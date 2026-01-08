@@ -76,7 +76,17 @@ public class SentinelService extends Service {
     private byte[] bestFrameJpeg = null;
     
     // Software Rotation Buffer
-    // Software Rotation Buffer
+    /**
+     * <b>Ping-Pong Buffer Strategy</b>
+     * <p>
+     * A pool of 2 buffers is used to decouple the Prodcuer (Camera Thread) from the Consumer (Processing Thread).
+     * <ul>
+     *     <li><code>rotationBuffers[index]</code>: The "Back Buffer" being written to by the camera rotation logic.</li>
+     *     <li><code>rotationBuffers[(index + 1) % 2]</code>: The "Front Buffer" currently being read/processed by the detector.</li>
+     * </ul>
+     * This eliminates "tearing" artifacts where high-speed motion would otherwise be partially overwritten during processing.
+     * </p>
+     */
     private byte[][] rotationBuffers; // Pool of buffers
     private int rotationBufferIndex = 0;
 
@@ -319,7 +329,12 @@ public class SentinelService extends Service {
      * Rotates a YUV (NV21) image 180 degrees via software.
      * <p>
      * <b>Algorithm:</b> Efficiently reverses the Y plane and the UV plane (in pairs)
-     * to achieve a full 180-degree flip.
+     * to achieve a full 180-degree flip. This is necessary because the Galaxy S i9000
+     * driver does not support hardware rotation for preview callbacks.
+     * </p>
+     * <p>
+     * <b>Optimization:</b> Direct byte manipulation is used instead of creating Bitmap objects
+     * to avoid high Garbage Collection overhead on the 512MB RAM of the device.
      * </p>
      * <p>
      * <b>Double Buffering (Ping-Pong):</b> Uses a pool of 2 buffers to switch the

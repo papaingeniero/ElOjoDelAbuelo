@@ -1,44 +1,52 @@
 # 👁️ El Ojo Del Abuelo (Sentinel Project)
 
-**Android NVR & Surveillance System for Galaxy S i9000**
+### Galaxy S i9000 Autonomous NVR System
 
-"El Ojo Del Abuelo" turns a legacy Android device (Samsung Galaxy S i9000, Android 2.3-4.4) into a robust, high-performance security camera. It is designed for extreme efficiency, minimal CPU usage, and thermal protection.
+**Mission:** To upcycle a legacy Samsung Galaxy S (i9000) device into a high-performance, autonomous IP security camera by overcoming Android 2.3 hardware limitations through advanced software engineering.
 
-## Features
+---
 
-### 🎥 Core Capabilities
-*   **Motion Detection**: Efficient algorithm optimized for single-core CPUs. Triggers recording only when significant movement is detected.
-*   **Thermal Guardian**: Monitors CPU temperature in real-time. Pauses heavy processing if the device overheats (>45°C) to prevent damage.
-*   **Foreground Service**: Runs reliably in the background with a persistent notification.
+## 🚀 Technical Features
 
-### ⚙️ v2.2: Advanced Logic (New!)
-*   **Software Rotation (180°)**: Solves the hardware limitation of the i9000 driver. Images are inverted efficiently using a custom algorithm.
-*   **Double Buffering (Ping-Pong)**: Uses a buffer pool to eliminate screen tearing during high-speed rotation processing. The camera write thread and processing read thread never conflict.
+This project is not just a webcam app; it is a showcase of optimization for constrained environments (Single Core 1GHz, 512MB RAM).
 
-### 🌐 Web Dashboard
-Access the camera via `http://DEVICE_IP:8080`.
-*   **Live Stream**: MJPEG stream compatible with any browser.
-*   **Animated Thumbnails**: Real-time previews of activity.
-*   **Settings Menu ⚙️**: Configure sensitivity, timeout, and rotation remotely without touching the phone.
+### ✅ Core Engineering Achievements
 
-## Installation
+*   **Double Buffering (Ping-Pong) Engine**:
+    *   **Problem:** The single-threaded camera callback caused "screen tearing" (visual artifacts) when the extensive image processing took longer than the frame interval.
+    *   **Solution:** A custom `rotationBuffers` pool (size 2) creates a "Ping-Pong" architecture. The Camera Thread writes to *Buffer A* while the Processing Thread reads *Buffer B*, completely decoupling input from output.
 
-1.  **Build**:
-    ```bash
-    ./gradlew assembleDebug
-    ```
-2.  **Install**:
-    ```bash
-    adb install -r app/build/outputs/apk/debug/app-debug.apk
-    ```
-3.  **Run**:
-    Open the app manually or via:
-    ```bash
-    adb shell am start -n com.elojodelabuelo/.MainActivity
-    ```
+*   **Precise Software Rotation (180°)**:
+    *   **Problem:** The Galaxy S i9000 driver ignores `setRotation()` for preview callbacks, making upside-down mounting impossible via standard API.
+    *   **Solution:** A highly optimized byte-manipulation algorithm (`rotateNV21Degree180`) that inverts the Y (Luminance) and UV (Chrominance-Interleaved) planes manually in real-time with minimal GC pressure (reused buffers).
 
-## Settings
-Persistent configuration is stored in `SharedPreferences`.
-*   **Motion Sensitivity**: Adjusts the pixel change threshold.
-*   **Recording Timeout**: Duration to keep recording after motion stops (10s, 30s, 60s).
-*   **Camera Rotation**: 0° (Standard) or 180° (Inverted for ceiling mount).
+*   **Thermal Guardian Protocol**:
+    *   **Problem:** Continuous processing on aged hardware leads to overheating and battery swelling.
+    *   **Solution:** A background monitor checks the `sys/class/power_supply` thermal sensors every 5 seconds. If T > 45°C, the system enters "Cool Down Mode" (halting image analysis) until T < 40°C.
+
+*   **Asynchronous I/O Pipeline**:
+    *   **Problem:** Saving frames to the SD card on the main thread freezes the preview.
+    *   **Solution:** Use of `SingleThreadExecutor` to offload all filesystem operations, prioritizing the live stream fluidity.
+
+*   **NanoHTTPD Web Dashboard**:
+    *   **Architecture:** Embedded lighttpd-style Java server.
+    *   **Features:** MJPEG Streaming, Dynamic Settings API (`/api/settings`), and Animated Thumbnail generation.
+
+---
+
+## 🛠️ Usage
+
+### Installation
+```bash
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Remote Configuration
+Access the control panel at `http://PHONE_IP:8080`.
+*   **Rotation:** Toggle 180° inversion instantly.
+*   **Sensitivity:** Adjust motion detection threshold (0-100%).
+*   **Timeout:** Set post-motion recording duration.
+
+---
+*Built with ❤️ and Java.*
