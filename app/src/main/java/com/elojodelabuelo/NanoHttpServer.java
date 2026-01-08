@@ -42,6 +42,9 @@ public class NanoHttpServer {
         lastError = error;
     }
 
+    // Phase 8: Real FPS Diagnostics
+    public static volatile int currentFps = 0;
+
     public NanoHttpServer(Context context) {
         this.context = context;
     }
@@ -240,8 +243,8 @@ public class NanoHttpServer {
 
             // Manual JSON construction to avoid external libs
             String json = String.format(
-                    "{\"bat\":%d, \"charging\":%b, \"temp\":%d, \"storage\":\"%s\", \"recording\":%b}",
-                    batLevel, charging, temp, freeStorage, SentinelService.isRecordingPublic);
+                    "{\"bat\":%d, \"charging\":%b, \"temp\":%d, \"storage\":\"%s\", \"recording\":%b, \"fps\":%d}",
+                    batLevel, charging, temp, freeStorage, SentinelService.isRecordingPublic, currentFps);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -479,6 +482,7 @@ public class NanoHttpServer {
                 "     <span id='stat-status'>⏺️ VIGILANDO</span>\n" +
                 "     <span id='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
                 "     <span id='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
+                "     <span id='stat-fps' style='color:#00e676;'>FPS: " + currentFps + "</span>\n" +
                 "     <span id='stat-storage'>💾 " + freeStorage + "</span>\n" +
                 "  </div>\n" +
                 "  <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
@@ -715,9 +719,32 @@ public class NanoHttpServer {
                 "});\n" +
                 "canvas.addEventListener('touchend', function(e) { panning = false; });\n" +
                 "\n" +
+                "// --- LIVE STATS UPDATER (Phase 8) ---\n" +
+                "function startStatsUpdater() {\n" +
+                "  setInterval(function() {\n" +
+                "    fetch('/stats').then(r => r.json()).then(data => {\n" +
+                "      // Battery\n" +
+                "      var batIcon = data.charging ? '⚡' : (data.bat > 20 ? '🔋' : '🪫');\n" +
+                "      document.getElementById('stat-bat').innerText = batIcon + ' ' + data.bat + '%';\n" +
+                "      // Temp\n" +
+                "      var tempIcon = data.temp > 40 ? '🔥' : '🌡️';\n" +
+                "      document.getElementById('stat-temp').innerText = tempIcon + ' ' + data.temp + '°C';\n" +
+                "      // FPS\n" +
+                "      document.getElementById('stat-fps').innerText = 'FPS: ' + data.fps;\n" +
+                "      // Storage\n" +
+                "      document.getElementById('stat-storage').innerText = '💾 ' + data.storage;\n" +
+                "      // Status\n" +
+                "      document.getElementById('stat-status').innerText = data.recording ? '🔴 GRABANDO' : '⏺️ VIGILANDO';\n" +
+                "      document.getElementById('stat-status').style.color = data.recording ? '#ff4444' : '#ffffff';\n" +
+                "    }).catch(e => console.log('Stats error', e));\n" +
+                "  }, 5000);\n" +
+                "}\n" +
+                "// ------------------------------\n" +
+                "\n" +
                 "// Settings Logic\n" +
                 "function openSettings() {\n" +
                 "    document.getElementById('settings-modal').style.display = 'flex';\n" +
+                "    loadSettings();\n" +
                 "}\n" +
                 "function closeSettings() {\n" +
                 "    document.getElementById('settings-modal').style.display = 'none';\n" +
@@ -725,6 +752,17 @@ public class NanoHttpServer {
                 "function updateSensLabel(val) {\n" +
                 "    var px = 500 - (val * 4.9);\n" +
                 "    document.getElementById('sens-label').textContent = val + '% (' + Math.round(px) + ' px)';\n" +
+                "}\n" +
+                "function loadSettings() {\n" +
+                "  fetch('/api/settings').then(r=>r.json()).then(data => {\n" +
+                "     document.getElementById('sens-slider').value = data.sens;\n" +
+                "     document.getElementById('sens-label').innerText = data.sens + '%';\n" +
+                "     document.getElementById('set-time').value = data.time;\n" +
+                "     document.getElementById('set-active').checked = data.active;\n" +
+                "     if(data.rot === 180) document.getElementById('rot-180').checked = true;\n" +
+                "     else document.getElementById('rot-0').checked = true;\n" +
+                "     updateSensLabel(data.sens);\n" +
+                "  });\n" +
                 "}\n" +
                 "function saveSettings() {\n" +
                 "    var active = document.getElementById('set-active').checked;\n" +
@@ -743,7 +781,6 @@ public class NanoHttpServer {
                 "    });\n" +
                 "}\n" +
                 "// Load Settings on Start\n" +
-                "window.onload = function() {\n" +
                 "    fetch('/api/settings').then(function(res) { return res.json(); })\n" +
                 "    .then(function(data) {\n" +
                 "        document.getElementById('set-active').checked = data.active;\n" +

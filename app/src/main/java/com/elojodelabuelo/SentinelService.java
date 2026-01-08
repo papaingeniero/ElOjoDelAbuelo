@@ -29,13 +29,8 @@ import android.content.SharedPreferences;
 public class SentinelService extends Service {
 
     private static final String TAG = "Sentinel";
-    private static Context instanceContext; // To access SharedPreferences from static context if needed, but easier to just use standard way or keep references?
-    // Actually updateSettings is static, so we need a way to save prefs. We can pass context or keep a static ref.
-    // Simpler: SentinelService is a singleton service usually, but static methods don't have 'this'.
-    // We will need a static reference to the running service or context.
     private static SentinelService instance;
     private static final int NOTIFICATION_ID = 1;
-    private static final int WAKE_LOCK_TIMEOUT = 0; // Infinity
 
     private PowerManager.WakeLock wakeLock;
     private Camera camera;
@@ -53,24 +48,22 @@ public class SentinelService extends Service {
     private FileOutputStream fileOutputStream;
     private FileOutputStream previewOutputStream; // For mini-mjpeg
     private long lastPreviewTime = 0;
-
     
+    // Phase 9.2: Optimization
+    private boolean processNextFrame = true;
+
     // Configurable Settings (Version 2.0)
     public static int motionSensitivity = 90;
     public static int recordingTimeout = 10; // seconds
     public static volatile boolean isDetectorActive = true;
-    public static int cameraRotation = 0;
+    public static int cameraRotation = 0; // 0 or 180
             
     // Optimization: Pre-calculated threshold
     private static int currentThreshold = 50;
     
-    // private static final long RECORD_TIMEOUT_MS = 10000; // Replaced by dynamic
-    // private static final int MOTION_THRESHOLD = 50; // Replaced by dynamic
     // Buffer management
     private static final int NUM_BUFFERS = 3;
-    private static final int WIDTH = 320;
-    private static final int HEIGHT = 240;
-
+    
     // Smart Thumbnail Logic
     private int maxMotionScore = -1;
     private byte[] bestFrameJpeg = null;
@@ -90,10 +83,12 @@ public class SentinelService extends Service {
     private byte[][] rotationBuffers; // Pool of buffers
     private int rotationBufferIndex = 0;
 
-    // FPS Calculation
+    // FPS Calculation (Diagnostics)
     private int frameCount = 0;
     private long recordingStartTime = 0;
-
+    private int realFpsCounter = 0;
+    private long lastRealFpsTime = 0;
+    
     // State Synchronization for Long-Polling
     public static final Object statusLock = new Object();
     public static volatile boolean isRecordingPublic = false;
@@ -106,7 +101,6 @@ public class SentinelService extends Service {
         SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
         motionSensitivity = prefs.getInt("motionSensitivity", 90);
         recordingTimeout = prefs.getInt("recordingTimeout", 10);
-        isDetectorActive = prefs.getBoolean("isDetectorActive", true);
         isDetectorActive = prefs.getBoolean("isDetectorActive", true);
         cameraRotation = prefs.getInt("cameraRotation", 0);
         
@@ -156,6 +150,12 @@ public class SentinelService extends Service {
     private void startCamera() {
         try {
             camera = Camera.open();
+            
+            // --- DIAGNOSTICS AUDIT (Phase 8 - REVISED File Based) ---
+            Camera.Parameters params = camera.getParameters();
+            writeCameraInfoToFile(params);
+            // -----------------------------------
+
             setupCameraParameters();
 
             // Calculate buffer size
@@ -183,15 +183,27 @@ public class SentinelService extends Service {
         Camera.Parameters params = camera.getParameters();
         java.util.List<Camera.Size> sizes = params.getSupportedPreviewSizes();
 
-        // Find closest size to 320x240
-        Camera.Size bestSize = sizes.get(0);
-        int minDiff = Integer.MAX_VALUE;
-
+        // Phase 9.1: Optimization - Native Resolution (CIF)
+        // Explicitly look for 352x288 first
+        Camera.Size bestSize = null;
         for (Camera.Size size : sizes) {
-            int diff = Math.abs(size.width * size.height - 320 * 240);
-            if (diff < minDiff) {
-                minDiff = diff;
+            if (size.width == 352 && size.height == 288) {
                 bestSize = size;
+                break;
+            }
+        }
+
+        // Fallback: Find closest size to 320x240 if CIF not found
+        if (bestSize == null) {
+            bestSize = sizes.get(0);
+            int minDiff = Integer.MAX_VALUE;
+
+            for (Camera.Size size : sizes) {
+                int diff = Math.abs(size.width * size.height - 320 * 240);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    bestSize = size;
+                }
             }
         }
 
@@ -199,28 +211,70 @@ public class SentinelService extends Service {
         PREVIEW_HEIGHT = bestSize.height;
 
         params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
         // params.setRotation(cameraRotation); // REMOVED: Hardware rotation not supported for Preview on i9000 driver
-        // params.setPreviewFormat(ImageFormat.NV21); // NV21 is default, sometimes
-        // setting it causes issues if not supported explicitly in list
-
+        
         camera.setParameters(params);
         NanoHttpServer.setLastError("Camera OK. Size: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT);
+    }
+    
+    private void writeCameraInfoToFile(Camera.Parameters params) {
+        File logFile = new File(Environment.getExternalStorageDirectory(), "camera_info.txt");
+        try {
+            java.io.FileWriter writer = new java.io.FileWriter(logFile, false); // Overwrite
+            
+            writer.write("--- CAMERA CAPABILITIES AUDIT ---\n");
+            writer.write("Current Preview Rate: " + params.getPreviewFrameRate() + "\n");
+            
+            java.util.List<Integer> rates = params.getSupportedPreviewFrameRates();
+            if (rates != null) {
+                writer.write("Supported FPS: ");
+                for (Integer fps : rates) writer.write(fps + " ");
+                writer.write("\n");
+            }
+
+            java.util.List<Camera.Size> sizes = params.getSupportedPreviewSizes();
+            if (sizes != null) {
+                writer.write("Supported Sizes: ");
+                for (Camera.Size size : sizes) writer.write(size.width + "x" + size.height + " ");
+                writer.write("\n");
+            }
+            writer.write("--------------------------------\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private final Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(final byte[] data, final Camera camera) {
+            if (data == null) return;
+
+            // Phase 9.2: Frame Throttling (50% Reduction)
+            // Process 1, Skip 1 to save CPU
+            processNextFrame = !processNextFrame;
+            if (!processNextFrame) {
+                camera.addCallbackBuffer(data); // Must return buffer!
+                return;
+            }
+
+            // --- REAL FPS COUNTER (Diagnostics) ---
+            realFpsCounter++;
+            long now = System.currentTimeMillis();
+            if (now - lastRealFpsTime >= 1000) {
+                // Update Web Stats
+                NanoHttpServer.currentFps = realFpsCounter;
+                realFpsCounter = 0;
+                lastRealFpsTime = now;
+            }
+            // --------------------------------------
+
             if (thermalGuardian.isOverheating()) {
                 // Pause specific logic or just drop frame
                 // Ensure we return buffer
                 camera.addCallbackBuffer(data);
                 return;
             }
-
-            // Motion Detection on Main Thread (or Binder Thread depending on
-            // implementation)
-            // Ideally should be fast. 320x240 stride 10 is very fast.
             
             // Software Rotation
             byte[] processedData = data;
@@ -228,8 +282,6 @@ public class SentinelService extends Service {
                  processedData = rotateNV21Degree180(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
             }
             
-            // Motion Detection Logic
-            // Ideally should be fast. 320x240 stride 10 is very fast.
             // Motion Detection Logic
             if (!isDetectorActive) {
                 if (isRecording) {
@@ -248,69 +300,48 @@ public class SentinelService extends Service {
                 
                 // Optimized: Use pre-calculated threshold
                 if (score > currentThreshold) {
-                lastMotionTime = System.currentTimeMillis();
-                if (!isRecording) {
-                    isRecording = true;
-                    isRecordingPublic = true;
+                    lastMotionTime = System.currentTimeMillis();
+                    if (!isRecording) {
+                        isRecording = true;
+                        isRecordingPublic = true;
+                        synchronized (statusLock) {
+                            statusLock.notifyAll();
+                        }
+                        updateNotification(true);
+                        openNewRecordingFile();
+                    }
+                }
+
+                // PEAK MOTION LOGIC
+                if (isRecording) {
+                    if (score > maxMotionScore) {
+                        maxMotionScore = score;
+                        // Capture best frame immediately in memory
+                        try {
+                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                            yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 80, out); 
+                            bestFrameJpeg = out.toByteArray();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                // Check timeout
+                if (isRecording && (System.currentTimeMillis() - lastMotionTime > (recordingTimeout * 1000L))) {
+                    isRecording = false;
+                    isRecordingPublic = false;
                     synchronized (statusLock) {
                         statusLock.notifyAll();
                     }
-                    updateNotification(true);
-                    openNewRecordingFile();
+                    updateNotification(false);
+                    closeRecordingFile();
                 }
-            }
-
-            // PEAK MOTION LOGIC
-            if (isRecording) {
-                if (score > maxMotionScore) {
-                    maxMotionScore = score;
-                    // Capture best frame immediately in memory
-                    try {
-                        YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 80, out); // Higher quality
-                                                                                                    // for thumbnail
-                        bestFrameJpeg = out.toByteArray();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            // Check timeout
-            if (isRecording && (System.currentTimeMillis() - lastMotionTime > (recordingTimeout * 1000L))) {
-                isRecording = false;
-                isRecordingPublic = false;
-                synchronized (statusLock) {
-                    statusLock.notifyAll();
-                }
-                updateNotification(false);
-                closeRecordingFile();
-            }
             } // End of isDetectorActive check
 
             // Force Sync public state to be safe
             isRecordingPublic = isRecording;
-
-            // If we need to Record or Stream, we process in background.
-            // Simplified: Always process if recording OR if clients connected (implied by
-            // broadcasting)
-            // But we actually only know if clients are connected if we ask server?
-            // For now, let's process if isRecording is true OR we just want to stream
-            // always.
-            // To save CPU, strictly: Stream only if clients? NanoHttpServer structure
-            // doesn't expose client count easily without mod.
-            // Let's assume we process if isRecording OR motion detected (for stream
-            // responsiveness) OR periodically?
-            // Actually, let's just process every frame to background to keep stream live,
-            // 320x240 is light.
-            // BUT: "PRIORIDAD ABSOLUTA: Bajo consumo de CPU".
-            // So: Only convert to JPEG if isRecording OR server has clients.
-            // I'll add a hasClients() method to NanoHttpServer to optimize.
-            // Since I can't modify NanoHttpServer easily in this tool call (I already wrote
-            // it), I'll assume I can edit it or just process.
-            // Wait, I can't verify 'hasClients' without editing NanoHttpServer.
-            // I'll optimistically process.
 
             final byte[] finalData = processedData; // Need final for inner class if not using lambda
             processingHandler.post(new Runnable() {
@@ -321,8 +352,6 @@ public class SentinelService extends Service {
                 }
             });
         }
-    };
-    
     };
     
     /**
@@ -392,47 +421,15 @@ public class SentinelService extends Service {
             httpServer.broadcast(jpeg);
 
             // Record
-            // Record
             if (isRecording) {
                 frameCount++;
                 saveToFile(jpeg);
 
-                // Smart Preview Recording (1fps, 100x75)
+                // Smart Preview Recording (1fps)
                 long now = System.currentTimeMillis();
                 if (now - lastPreviewTime > 1000) {
                     lastPreviewTime = now;
                     try {
-                        YuvImage yuvPreview = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
-                        ByteArrayOutputStream outPreview = new ByteArrayOutputStream();
-                        yuvPreview.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 50, outPreview);
-                        // Resize is tricky with YuvImage directly.
-                        // Actually, YuvImage doesn't resize. We need to load as Bitmap to resize?
-                        // Too slow for "Optimized Android".
-                        // Better approach: Just save full frame every 1s? Or use a simple downsample?
-                        // "100x75" is requested.
-                        // Let's optimize: Just save 1 frame (full res 320x240) every 1s.
-                        // 320x240 is already small. 100x75 is tiny.
-                        // If we really want 100x75, we need Bitmap scaling which is expensive on CPU.
-                        // User said "IMPORTANTE: No hace falta guardar Bitmaps en listas ni usar
-                        // Canvas".
-                        // But to RESIZE we need something.
-                        // NOTE: NV21 sub-sampling is hard.
-                        // Decision: Save 320x240 frame every 1s. It is small enough (~5KB).
-                        // Wait, user explicitly asked for 100x75.
-                        // I will respect the 1s interval.
-                        // For size, I'll stick to 320x240 to avoid CPU overhead of resizing Bitmap.
-                        // Wait, I can set inSampleSize in BitmapFactory if I decode? No that's slow.
-                        // Re-reading specific instruction: "Genera un YuvImage y comprímelo
-                        // directamente a JPEG con dimensiones 100x75."
-                        // YuvImage.compressToJpeg DOES NOT RESIZE. It uses the Rect to CROP.
-                        // So I cannot resize to 100x75 with YuvImage.
-                        // I will CROPPING? No.
-                        // I will just save the full 320x240 frame. It serves the purpose of
-                        // "Mini-MJPEG" (timelapse).
-                        // It's effectively a preview. HTML will scale it down visually.
-
-                        // EDIT: I will simply write the SAME jpeg bytes to preview file if time match.
-                        // Even faster.
                         if (previewOutputStream != null) {
                             previewOutputStream.write(jpeg);
                         }
@@ -569,10 +566,6 @@ public class SentinelService extends Service {
         }
         closeRecordingFile();
     }
-
-
-    // Optimized Threshold for v2.1
-    private static int currentThreshold = 50;
     
     /**
      * Updates global configuration settings and persists them.

@@ -17,6 +17,11 @@ public class MainActivity extends Activity {
         Button btnActivate = (Button) findViewById(R.id.btn_activate);
         Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
 
+        // Phase 9: Auto-start Surveillance on Launch
+        Intent autoStartIntent = new Intent(this, SentinelService.class);
+        startService(autoStartIntent);
+        Toast.makeText(this, "Auto-Iniciando Vigilancia...", Toast.LENGTH_SHORT).show();
+
         btnActivate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

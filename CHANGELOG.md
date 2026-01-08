@@ -5,6 +5,21 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.3.0] - 2026-01-08 (Milestone: "Cool & Stable")
+### Added
+- **Native Resolution (CIF)**: Forced camera preview to **352x288** to match hardware capabilities, replacing the heuristic resolution search.
+- **Frame Throttling**: Implemented a "Process 1 / Skip 1" strategy in `SentinelService`.
+- **Diagnostics**:
+    - File-based camera audit (`/sdcard/camera_info.txt`).
+    - Real-time FPS counter on Web Dashboard.
+    - Auto-start surveillance on app launch.
+
+### Changed
+- **Optimization**:
+    - CPU load reduced by ~50% via frame throttling.
+    - Operating temperature stabilized (40°C -> 38°C).
+    - FPS stabilized at 15 FPS (derived from 30 FPS hardware input).
+
 ## [v2.2.0] - 2026-01-08
 ### Added
 - **Double Buffering (Ping-Pong)**: Implementation of a `rotationBuffers` pool (size 2) in `SentinelService`. This decouples the camera writing thread from the background reading thread, completely eliminating screen tearing artifacts.
