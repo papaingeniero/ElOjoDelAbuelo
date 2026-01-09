@@ -43,4 +43,15 @@ public class SystemStats {
             return freeMB + " MB";
         }
     }
+
+
+    public static String getBootTime() {
+        try {
+            long bootTime = System.currentTimeMillis() - android.os.SystemClock.elapsedRealtime();
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM HH:mm", java.util.Locale.US);
+            return sdf.format(new java.util.Date(bootTime));
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
 }

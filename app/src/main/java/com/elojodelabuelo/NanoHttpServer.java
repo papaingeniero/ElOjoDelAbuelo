@@ -495,7 +495,7 @@ public class NanoHttpServer {
                 "  </div>\n" +
                 "  <div style='text-align:center; padding-bottom:10px;'>\n" +
                 "     <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
-                "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + "</div>\n" +
+                "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: " + SystemStats.getBootTime() + "</div>\n" +
                 "  </div>\n" +
                 "\n" +
                 "<div class='library'>\n" +

@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.7.0] - 2026-01-10 (Auto-Deploy Verified)
+### Added
+- **Diagnostics**: Added "Boot Time" timestamp to the dashboard footer.
+- **Workflow**: Automated version bumping and Git Protocol verification (Self-Test).
+ 
 ## [v2.6.0] - 2026-01-09
 ### Added
 - **UI Version Display**: Dashboard header now dynamically displays the app version (e.g., "v2.6").
