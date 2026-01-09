@@ -42,8 +42,8 @@ public class NanoHttpServer {
         lastError = error;
     }
 
-    // Phase 8: Real FPS Diagnostics
-    public static volatile int currentFps = 0;
+    // Phase 8: Real FPS Diagnostics - REMOVED
+
 
     public NanoHttpServer(Context context) {
         this.context = context;
@@ -243,8 +243,8 @@ public class NanoHttpServer {
 
             // Manual JSON construction to avoid external libs
             String json = String.format(
-                    "{\"bat\":%d, \"charging\":%b, \"temp\":%d, \"storage\":\"%s\", \"recording\":%b, \"fps\":%d}",
-                    batLevel, charging, temp, freeStorage, SentinelService.isRecordingPublic, currentFps);
+                    "{\"bat\":%d, \"charging\":%b, \"temp\":%d, \"storage\":\"%s\", \"recording\":%b}",
+                    batLevel, charging, temp, freeStorage, SentinelService.isRecordingPublic);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -422,6 +422,12 @@ public class NanoHttpServer {
         String freeStorage = SystemStats.getFreeStorageSpace();
         int temp = ThermalGuardian.getBatteryTemperature(context);
 
+        // Version
+        String versionName = "v?";
+        try {
+            versionName = "v" + context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+        } catch (Exception e) { e.printStackTrace(); }
+
         String batIcon = charging ? "⚡" : (batLevel > 20 ? "🔋" : "🪫");
         String tempIcon = temp > 40 ? "🔥" : "🌡️";
 
@@ -432,6 +438,8 @@ public class NanoHttpServer {
                 +
                 "<style>\n" +
                 "body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }\n"
+                +
+                (SentinelService.isCameraError ? ".camera-error { background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; animation: blink 1s infinite; z-index: 2000; } @keyframes blink { 50% { opacity: 0.5; } }\\n" : "")
                 +
                 ".header { padding: 20px; text-align: center; background: #1f1f1f; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }\n"
                 +
@@ -456,9 +464,9 @@ public class NanoHttpServer {
                 "/* Modal Player */\n" +
                 "#player-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; flex-direction: column; }\n"
                 +
-                "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }\n"
+                "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; background-color: #000; width: 100%; height: auto; }\n"
                 +
-                "canvas { max-width: 100%; max-height: 100%; touch-action: none; }\n" +
+                "img#video-player { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; }\n" +
                 ".controls { padding: 20px; background: rgba(20,20,20,0.9); display: flex; align-items: center; gap: 10px; }\n"
                 +
                 ".btn-close { color: white; background: none; border: none; font-size: 20px; padding: 10px; }\n" +
@@ -473,21 +481,22 @@ public class NanoHttpServer {
                 "</style>\n" +
                 "</head><body>\n" +
                 "\n" +
-                "<div class='header'>\n" +
-                "  <div style='margin-bottom:10px; font-size:20px; position:relative;'>\n" +
-                "     👁️ El Ojo Del Abuelo\n" +
-                "     <span id='settings-btn' style='cursor:pointer; position:absolute; right:0; top:0; font-size:24px;' onclick='openSettings()'>⚙️</span>\n" +
-                "  </div>\n" +
-                "  <div class='stats-bar'>\n" +
+                (SentinelService.isCameraError ? "<div class='camera-error'>⚠️ ERROR CRÍTICO: CÁMARA NO RESPONDE - REINICIA EL MÓVIL</div>\n" : "") +
+            "<div class='header' style='position:relative;'>\n" +
+            "   <h1 style='font-size:18px; margin:0; display:inline-block;'>👁️ El Ojo del Abuelo <span style='font-size:0.7em; color:#aaa;'>" + versionName + "</span></h1>\n" +
+            "   <span id='settings-btn' style='cursor:pointer; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:24px;' onclick='openSettings()'>⚙️</span>\n" +
+            "</div>\n"
+            +
+            "<div class='stats-bar'>\n" +
                 "     <span id='stat-status'>⏺️ VIGILANDO</span>\n" +
                 "     <span id='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
                 "     <span id='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
-                "     <span id='stat-fps' style='color:#00e676;'>FPS: " + currentFps + "</span>\n" +
                 "     <span id='stat-storage'>💾 " + freeStorage + "</span>\n" +
                 "  </div>\n" +
-                "  <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
-                "  <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + "</div>\n" +
-                "</div>\n" +
+                "  <div style='text-align:center; padding-bottom:10px;'>\n" +
+                "     <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
+                "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + "</div>\n" +
+                "  </div>\n" +
                 "\n" +
                 "<div class='library'>\n" +
                 "  <div class='section-title'>📼 Grabaciones</div>\n" +
@@ -500,7 +509,7 @@ public class NanoHttpServer {
                 "     <button class='btn-close' onclick='closePlayer()'>❌</button>\n" +
                 "  </div>\n" +
                 "  <div id='canvas-container'>\n" +
-                "     <canvas id='video-canvas'></canvas>\n" +
+                "     <img id='video-player'>\n" +
                 "  </div>\n" +
                 "  <div class='controls'>\n" +
                 "     <button class='btn-close' id='play-pause' style='font-size:24px;'>⏸</button>\n" +
@@ -559,17 +568,13 @@ public class NanoHttpServer {
                 "var currentFrameIdx = 0;\n" +
                 "var isPlaying = false;\n" +
                 "var fps = 10;\n" +
-                "var canvas = document.getElementById('video-canvas');\n" +
-                "var ctx = canvas.getContext('2d');\n" +
-                "// Zoom logic\n" +
-                "var scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;\n" +
+                "var currentObjectUrl = null;\n" +
                 "\n" +
                 "function playVideo(file) {\n" +
                 "  document.getElementById('player-modal').style.display = 'flex';\n" +
                 "  document.getElementById('video-title').textContent = file;\n" +
                 "  frames = [];\n" +
                 "  currentFrameIdx = 0;\n" +
-                "  scale = 1; pointX = 0; pointY = 0;\n" +
                 "  document.getElementById('scrubber').value = 0;\n" +
                 "  \n" +
                 "  // Extract FPS\n" +
@@ -615,13 +620,12 @@ public class NanoHttpServer {
                 "    }\n" +
                 "    if(end === -1) break; // No footer yet, keep buffer\n" +
                 "    \n" +
-                "    // Extract Jpeg\n" +
+                "    // Extract Jpeg Blob\n" +
                 "    var jpegData = buffer.slice(start, end);\n" +
-                "    createImageBitmap(new Blob([jpegData])).then(img => {\n" +
-                "       frames.push(img);\n" +
-                "       if(frames.length === 1) requestAnimationFrame(drawLoop);\n" +
-                "       updateScrubber();\n" +
-                "    });\n" +
+                "    var blob = new Blob([jpegData], {type: 'image/jpeg'});\n" +
+                "    frames.push(blob);\n" +
+                "    if(frames.length === 1) requestAnimationFrame(drawLoop);\n" +
+                "    updateScrubber();\n" +
                 "    \n" +
                 "    // Remove processed part\n" +
                 "    buffer = buffer.slice(end);\n" +
@@ -676,11 +680,10 @@ public class NanoHttpServer {
                 "\n" +
                 "function drawFrame(idx) {\n" +
                 "   if(!frames[idx]) return;\n" +
-                "   var img = frames[idx];\n" +
-                "   canvas.width = 352; canvas.height = 288;\n" +
-                "   ctx.clearRect(0,0,canvas.width,canvas.height);\n" +
-                "   ctx.setTransform(scale, 0, 0, scale, pointX, pointY);\n" +
-                "   ctx.drawImage(img, 0, 0);\n" +
+                "   \n" +
+                "   if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);\n" +
+                "   currentObjectUrl = URL.createObjectURL(frames[idx]);\n" +
+                "   document.getElementById('video-player').src = currentObjectUrl;\n" +
                 "}\n" +
                 "\n" +
                 "// Scrubber logic\n" +
@@ -699,25 +702,7 @@ public class NanoHttpServer {
                 "  frames = [];\n" +
                 "}\n" +
                 "\n" +
-                "// Touch Gestures\n" +
-                "canvas.addEventListener('touchstart', function(e) {\n" +
-                "   if(e.touches.length == 1) { \n" +
-                "      // panning = true; \n" +
-                "      // startX = e.touches[0].clientX - pointX; startY = e.touches[0].clientY - pointY;\n" +
-                "   } else if (e.touches.length == 2) {\n" +
-                "      // Pinch start logic could go here\n" +
-                "   }\n" +
-                "   e.preventDefault();\n" +
-                "});\n" +
-                "canvas.addEventListener('touchmove', function(e) {\n" +
-                "   e.preventDefault();\n" +
-                "   if (e.touches.length == 2) {\n" +
-                "      // Simple zoom hack: just zoom in continuous\n" +
-                "      scale = Math.min(3, scale + 0.05);\n" +
-                "      drawFrame(currentFrameIdx);\n" +
-                "   }\n" +
-                "});\n" +
-                "canvas.addEventListener('touchend', function(e) { panning = false; });\n" +
+
                 "\n" +
                 "// --- LIVE STATS UPDATER (Phase 8) ---\n" +
                 "function startStatsUpdater() {\n" +
@@ -729,8 +714,6 @@ public class NanoHttpServer {
                 "      // Temp\n" +
                 "      var tempIcon = data.temp > 40 ? '🔥' : '🌡️';\n" +
                 "      document.getElementById('stat-temp').innerText = tempIcon + ' ' + data.temp + '°C';\n" +
-                "      // FPS\n" +
-                "      document.getElementById('stat-fps').innerText = 'FPS: ' + data.fps;\n" +
                 "      // Storage\n" +
                 "      document.getElementById('stat-storage').innerText = '💾 ' + data.storage;\n" +
                 "      // Status\n" +
@@ -780,20 +763,13 @@ public class NanoHttpServer {
                 "        }, 800);\n" +
                 "    });\n" +
                 "}\n" +
-                "// Load Settings on Start\n" +
-                "    fetch('/api/settings').then(function(res) { return res.json(); })\n" +
-                "    .then(function(data) {\n" +
-                "        document.getElementById('set-active').checked = data.active;\n" +
-                "        document.getElementById('sens-slider').value = data.sens;\n" +
-                "        document.getElementById('set-time').value = data.time;\n" +
-                "        if(data.rot === 180) document.getElementById('rot-180').checked = true;\n" +
-                "        else document.getElementById('rot-0').checked = true;\n" +
-                "        \n" +
-                "        updateSensLabel(data.sens);\n" +
-                "    }).catch(function(err) { console.log('Error loading settings', err); });\n" +
-                "    \n" +
-                "    // Start Polling Stats\n" +
-                "    setInterval(updateStats, 5000);\n" +
+                "// Load Settings on Start - CLEANED\n" +
+
+                "\n" +
+                "// Initialize on Load\n" +
+                "window.onload = function() {\n" +
+                "    loadSettings();\n" + // Extracted from fetch blob
+                "    startStatsUpdater();\n" +
                 "    pollStatus();\n" +
                 "};\n" +
                 "\n" +

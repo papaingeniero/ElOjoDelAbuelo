@@ -83,15 +83,16 @@ public class SentinelService extends Service {
     private byte[][] rotationBuffers; // Pool of buffers
     private int rotationBufferIndex = 0;
 
-    // FPS Calculation (Diagnostics)
+    // FPS Calculation (Diagnostics) - REMOVED
+    // private int frameCount = 0; // Kept for recording stats if needed, or remove if unused. Keep frameCount for video file naming.
     private int frameCount = 0;
     private long recordingStartTime = 0;
-    private int realFpsCounter = 0;
-    private long lastRealFpsTime = 0;
+    // Real FPS Removed
     
     // State Synchronization for Long-Polling
     public static final Object statusLock = new Object();
     public static volatile boolean isRecordingPublic = false;
+    public static volatile boolean isCameraError = false; // Phase 13: Watchdog flag
 
     @Override
     public void onCreate() {
@@ -104,10 +105,10 @@ public class SentinelService extends Service {
         isDetectorActive = prefs.getBoolean("isDetectorActive", true);
         cameraRotation = prefs.getInt("cameraRotation", 0);
         
-        // Calculate initial threshold
-        currentThreshold = 500 - (int)(motionSensitivity * 4.9);
-        if (currentThreshold < 5) currentThreshold = 5;
-        if (currentThreshold > 500) currentThreshold = 500;
+        // Calculate initial threshold (Phase 13: Exponential)
+        currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
+        if (currentThreshold < 20) currentThreshold = 20;
+        if (currentThreshold > 50000) currentThreshold = 50000;
 
         // 1. WakeLock
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -248,7 +249,14 @@ public class SentinelService extends Service {
     private final Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(final byte[] data, final Camera camera) {
-            if (data == null) return;
+            // Phase 13: Camera Watchdog
+            if (data == null || data.length == 0) {
+                 isCameraError = true;
+                 // Don't restart here, just flag it for the user to see
+                 return; 
+            }
+            isCameraError = false; // Recover if we get data
+
 
             // Phase 9.2: Frame Throttling (50% Reduction)
             // Process 1, Skip 1 to save CPU
@@ -258,16 +266,8 @@ public class SentinelService extends Service {
                 return;
             }
 
-            // --- REAL FPS COUNTER (Diagnostics) ---
-            realFpsCounter++;
-            long now = System.currentTimeMillis();
-            if (now - lastRealFpsTime >= 1000) {
-                // Update Web Stats
-                NanoHttpServer.currentFps = realFpsCounter;
-                realFpsCounter = 0;
-                lastRealFpsTime = now;
-            }
-            // --------------------------------------
+            // --- REAL FPS COUNTER REMOVED ---
+
 
             if (thermalGuardian.isOverheating()) {
                 // Pause specific logic or just drop frame
@@ -417,10 +417,9 @@ public class SentinelService extends Service {
             yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 60, out);
             byte[] jpeg = out.toByteArray();
 
-            // Stream
-            httpServer.broadcast(jpeg);
-
-            // Record
+            // Phase 13: Priorities - Record FIRST, then Stream
+            
+            // 1. Record (Disk I/O)
             if (isRecording) {
                 frameCount++;
                 saveToFile(jpeg);
@@ -437,6 +436,13 @@ public class SentinelService extends Service {
                         e.printStackTrace();
                     }
                 }
+            }
+
+            // 2. Stream (Network I/O - Protected)
+            try {
+                httpServer.broadcast(jpeg);
+            } catch (Exception e) {
+                Log.e(TAG, "Stream broadcast failed: " + e.getMessage());
             }
 
         } catch (Exception e) {
@@ -586,10 +592,10 @@ public class SentinelService extends Service {
 
         cameraRotation = rot;
         
-        // Update Threshold
-        currentThreshold = 500 - (int)(motionSensitivity * 4.9);
-        if (currentThreshold < 5) currentThreshold = 5;
-        if (currentThreshold > 500) currentThreshold = 500;
+        // Update Threshold (Phase 13: Exponential)
+        currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
+        if (currentThreshold < 20) currentThreshold = 20;
+        if (currentThreshold > 50000) currentThreshold = 50000;
 
         if (instance != null) {
             SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);

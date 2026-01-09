@@ -5,6 +5,22 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.6.0] - 2026-01-09
+### Added
+- **UI Version Display**: Dashboard header now dynamically displays the app version (e.g., "v2.6").
+- **Visual Polish**: Improved alignment of "Live Camera" button and removed stray escaped characters in HTML.
+
+## [v2.5.0] - 2026-01-09
+### Fixed
+- **Ghost Recordings**: Replaced linear sensitivity formula with an exponential one (`10000 * (1 - sens/100)^2`), eliminating false positives at low sensitivity.
+- **0KB Files**: Reordered processing logic to prioritize disk writing before network broadcasting.
+- **Camera Reliability**: Implemented a "Watchdog" that flags critical hardware errors (null data) and displays a red alert in the Web UI.
+
+## [v2.4.0] - 2026-01-09
+### Refactor
+- **Web Player**: Replaced `<canvas>` implementation with native `<img>` tag using Blob URLs.
+- **Benefits**: Fixed visual glitches (split images) on rotated videos and improved rendering performance.
+
 ## [v2.3.0] - 2026-01-08 (Milestone: "Cool & Stable")
 ### Added
 - **Native Resolution (CIF)**: Forced camera preview to **352x288** to match hardware capabilities, replacing the heuristic resolution search.
