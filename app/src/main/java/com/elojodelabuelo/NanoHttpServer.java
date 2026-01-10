@@ -354,9 +354,15 @@ public class NanoHttpServer {
              String json = "{}";
              File f = SentinelService.getCurrentRecordingFile();
              if (f != null) {
-                 json = "{\"filename\":\"" + f.getName() + "\", \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\"}";
+                 String sizeStr = "0 KB";
+                 if (f.exists()) {
+                     long bytes = f.length();
+                     if (bytes > 1024 * 1024) sizeStr = String.format("%.1f MB", bytes / (1024.0 * 1024.0));
+                     else sizeStr = (bytes / 1024) + " KB";
+                 }
+                 json = "{\"filename\":\"" + f.getName() + "\", \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\", \"size\":\"" + sizeStr + "\"}";
              } else {
-                 json = "{\"filename\":null, \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\"}";
+                 json = "{\"filename\":null, \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\", \"size\":null}";
              }
              
              os.write("HTTP/1.1 200 OK\r\n".getBytes());
@@ -1011,18 +1017,30 @@ public class NanoHttpServer {
                 "    var img = document.getElementById('hidden-stream-source');\n" +
                 "    if(img) document.body.removeChild(img);\n" +
                 "    \n" +
-                "    var card = document.getElementById('temp-preview-card');\n" +
-                "    if(card) {\n" +
-                "        card.style.borderLeft = 'none';\n" +
-                "        card.style.background = '#2c2c2c';\n" +
-                "        \n" +
-                "        fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
-                "            card.querySelector('.info').innerHTML = \"<b>\" + meta.filename + \"</b><br>DISPONIBLE (Recarga para KB)\";\n" +
-                "            card.onclick = function() { playVideo(meta.filename); };\n" +
-                "            card.id = '';\n" +
-                "            card.querySelector('.thumb-container').style.border = 'none';\n" +
-                "        });\n" +
-                "    }\n" +
+                "    // Phase 17.2: Hot-Swap Logic\n" +
+                "    console.log('Recording stopped. Waiting for buffer flush (3s)...');\n" +
+                "    setTimeout(function() {\n" +
+                "        var card = document.getElementById('temp-preview-card');\n" +
+                "        if(card) {\n" +
+                "             fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
+                "                if(!meta.filename) return; \n" +
+                "                \n" +
+                "                var newHtml = \n" +
+                "                \"<div class='video-item' onclick=\\\"playVideo('\" + meta.filename + \"')\\\">\" +\n" +
+                "                   \"<div class='thumb-container'>\" +\n" +
+                "                      \"<img class='thumb' src='/thumbnails/\" + meta.filename + \"' onload='this.style.opacity=1'>\" +\n" +
+                "                   \"</div>\" +\n" +
+                "                   \"<div class='info'><b>\" + meta.filename + \"</b><br>\" + meta.size + \"</div>\" +\n" +
+                "                \"</div>\";\n" +
+                "                \n" +
+                "                var temp = document.createElement('div');\n" +
+                "                temp.innerHTML = newHtml;\n" +
+                "                var newCard = temp.firstChild;\n" +
+                "                card.parentNode.replaceChild(newCard, card);\n" +
+                "                console.log('Hot-Swap completed for: ' + meta.filename);\n" +
+                "             });\n" +
+                "        }\n" +
+                "    }, 3000);\n" +
                 "}\n" +
                 "</script>\n" +
                 "</body></html>";

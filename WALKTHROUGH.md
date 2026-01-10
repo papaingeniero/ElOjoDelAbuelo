@@ -185,3 +185,19 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - Record a clip.
     - Wait for it to finish.
     - Verify the thumbnail *continues moving* even after the status text changes to "DISPONIBLE".
+
+### Phase 17.2: Hot-Swap Final Card (v2.8.2)
+- **Problem**: The persistent animation (Phase 17.1) was a nice visual trick, but the card lacked real data (File Size) and relied on client-side CPU for the animation loop.
+- **Solution**:
+    - **Back-End**: Updated `/api/latest_video_meta` to calculate and return the actual file size (KB/MB).
+    - **Front-End**: Implemented a "Hot-Swap" strategy.
+        1. When recording stops, wait 3 seconds (flush buffer).
+        2. Fetch final metadata.
+        3. Replace the entire "Live Preview" card HTML with a standard, static "Video Card".
+- **Result**: Seamless transition from "Live Recording" -> "Static File" without refreshing the page. The user sees the final file size and gets a solid link to the file.
+- **Verification**:
+    - Record a clip.
+    - Wait for "DISPONIBLE".
+    - 3 seconds later -> The card flickers briefly and updates to show the File Size (e.g., "450 KB").
+    - The thumbnail becomes static.
+
