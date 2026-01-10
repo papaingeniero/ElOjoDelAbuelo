@@ -154,6 +154,8 @@ public class NanoHttpServer {
                     serveSettings(os);
                 } else if (uri.startsWith("/api/save_settings")) {
                     serveSaveSettings(os, uri);
+                } else if (uri.equals("/api/latest_video_meta")) {
+                    serveLatestVideoMeta(os);
                 } else if (uri.startsWith("/wait_status")) {
                     serveWaitStatus(os, uri);
                 } else {
@@ -346,6 +348,23 @@ public class NanoHttpServer {
             os.write("\r\n".getBytes());
             os.write(json.getBytes());
             os.flush();
+        }
+
+        private void serveLatestVideoMeta(OutputStream os) throws IOException {
+             String json = "{}";
+             File f = SentinelService.getCurrentRecordingFile();
+             if (f != null) {
+                 json = "{\"filename\":\"" + f.getName() + "\", \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\"}";
+             } else {
+                 json = "{\"filename\":null, \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\"}";
+             }
+             
+             os.write("HTTP/1.1 200 OK\r\n".getBytes());
+             os.write("Content-Type: application/json\r\n".getBytes());
+             os.write("Cache-Control: no-cache\r\n".getBytes());
+             os.write(("\r\n").getBytes());
+             os.write(json.getBytes());
+             os.flush();
         }
 
         private void serveDashboard(OutputStream os) throws IOException {
@@ -779,6 +798,13 @@ public class NanoHttpServer {
                 "  fetch('/wait_status?current_state=' + currentRecordingState + '&_=' + Date.now())\n" +
                 "     .then(r => r.json())\n" +
                 "     .then(data => {\n" +
+                "         // Phase 17: Live Injection Logic\n" +
+                "         if (data.recording && !currentRecordingState) {\n" +
+                "             injectLivePreview();\n" +
+                "         } else if (!data.recording && currentRecordingState) {\n" +
+                "             cleanupLivePreview();\n" +
+                "         }\n" +
+                "         \n" +
                 "         currentRecordingState = data.recording;\n" +
                 "         updateStatusIndicator(data.recording);\n" +
                 "         setTimeout(pollStatus, 10); // Loop immediately\n" +
@@ -902,6 +928,99 @@ public class NanoHttpServer {
                 "            setTimeout(() => requestAnimationFrame(loop), 100); // 10 FPS\n" +
                 "        }\n" +
                 "        loop();\n" +
+                "    }\n" +
+                "}\n" +
+                "\n" +
+                "// --- Phase 17: Live Preview Injection (Parasite) ---\n" +
+                "var parasiteInterval = null;\n" +
+                "var parasiteBuffer = [];\n" +
+                "var parasiteIdx = 0;\n" +
+                "\n" +
+                "function injectLivePreview() {\n" +
+                "    console.log('Injecting Live Preview...');\n" +
+                "    fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
+                "        if(!meta.filename) return;\n" +
+                "        \n" +
+                "        var container = document.querySelector('.library');\n" +
+                "        var div = document.createElement('div');\n" +
+                "        div.className = 'video-item';\n" +
+                "        div.id = 'temp-preview-card';\n" +
+                "        div.style.borderLeft = '4px solid #d32f2f';\n" +
+                "        div.style.background = '#3e2727';\n" +
+                "        \n" +
+                "        div.innerHTML = \n" +
+                "          \"<div class='thumb-container' style='border: 1px solid #d32f2f;'>\" +\n" +
+                "             \"<canvas id='parasite-canvas' class='thumb' width='320' height='240'></canvas>\" + \n" +
+                "          \"</div>\" +\n" +
+                "          \"<div class='info'><b>\" + meta.filename + \"</b><br>\" + \n" +
+                "             \"<span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span>\" +\n" +
+                "          \"</div>\";\n" +
+                "          \n" +
+                "        var title = container.querySelector('.section-title');\n" +
+                "        title.parentNode.insertBefore(div, title.nextSibling);\n" +
+                "        \n" +
+                "        startParasite();\n" +
+                "    });\n" +
+                "}\n" +
+                "\n" +
+                "function startParasite() {\n" +
+                "    var img = document.createElement('img');\n" +
+                "    img.src = '/stream';\n" +
+                "    img.style.display = 'none';\n" +
+                "    img.id = 'hidden-stream-source';\n" +
+                "    document.body.appendChild(img);\n" +
+                "    \n" +
+                "    var hiddenCanvas = document.createElement('canvas');\n" +
+                "    hiddenCanvas.width = 320;\n" +
+                "    hiddenCanvas.height = 240;\n" +
+                "    var ctx = hiddenCanvas.getContext('2d');\n" +
+                "    \n" +
+                "    parasiteBuffer = [];\n" +
+                "    \n" +
+                "    // Capture Loop (1 FPS)\n" +
+                "    parasiteInterval = setInterval(function() {\n" +
+                "        try {\n" +
+                "            ctx.drawImage(img, 0, 0, 320, 240);\n" +
+                "            parasiteBuffer.push(hiddenCanvas.toDataURL('image/jpeg', 0.4));\n" +
+                "            if (parasiteBuffer.length > 30) parasiteBuffer.shift();\n" +
+                "        } catch(e) { console.log('Parasite capture error (waiting for stream)', e); }\n" +
+                "    }, 1000);\n" +
+                "    \n" +
+                "    // Playback Loop\n" +
+                "    var displayCanvas = document.getElementById('parasite-canvas');\n" +
+                "    if(displayCanvas) {\n" +
+                "        var dCtx = displayCanvas.getContext('2d');\n" +
+                "        var pLoop = function() {\n" +
+                "            if(parasiteBuffer.length > 0) {\n" +
+                "                var i = new Image();\n" +
+                "                i.onload = function() { dCtx.drawImage(i, 0, 0, 320, 240); };\n" +
+                "                i.src = parasiteBuffer[parasiteIdx];\n" +
+                "                parasiteIdx = (parasiteIdx + 1) % parasiteBuffer.length;\n" +
+                "            }\n" +
+                "            if(document.getElementById('temp-preview-card')) {\n" +
+                "                setTimeout(pLoop, 100); // 10 FPS\n" +
+                "            }\n" +
+                "        };\n" +
+                "        pLoop();\n" +
+                "    }\n" +
+                "}\n" +
+                "\n" +
+                "function cleanupLivePreview() {\n" +
+                "    if(parasiteInterval) clearInterval(parasiteInterval);\n" +
+                "    var img = document.getElementById('hidden-stream-source');\n" +
+                "    if(img) document.body.removeChild(img);\n" +
+                "    \n" +
+                "    var card = document.getElementById('temp-preview-card');\n" +
+                "    if(card) {\n" +
+                "        card.style.borderLeft = 'none';\n" +
+                "        card.style.background = '#2c2c2c';\n" +
+                "        \n" +
+                "        fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
+                "            card.querySelector('.info').innerHTML = \"<b>\" + meta.filename + \"</b><br>DISPONIBLE (Recarga para KB)\";\n" +
+                "            card.onclick = function() { playVideo(meta.filename); };\n" +
+                "            card.id = '';\n" +
+                "            card.querySelector('.thumb-container').style.border = 'none';\n" +
+                "        });\n" +
                 "    }\n" +
                 "}\n" +
                 "</script>\n" +

@@ -625,4 +625,10 @@ public class SentinelService extends Service {
             }
         }
     }
+    public static File getCurrentRecordingFile() {
+        if (instance != null) {
+            return instance.currentFile;
+        }
+        return null;
+    }
 }
