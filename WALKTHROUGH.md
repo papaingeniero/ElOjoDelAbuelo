@@ -175,3 +175,13 @@ This document tracks the implementation progress and verification of "El Ojo Del
     3. Verify a red-bordered card appears instantly (`< 500ms`).
     4. Verify the thumbnail inside moves (is animated).
     5. Wait 10s -> Verify it becomes a normal, clickable video.
+
+### Phase 17.1: Persistent Live Preview Loop (v2.8.1)
+- **Problem**: When recording stopped, the animated thumbnail froze on the last frame, losing context.
+- **Solution**:
+    - **Persistent Loop**: Modified `pLoop` in `NanoHttpServer.java` to check for `document.body.contains(canvas)` instead of relying on the temporary card ID.
+    - **Result**: The animation continues indefinitely on the "DISPONIBLE" card until the user reloads the page.
+- **Verification**:
+    - Record a clip.
+    - Wait for it to finish.
+    - Verify the thumbnail *continues moving* even after the status text changes to "DISPONIBLE".

@@ -997,7 +997,8 @@ public class NanoHttpServer {
                 "                i.src = parasiteBuffer[parasiteIdx];\n" +
                 "                parasiteIdx = (parasiteIdx + 1) % parasiteBuffer.length;\n" +
                 "            }\n" +
-                "            if(document.getElementById('temp-preview-card')) {\n" +
+                "            // Logic Change for v2.8.1: Check if canvas is still in DOM, regardless of parent ID\n" +
+                "            if(document.body.contains(displayCanvas)) {\n" +
                 "                setTimeout(pLoop, 100); // 10 FPS\n" +
                 "            }\n" +
                 "        };\n" +
