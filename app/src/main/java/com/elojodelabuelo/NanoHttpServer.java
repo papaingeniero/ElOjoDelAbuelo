@@ -44,7 +44,6 @@ public class NanoHttpServer {
 
     // Phase 8: Real FPS Diagnostics - REMOVED
 
-
     public NanoHttpServer(Context context) {
         this.context = context;
     }
@@ -257,7 +256,6 @@ public class NanoHttpServer {
             os.flush();
         }
 
-
         /**
          * GET /api/settings
          * Returns the current application configuration.
@@ -287,39 +285,44 @@ public class NanoHttpServer {
          * @param uri The full request URI containing query parameters.
          */
         private void serveSaveSettings(OutputStream os, String uri) throws IOException {
-             // Parse query params manually
-             // uri format: /api/save_settings?sens=90&time=10&active=true&rot=0
-             int sens = 90;
-             int time = 10;
-             boolean active = true;
-             int rot = 0;
+            // Parse query params manually
+            // uri format: /api/save_settings?sens=90&time=10&active=true&rot=0
+            int sens = 90;
+            int time = 10;
+            boolean active = true;
+            int rot = 0;
 
-             try {
-                 if (uri.contains("?")) {
-                     String query = uri.substring(uri.indexOf("?") + 1);
-                     String[] pairs = query.split("&");
-                     for (String pair : pairs) {
-                         String[] kv = pair.split("=");
-                         if (kv.length == 2) {
-                             String key = kv[0];
-                             String val = kv[1];
-                             if (key.equals("sens")) sens = Integer.parseInt(val);
-                             else if (key.equals("time")) time = Integer.parseInt(val);
-                             else if (key.equals("active")) active = Boolean.parseBoolean(val);
-                             else if (key.equals("rot")) rot = Integer.parseInt(val);
-                         }
-                     }
-                 }
-                 SentinelService.updateSettings(sens, time, active, rot);
-             } catch (Exception e) {
-                 e.printStackTrace();
-             }
+            try {
+                if (uri.contains("?")) {
+                    String query = uri.substring(uri.indexOf("?") + 1);
+                    String[] pairs = query.split("&");
+                    for (String pair : pairs) {
+                        String[] kv = pair.split("=");
+                        if (kv.length == 2) {
+                            String key = kv[0];
+                            String val = kv[1];
+                            if (key.equals("sens"))
+                                sens = Integer.parseInt(val);
+                            else if (key.equals("time"))
+                                time = Integer.parseInt(val);
+                            else if (key.equals("active"))
+                                active = Boolean.parseBoolean(val);
+                            else if (key.equals("rot"))
+                                rot = Integer.parseInt(val);
+                        }
+                    }
+                }
+                SentinelService.updateSettings(sens, time, active, rot);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-             os.write("HTTP/1.1 200 OK\r\n".getBytes());
-             os.write("Content-Type: text/plain\r\n".getBytes());
-             os.write("\r\n".getBytes());
-             os.write("OK".getBytes());
+            os.write("HTTP/1.1 200 OK\r\n".getBytes());
+            os.write("Content-Type: text/plain\r\n".getBytes());
+            os.write("\r\n".getBytes());
+            os.write("OK".getBytes());
         }
+
         private void serveWaitStatus(OutputStream os, String uri) throws IOException {
             // Parse query params manually (uri contains ?current_state=true/false)
             boolean clientState = false;
@@ -351,26 +354,31 @@ public class NanoHttpServer {
         }
 
         private void serveLatestVideoMeta(OutputStream os) throws IOException {
-             String json = "{}";
-             File f = SentinelService.getCurrentRecordingFile();
-             if (f != null) {
-                 String sizeStr = "0 KB";
-                 if (f.exists()) {
-                     long bytes = f.length();
-                     if (bytes > 1024 * 1024) sizeStr = String.format("%.1f MB", bytes / (1024.0 * 1024.0));
-                     else sizeStr = (bytes / 1024) + " KB";
-                 }
-                 json = "{\"filename\":\"" + f.getName() + "\", \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\", \"size\":\"" + sizeStr + "\"}";
-             } else {
-                 json = "{\"filename\":null, \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\", \"size\":null}";
-             }
-             
-             os.write("HTTP/1.1 200 OK\r\n".getBytes());
-             os.write("Content-Type: application/json\r\n".getBytes());
-             os.write("Cache-Control: no-cache\r\n".getBytes());
-             os.write(("\r\n").getBytes());
-             os.write(json.getBytes());
-             os.flush();
+            String json = "{}";
+            File f = SentinelService.getCurrentRecordingFile();
+            if (f != null) {
+                String sizeStr = "0 KB";
+                if (f.exists()) {
+                    long bytes = f.length();
+                    if (bytes > 1024 * 1024)
+                        sizeStr = String.format("%.1f MB", bytes / (1024.0 * 1024.0));
+                    else
+                        sizeStr = (bytes / 1024) + " KB";
+                }
+                json = "{\"filename\":\"" + f.getName() + "\", \"status\":\""
+                        + (SentinelService.isRecordingPublic ? "recording" : "idle") + "\", \"size\":\"" + sizeStr
+                        + "\"}";
+            } else {
+                json = "{\"filename\":null, \"status\":\"" + (SentinelService.isRecordingPublic ? "recording" : "idle")
+                        + "\", \"size\":null}";
+            }
+
+            os.write("HTTP/1.1 200 OK\r\n".getBytes());
+            os.write("Content-Type: application/json\r\n".getBytes());
+            os.write("Cache-Control: no-cache\r\n".getBytes());
+            os.write(("\r\n").getBytes());
+            os.write(json.getBytes());
+            os.flush();
         }
 
         private void serveDashboard(OutputStream os) throws IOException {
@@ -451,7 +459,9 @@ public class NanoHttpServer {
         String versionName = "v?";
         try {
             versionName = "v" + context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         String batIcon = charging ? "⚡" : (batLevel > 20 ? "🔋" : "🪫");
         String tempIcon = temp > 40 ? "🔥" : "🌡️";
@@ -464,7 +474,9 @@ public class NanoHttpServer {
                 "<style>\n" +
                 "body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }\n"
                 +
-                (SentinelService.isCameraError ? ".camera-error { background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; animation: blink 1s infinite; z-index: 2000; } @keyframes blink { 50% { opacity: 0.5; } }\\n" : "")
+                (SentinelService.isCameraError
+                        ? ".camera-error { background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; animation: blink 1s infinite; z-index: 2000; } @keyframes blink { 50% { opacity: 0.5; } }\\n"
+                        : "")
                 +
                 ".header { padding: 20px; text-align: center; background: #1f1f1f; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }\n"
                 +
@@ -491,28 +503,40 @@ public class NanoHttpServer {
                 +
                 "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; background-color: #000; width: 100%; height: auto; touch-action: none; }\n"
                 +
-                "img#video-player { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; transform-origin: 0 0; -webkit-transform-origin: 0 0; }\n" +
+                "img#video-player { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; transform-origin: 0 0; -webkit-transform-origin: 0 0; }\n"
+                +
                 ".controls { padding: 20px; background: rgba(20,20,20,0.9); display: flex; align-items: center; gap: 10px; }\n"
                 +
                 ".btn-close { color: white; background: none; border: none; font-size: 20px; padding: 10px; }\n" +
                 "input[type=range] { flex: 1; }\n" +
                 "/* Settings Modal */\n" +
-                "#settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }\n" +
-                ".settings-content { background: #222; padding: 25px; border-radius: 12px; width: 85%; max-width: 400px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }\n" +
-                ".settings-row { margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }\n" +
-                ".btn-save { background: #2e7d32; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; flex: 1; margin-right: 10px; }\n" +
-                ".btn-cancel { background: #c62828; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; flex: 1; }\n" +
-                "label { font-size: 16px; }\n" +
+                "#settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }\n"
+                +
+                ".settings-content { background: #222; padding: 25px; border-radius: 12px; width: 85%; max-width: 400px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }\n"
+                +
+                ".settings-row { margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }\n"
+                +
+                ".btn-save { background: #2e7d32; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; flex: 1; margin-right: 10px; }\n"
+                +
+                ".btn-cancel { background: #c62828; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; flex: 1; }\n"
+                +
+                "label { font-size: 16px; }\n"
+                +
                 "</style>\n" +
                 "</head><body>\n" +
                 "\n" +
-                (SentinelService.isCameraError ? "<div class='camera-error'>⚠️ ERROR CRÍTICO: CÁMARA NO RESPONDE - REINICIA EL MÓVIL</div>\n" : "") +
-            "<div class='header' style='position:relative;'>\n" +
-            "   <h1 style='font-size:18px; margin:0; display:inline-block;'>👁️ El Ojo del Abuelo <span style='font-size:0.7em; color:#aaa;'>" + versionName + "</span></h1>\n" +
-            "   <span id='settings-btn' style='cursor:pointer; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:24px;' onclick='openSettings()'>⚙️</span>\n" +
-            "</div>\n"
-            +
-            "<div class='stats-bar'>\n" +
+                (SentinelService.isCameraError
+                        ? "<div class='camera-error'>⚠️ ERROR CRÍTICO: CÁMARA NO RESPONDE - REINICIA EL MÓVIL</div>\n"
+                        : "")
+                +
+                "<div class='header' style='position:relative;'>\n" +
+                "   <h1 style='font-size:18px; margin:0; display:inline-block;'>👁️ El Ojo del Abuelo <span style='font-size:0.7em; color:#aaa;'>"
+                + versionName + "</span></h1>\n" +
+                "   <span id='settings-btn' style='cursor:pointer; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:24px;' onclick='openSettings()'>⚙️</span>\n"
+                +
+                "</div>\n"
+                +
+                "<div class='stats-bar'>\n" +
                 "     <span id='stat-status'>⏺️ VIGILANDO</span>\n" +
                 "     <span id='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
                 "     <span id='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
@@ -520,7 +544,8 @@ public class NanoHttpServer {
                 "  </div>\n" +
                 "  <div style='text-align:center; padding-bottom:10px;'>\n" +
                 "     <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
-                "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: " + SystemStats.getBootTime() + "</div>\n" +
+                "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: "
+                + SystemStats.getBootTime() + "</div>\n" +
                 "  </div>\n" +
                 "\n" +
                 "<div class='library'>\n" +
@@ -546,7 +571,8 @@ public class NanoHttpServer {
                 "\n" +
                 "<div id='settings-modal'>\n" +
                 "  <div class='settings-content'>\n" +
-                "     <h3 style='margin-top:0; border-bottom:1px solid #444; padding-bottom:10px;'>Configuración ⚙️</h3>\n" +
+                "     <h3 style='margin-top:0; border-bottom:1px solid #444; padding-bottom:10px;'>Configuración ⚙️</h3>\n"
+                +
                 "     \n" +
                 "     <div class='settings-row'>\n" +
                 "        <label>Detector Activado:</label>\n" +
@@ -554,10 +580,12 @@ public class NanoHttpServer {
                 "     </div>\n" +
                 "\n" +
                 "     <div style='margin-bottom:20px;'>\n" +
-                "        <label>Sensibilidad: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n" +
+                "        <label>Sensibilidad: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n"
+                +
                 "        <div style='display:flex; align-items:center; margin-top:5px;'>\n" +
                 "           <span style='font-size:12px;'>Min</span>\n" +
-                "           <input type='range' id='sens-slider' min='0' max='100' oninput='updateSensLabel(this.value)'>\n" +
+                "           <input type='range' id='sens-slider' min='0' max='100' oninput='updateSensLabel(this.value)'>\n"
+                +
                 "           <span style='font-size:12px;'>Max</span>\n" +
                 "        </div>\n" +
                 "     </div>\n" +
@@ -565,7 +593,8 @@ public class NanoHttpServer {
                 "     <div class='settings-row'>\n" +
                 "        <label>Tiempo Extra:</label>\n" +
                 "        <div>\n" +
-                "           <select id='set-time' style='background:#333; color:white; padding:5px; border-radius:4px;'>\n" +
+                "           <select id='set-time' style='background:#333; color:white; padding:5px; border-radius:4px;'>\n"
+                +
                 "              <option value='10'>10 seg</option>\n" +
                 "              <option value='30'>30 seg</option>\n" +
                 "              <option value='60'>60 seg</option>\n" +
@@ -709,58 +738,98 @@ public class NanoHttpServer {
                 "   if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);\n" +
                 "   currentObjectUrl = URL.createObjectURL(frames[idx]);\n" +
                 "   document.getElementById('video-player').src = currentObjectUrl;\n" +
-                "   resetZoom();\n" +
                 "}\n" +
                 "\n" +
-                "// --- Phase 18: Pan & Zoom Logic (Vanilla JS) ---\n" +
+                "// --- Phase 18.2: Matrix Zoom Logic (ES3 Compatible) ---\n" +
                 "var playerImg = document.getElementById('video-player');\n" +
                 "var container = document.getElementById('canvas-container');\n" +
-                "var currentScale = 1;\n" +
-                "var currentX = 0;\n" +
-                "var currentY = 0;\n" +
-                "var startDist = 0;\n" +
-                "var startX = 0;\n" +
-                "var startY = 0;\n" +
+                "\n" +
+                "// State Mappings\n" +
+                "var mat = { x: 0, y: 0, s: 1 };\n" +
+                "var drag = { startX: 0, startY: 0, initialX: 0, initialY: 0 };\n" +
+                "var pinch = { dist: 0, midX: 0, midY: 0, initialS: 1, initialX: 0, initialY: 0 };\n" +
                 "\n" +
                 "function resetZoom() {\n" +
-                "    currentScale = 1; currentX = 0; currentY = 0;\n" +
+                "    mat.x = 0; mat.y = 0; mat.s = 1;\n" +
                 "    updateTransform();\n" +
                 "}\n" +
                 "\n" +
                 "function updateTransform() {\n" +
-                "    var t = 'translate(' + currentX + 'px, ' + currentY + 'px) scale(' + currentScale + ')';\n" +
+                "    var t = 'translate(' + mat.x + 'px, ' + mat.y + 'px) scale(' + mat.s + ')';\n" +
                 "    playerImg.style.transform = t;\n" +
                 "    playerImg.style.webkitTransform = t;\n" +
                 "}\n" +
                 "\n" +
+                "// Helpers (ES3 Safe)\n" +
+                "function getDist(t1, t2) {\n" +
+                "    var dx = t1.pageX - t2.pageX;\n" +
+                "    var dy = t1.pageY - t2.pageY;\n" +
+                "    return Math.sqrt(dx*dx + dy*dy);\n" +
+                "}\n" +
+                "\n" +
+                "function getMid(t1, t2) {\n" +
+                "    return {\n" +
+                "        x: (t1.pageX + t2.pageX) / 2,\n" +
+                "        y: (t1.pageY + t2.pageY) / 2\n" +
+                "    };\n" +
+                "}\n" +
+                "\n" +
                 "container.addEventListener('touchstart', function(e) {\n" +
+                "    if(e.cancelable) e.preventDefault();\n" +
                 "    if (e.touches.length === 2) {\n" +
-                "        startDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);\n" +
+                "        // PINCH START\n" +
+                "        pinch.dist = getDist(e.touches[0], e.touches[1]);\n" +
+                "        var mid = getMid(e.touches[0], e.touches[1]);\n" +
+                "        pinch.midX = mid.x; \n" +
+                "        pinch.midY = mid.y;\n" +
+                "        pinch.initialS = mat.s;\n" +
+                "        pinch.initialX = mat.x;\n" +
+                "        pinch.initialY = mat.y;\n" +
                 "    } else if (e.touches.length === 1) {\n" +
-                "        startX = e.touches[0].pageX - currentX;\n" +
-                "        startY = e.touches[0].pageY - currentY;\n" +
+                "        // PAN START\n" +
+                "        drag.startX = e.touches[0].pageX;\n" +
+                "        drag.startY = e.touches[0].pageY;\n" +
+                "        drag.initialX = mat.x;\n" +
+                "        drag.initialY = mat.y;\n" +
                 "    }\n" +
-                "});\n" +
+                "}, { passive: false });\n" +
                 "\n" +
                 "container.addEventListener('touchmove', function(e) {\n" +
-                "    if(e.cancelable) e.preventDefault(); // Stop browser zoom/scroll\n" +
+                "    if(e.cancelable) e.preventDefault(); \n" +
                 "    \n" +
-                "    if (e.touches.length === 2) {\n" +
-                "        var dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);\n" +
-                "        if (startDist > 0) {\n" +
-                "            var delta = dist / startDist;\n" +
-                "            var newScale = currentScale * delta;\n" +
-                "            if (newScale >= 1 && newScale <= 5) {\n" +
-                "                currentScale = newScale;\n" +
-                "                startDist = dist; // Reset for smooth continuous zoom\n" +
-                "            }\n" +
-                "        }\n" +
-                "    } else if (e.touches.length === 1 && currentScale > 1) {\n" +
-                "        // Pan only if zoomed in\n" +
-                "        currentX = e.touches[0].pageX - startX;\n" +
-                "        currentY = e.touches[0].pageY - startY;\n" +
+                "    if (e.touches.length === 2 && pinch.dist > 0) {\n" +
+                "        // PINCH UPDATE\n" +
+                "        var newDist = getDist(e.touches[0], e.touches[1]);\n" +
+                "        var scaleFactor = newDist / pinch.dist;\n" +
+                "        var newScale = pinch.initialS * scaleFactor;\n" +
+                "        \n" +
+                "        // Clamp\n" +
+                "        newScale = Math.max(1, Math.min(newScale, 5));\n" +
+                "        \n" +
+                "        // Focal Point Logic: Keep mid stationary\n" +
+                "        var ratio = newScale / pinch.initialS;\n" +
+                "        mat.x = pinch.midX - (pinch.midX - pinch.initialX) * ratio;\n" +
+                "        mat.y = pinch.midY - (pinch.midY - pinch.initialY) * ratio;\n" +
+                "        mat.s = newScale;\n" +
+                "        \n" +
+                "        updateTransform();\n" +
+                "    } else if (e.touches.length === 1 && mat.s > 1) {\n" +
+                "        // PAN UPDATE\n" +
+                "        var dx = e.touches[0].pageX - drag.startX;\n" +
+                "        mat.x = drag.initialX + dx;\n" +
+                "        mat.y = drag.initialY + dy;\n" +
+                "        updateTransform();\n" +
                 "    }\n" +
-                "    updateTransform();\n" +
+                "}, { passive: false });\n" +
+                "\n" +
+                "container.addEventListener('touchend', function(e) {\n" +
+                "    // If dropped to 1 finger, restart pan to prevent jump\n" +
+                "    if (e.touches.length === 1) {\n" +
+                "        drag.startX = e.touches[0].pageX;\n" +
+                "        drag.startY = e.touches[0].pageY;\n" +
+                "        drag.initialX = mat.x;\n" +
+                "        drag.initialY = mat.y;\n" +
+                "    }\n" +
                 "});\n" +
                 "\n" +
                 "// Scrubber logic\n" +
@@ -794,7 +863,8 @@ public class NanoHttpServer {
                 "      // Storage\n" +
                 "      document.getElementById('stat-storage').innerText = '💾 ' + data.storage;\n" +
                 "      // Status\n" +
-                "      document.getElementById('stat-status').innerText = data.recording ? '🔴 GRABANDO' : '⏺️ VIGILANDO';\n" +
+                "      document.getElementById('stat-status').innerText = data.recording ? '🔴 GRABANDO' : '⏺️ VIGILANDO';\n"
+                +
                 "      document.getElementById('stat-status').style.color = data.recording ? '#ff4444' : '#ffffff';\n" +
                 "    }).catch(e => console.log('Stats error', e));\n" +
                 "  }, 5000);\n" +
@@ -833,7 +903,8 @@ public class NanoHttpServer {
                 "    // Show saving feedback\n" +
                 "    document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "    \n" +
-                "    fetch('/api/save_settings?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot, { method: 'POST' })\n" +
+                "    fetch('/api/save_settings?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot, { method: 'POST' })\n"
+                +
                 "    .then(function() {\n" +
                 "        setTimeout(function() {\n" +
                 "            location.reload();\n" +
@@ -1011,7 +1082,8 @@ public class NanoHttpServer {
                 "             \"<canvas id='parasite-canvas' class='thumb' width='320' height='240'></canvas>\" + \n" +
                 "          \"</div>\" +\n" +
                 "          \"<div class='info'><b>\" + meta.filename + \"</b><br>\" + \n" +
-                "             \"<span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span>\" +\n" +
+                "             \"<span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span>\" +\n"
+                +
                 "          \"</div>\";\n" +
                 "          \n" +
                 "        var title = container.querySelector('.section-title');\n" +
@@ -1078,11 +1150,14 @@ public class NanoHttpServer {
                 "                if(!meta.filename) return; \n" +
                 "                \n" +
                 "                var newHtml = \n" +
-                "                \"<div class='video-item' onclick=\\\"playVideo('\" + meta.filename + \"')\\\">\" +\n" +
+                "                \"<div class='video-item' onclick=\\\"playVideo('\" + meta.filename + \"')\\\">\" +\n"
+                +
                 "                   \"<div class='thumb-container'>\" +\n" +
-                "                      \"<img class='thumb' src='/thumbnails/\" + meta.filename + \"' onload='this.style.opacity=1'>\" +\n" +
+                "                      \"<img class='thumb' src='/thumbnails/\" + meta.filename + \"' onload='this.style.opacity=1'>\" +\n"
+                +
                 "                   \"</div>\" +\n" +
-                "                   \"<div class='info'><b>\" + meta.filename + \"</b><br>\" + meta.size + \"</div>\" +\n" +
+                "                   \"<div class='info'><b>\" + meta.filename + \"</b><br>\" + meta.size + \"</div>\" +\n"
+                +
                 "                \"</div>\";\n" +
                 "                \n" +
                 "                var temp = document.createElement('div');\n" +

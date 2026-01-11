@@ -5,6 +5,51 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.0] - 2026-01-11
+### Major Update
+- **Interactive Pan & Zoom**: Final, polished implementation of the video player zoom.
+  - Removed all debug overlays and temporary logging.
+  - Implemented persistent zoom state during playback.
+  - Optimized for iOS Safari (iPhone 15 Pro) and Android 2.3 compatibility.
+
+## [v2.9.9] - 2026-01-11
+### Fixed
+- **Zoom Reset Bug**: Removed critical logic error where `resetZoom()` was called on every frame update, preventing zoom from persisting during playback. Zoom state is now preserved while the video plays.
+
+## [v2.9.8] - 2026-01-11
+### Fixed
+- **iOS Zoom Fix**: Added `{ passive: false }` to touch event listeners. This is mandatory for modern iOS Safari to respect `preventDefault()` and allow custom zoom logic without the browser interfering.
+
+## [v2.9.7] - 2026-01-11
+### Fixed
+- **Zoom Jitter**: Aggressively blocked default browser touch events to prevent the native zoom from fighting with the custom pinch-to-zoom logic, eliminating the "trembling" effect.
+
+## [v2.9.6] - 2026-01-11
+### Fixed
+- **JS Runtime Error**: Fixed `ReferenceError: ratio is not defined` in the zoom logic which was silently crashing the touch handler. Zoom should now be functional.
+
+## [v2.9.5] - 2026-01-11
+### Debugging
+- **On-Screen Console**: Retrying injection of the debug overlay, as it failed to appear in v2.9.4.
+
+## [v2.9.4] - 2026-01-11
+### Debugging
+- **On-Screen Console**: Added a temporary debug overlay to visualize touch coordinates, scale factors, and matrix calculations in real-time for troubleshooting Android 2.3 zoom issues.
+
+## [v2.9.3] - 2026-01-11
+### Fixed
+- **JS Syntax Error**: Restored missing closing braces in the `touchend` event listener that were accidentally removed, restoring functionality to all buttons and touch interactions.
+
+## [v2.9.2] - 2026-01-11
+### Fixed
+- **Zoom Physics**: Replaced modern `Math.hypot` with ES3 `Math.sqrt` to prevent crashes/jitter on Android 2.3.
+- **Focal Point**: Implemented matrix math to ensure the zoom centers on the user's fingers, fixing the "drift to corner" issue.
+- **Touch Drift**: Corrected state reset logic when lifting fingers to prevent image jumping.
+
+## [v2.9.1] - 2026-01-11
+### Fixed
+- **Zoom Jitter**: Fixed an issue where the zoom level would reset abruptly when adjusting the pinch gesture. Zoom is now smooth and cumulative.
+
 ## [v2.9.0] - 2026-01-11
 ### Added
 - **Interactive Player**: Added Pan & Zoom support using multi-touch gestures (Pinch-to-Zoom).
