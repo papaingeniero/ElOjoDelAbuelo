@@ -201,3 +201,18 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - 3 seconds later -> The card flickers briefly and updates to show the File Size (e.g., "450 KB").
     - The thumbnail becomes static.
 
+### Phase 18: Interactive Pan & Zoom (v2.9.0)
+- **Problem**: When zooming into the video on mobile browsers, the entire webpage would scale, making controls (Close, Play/Pause) huge or inaccessible. UX was poor.
+- **Solution**:
+    - **Meta Viewport**: Forced `user-scalable=no` to transfer zoom control to Javascript.
+    - **Clipping Container**: Wrapped the video IMG in a `div` with `overflow: hidden`.
+    - **Vanilla JS**: Implemented custom `touchstart` and `touchmove` logic.
+        - **1 Finger**: Pan (Translate X/Y).
+        - **2 Fingers**: Zoom (Scale).
+- **Verification**:
+    - Open any video on the mobile.
+    - **Pinch Out**: Only the video zooms. The "Close" button stays fixed.
+    - **Drag**: The zoomed video moves within its frame.
+    - **Pinch In**: Zooms out correctly.
+
+

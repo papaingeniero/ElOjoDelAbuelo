@@ -489,9 +489,9 @@ public class NanoHttpServer {
                 "/* Modal Player */\n" +
                 "#player-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; flex-direction: column; }\n"
                 +
-                "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; background-color: #000; width: 100%; height: auto; }\n"
+                "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; background-color: #000; width: 100%; height: auto; touch-action: none; }\n"
                 +
-                "img#video-player { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; }\n" +
+                "img#video-player { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; transform-origin: 0 0; -webkit-transform-origin: 0 0; }\n" +
                 ".controls { padding: 20px; background: rgba(20,20,20,0.9); display: flex; align-items: center; gap: 10px; }\n"
                 +
                 ".btn-close { color: white; background: none; border: none; font-size: 20px; padding: 10px; }\n" +
@@ -709,7 +709,59 @@ public class NanoHttpServer {
                 "   if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);\n" +
                 "   currentObjectUrl = URL.createObjectURL(frames[idx]);\n" +
                 "   document.getElementById('video-player').src = currentObjectUrl;\n" +
+                "   resetZoom();\n" +
                 "}\n" +
+                "\n" +
+                "// --- Phase 18: Pan & Zoom Logic (Vanilla JS) ---\n" +
+                "var playerImg = document.getElementById('video-player');\n" +
+                "var container = document.getElementById('canvas-container');\n" +
+                "var currentScale = 1;\n" +
+                "var currentX = 0;\n" +
+                "var currentY = 0;\n" +
+                "var startDist = 0;\n" +
+                "var startX = 0;\n" +
+                "var startY = 0;\n" +
+                "\n" +
+                "function resetZoom() {\n" +
+                "    currentScale = 1; currentX = 0; currentY = 0;\n" +
+                "    updateTransform();\n" +
+                "}\n" +
+                "\n" +
+                "function updateTransform() {\n" +
+                "    var t = 'translate(' + currentX + 'px, ' + currentY + 'px) scale(' + currentScale + ')';\n" +
+                "    playerImg.style.transform = t;\n" +
+                "    playerImg.style.webkitTransform = t;\n" +
+                "}\n" +
+                "\n" +
+                "container.addEventListener('touchstart', function(e) {\n" +
+                "    if (e.touches.length === 2) {\n" +
+                "        startDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);\n" +
+                "    } else if (e.touches.length === 1) {\n" +
+                "        startX = e.touches[0].pageX - currentX;\n" +
+                "        startY = e.touches[0].pageY - currentY;\n" +
+                "    }\n" +
+                "});\n" +
+                "\n" +
+                "container.addEventListener('touchmove', function(e) {\n" +
+                "    if(e.cancelable) e.preventDefault(); // Stop browser zoom/scroll\n" +
+                "    \n" +
+                "    if (e.touches.length === 2) {\n" +
+                "        var dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);\n" +
+                "        if (startDist > 0) {\n" +
+                "            var delta = dist / startDist;\n" +
+                "            var newScale = currentScale * delta;\n" +
+                "            if (newScale >= 1 && newScale <= 5) {\n" +
+                "                currentScale = newScale;\n" +
+                "                startDist = dist; // Reset for smooth continuous zoom\n" +
+                "            }\n" +
+                "        }\n" +
+                "    } else if (e.touches.length === 1 && currentScale > 1) {\n" +
+                "        // Pan only if zoomed in\n" +
+                "        currentX = e.touches[0].pageX - startX;\n" +
+                "        currentY = e.touches[0].pageY - startY;\n" +
+                "    }\n" +
+                "    updateTransform();\n" +
+                "});\n" +
                 "\n" +
                 "// Scrubber logic\n" +
                 "document.getElementById('scrubber').addEventListener('input', function(e) {\n" +
