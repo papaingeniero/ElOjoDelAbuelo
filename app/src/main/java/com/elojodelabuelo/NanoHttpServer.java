@@ -1,6 +1,7 @@
 package com.elojodelabuelo;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -289,10 +290,12 @@ public class NanoHttpServer {
             float defZoom = SentinelService.defaultZoom;
             int defPanX = SentinelService.defaultPanX;
             int defPanY = SentinelService.defaultPanY;
+            SharedPreferences prefs = context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE);
+            int minFreeSpace = prefs.getInt("pref_min_free_space_mb", 500); // Phase 24
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d}",
-                    sens, time, active, rot, defZoom, defPanX, defPanY);
+                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d}",
+                    sens, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -341,6 +344,9 @@ public class NanoHttpServer {
                                 defPanX = Integer.parseInt(val);
                             else if (key.equals("defPanY"))
                                 defPanY = Integer.parseInt(val);
+                            else if (key.equals("min_free_space")) // Phase 24
+                                context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE)
+                                        .edit().putInt("pref_min_free_space_mb", Integer.parseInt(val)).commit();
                         }
                     }
                 }
@@ -728,6 +734,17 @@ public class NanoHttpServer {
                 +
                 "\n" +
                 "     <div class='settings-row'>\n" +
+                "        <label>Tiempo Grabación (s):</label>\n" +
+                "        <input type='number' id='set-time' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555;' min='5' max='60'>\n"
+                +
+                "     </div>\n" +
+                "     <!-- Phase 24: Min Space -->\n" +
+                "     <div class='settings-row'>\n" +
+                "        <label>Min. Espacio (MB):</label>\n" +
+                "        <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555;' min='100' max='5000'>\n"
+                +
+                "     </div>\n" +
+                "     <div class='settings-row'>\n" +
                 "        <label>Rotación:</label>\n" +
                 "        <div>\n" +
                 "           <input type='radio' name='rot' value='0' id='rot-0' checked> 0°\n" +
@@ -1085,6 +1102,8 @@ public class NanoHttpServer {
                 "     }\n" +
                 "     if(data.defPanX !== undefined) document.getElementById('def-pan-x').value = data.defPanX;\n" +
                 "     if(data.defPanY !== undefined) document.getElementById('def-pan-y').value = data.defPanY;\n" +
+                "     if(data.minFreeSpace !== undefined) document.getElementById('set-min-space').value = data.minFreeSpace;\n"
+                +
                 "     \n" +
                 "     updateSensLabel(data.sens);\n" +
                 "  });\n" +
@@ -1097,12 +1116,14 @@ public class NanoHttpServer {
                 "    var defZoom = document.getElementById('def-zoom').value;\n" +
                 "    var defPanX = document.getElementById('def-pan-x').value || 0;\n" +
                 "    var defPanY = document.getElementById('def-pan-y').value || 0;\n" +
+                "    var minSpace = document.getElementById('set-min-space').value || 500;\n" +
                 "\n" +
                 "    // Show saving feedback\n" +
                 "    document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "    \n" +
                 "    var qs = '?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
-                "             '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY;\n" +
+                "             '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
+                "             '&min_free_space=' + minSpace;\n" +
                 "    \n" +
                 "    fetch('/api/save_settings' + qs, { method: 'POST' })\n"
                 +

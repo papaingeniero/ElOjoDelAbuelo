@@ -25,6 +25,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import android.content.SharedPreferences;
+import android.os.StatFs;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class SentinelService extends Service {
 
@@ -356,7 +359,10 @@ public class SentinelService extends Service {
                     updateNotification(false);
                     closeRecordingFile();
                 }
-            } // End of isDetectorActive check
+            } // End
+              // of
+              // isDetectorActive
+              // check
 
             // Force Sync public state to be safe
             isRecordingPublic = isRecording;
@@ -366,8 +372,27 @@ public class SentinelService extends Service {
                 @Override
                 public void run() {
                     processFrame(finalData);
-                    camera.addCallbackBuffer(data); // Return buffer after processing (Must verify if we need to return
-                                                    // 'data' specifically. Yes, 'data' is the buffer owned by Camera)
+                    camera.addCallbackBuffer(data); // Return
+                                                    // buffer
+                                                    // after
+                                                    // processing
+                                                    // (Must
+                                                    // verify
+                                                    // if
+                                                    // we
+                                                    // need
+                                                    // to
+                                                    // return
+                                                    // 'data'
+                                                    // specifically.
+                                                    // Yes,
+                                                    // 'data'
+                                                    // is
+                                                    // the
+                                                    // buffer
+                                                    // owned
+                                                    // by
+                                                    // Camera)
                 }
             });
         }
@@ -551,6 +576,73 @@ public class SentinelService extends Service {
                 });
             }
         }
+
+        // Phase 24: Auto Storage Manager
+        manageStorage();
+    }
+
+    // Phase 24: Auto Storage Management (Circular Buffer)
+    private void manageStorage() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
+                    int minMb = prefs.getInt("pref_min_free_space_mb", 500);
+                    long minBytes = minMb * 1024L * 1024L;
+
+                    File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
+                    if (!dir.exists())
+                        return;
+
+                    StatFs stat = new StatFs(dir.getAbsolutePath());
+                    // Available blocks * Block size
+                    long available = (long) stat.getAvailableBlocks() * (long) stat.getBlockSize();
+
+                    if (available < minBytes) {
+                        Log.w(TAG,
+                                "Low Storage: " + (available / 1024 / 1024) + "MB < " + minMb + "MB. Cleaning up...");
+
+                        File[] files = dir.listFiles();
+                        if (files == null)
+                            return;
+
+                        // Sort by Last Modified (Oldest first)
+                        Arrays.sort(files, new Comparator<File>() {
+                            public int compare(File f1, File f2) {
+                                if (f1.lastModified() < f2.lastModified())
+                                    return -1;
+                                if (f1.lastModified() > f2.lastModified())
+                                    return 1;
+                                return 0;
+                            }
+                        });
+
+                        int deletedCount = 0;
+                        long freedBytes = 0;
+
+                        for (File f : files) {
+                            if (f.isFile() && (f.getName().endsWith(".mjpeg") || f.getName().endsWith(".jpg"))) {
+                                long size = f.length();
+                                if (f.delete()) {
+                                    available += size;
+                                    freedBytes += size;
+                                    deletedCount++;
+                                }
+                            }
+                            // Stop if we have enough space (Limit + 50MB buffer)
+                            if (available > minBytes + (50 * 1024 * 1024)) {
+                                break;
+                            }
+                        }
+                        Log.i(TAG, "Storage Cleanup: Deleted " + deletedCount + " files (" + (freedBytes / 1024 / 1024)
+                                + "MB freed).");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private synchronized void saveToFile(byte[] jpeg) {
