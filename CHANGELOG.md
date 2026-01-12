@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.7] - 2026-01-12
+### Fixed
+- **UI**: Fixed a critical bug where the header (Title/Settings) would disappear on mobile devices when the video library loaded. Implemented strict CSS Flexbox containment.
+
 ## [v3.0.6] - 2026-01-12
 ### Added
 - **HUD**: Implemented a "Calibration HUD" overlay on the video player. Displays real-time Zoom (x), Pan X, and Pan Y values during gestures to assist with setting defaults.
