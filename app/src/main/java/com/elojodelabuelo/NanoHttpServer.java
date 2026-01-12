@@ -749,6 +749,7 @@ public class NanoHttpServer {
                 "var drag = { startX: 0, startY: 0, initialX: 0, initialY: 0 };\n" +
                 "var pinch = { dist: 0, midX: 0, midY: 0, initialS: 1, initialX: 0, initialY: 0 };\n" +
                 "var lastTap = 0;\n" +
+                "var isMultiTouch = false;\n" +
                 "\n" +
                 "function resetZoom() {\n" +
                 "    mat.x = 0; mat.y = 0; mat.s = 1;\n" +
@@ -777,6 +778,9 @@ public class NanoHttpServer {
                 "\n" +
                 "container.addEventListener('touchstart', function(e) {\n" +
                 "    if(e.cancelable) e.preventDefault();\n" +
+                "    if (e.touches.length > 1) isMultiTouch = true;\n" +
+                "    else isMultiTouch = false;\n" +
+                "    \n" +
                 "    if (e.touches.length === 2) {\n" +
                 "        // PINCH START\n" +
                 "        pinch.dist = getDist(e.touches[0], e.touches[1]);\n" +
@@ -829,9 +833,12 @@ public class NanoHttpServer {
                 "\n" +
                 "container.addEventListener('touchend', function(e) {\n" +
                 "    var now = new Date().getTime();\n" +
-                "    if (e.touches.length === 0 && (now - lastTap < 300)) {\n" +
-                "        resetZoom();\n" +
-                "        e.preventDefault();\n" +
+                "    if (e.touches.length === 0) {\n" +
+                "        if (!isMultiTouch && (now - lastTap < 300)) {\n" +
+                "            resetZoom();\n" +
+                "            e.preventDefault();\n" +
+                "        }\n" +
+                "        isMultiTouch = false;\n" +
                 "    }\n" +
                 "    lastTap = now;\n" +
                 "\n" +
