@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.5] - 2026-01-12
+### Added
+- **UI**: Added "Close" (X) button to Settings Modal header.
+- **Storage**: Added "Delete All Videos" button in Settings (Danger Zone).
+- **UX**: Added "Default View" preferences (Zoom, Pan X, Pan Y) that persist across restarts.
+- **Docs**: Updated Walkthrough with new features.
+
 ## [v3.0.4] - 2026-01-11
 ### Fixed
 - **Ghost Reset Bug**: Fixed an annoyance where releasing a pinch-zoom gesture quickly would accidentally trigger the "Double-Tap Reset" logic, snapping the video back to 1x size. The system now intelligently ignores "taps" that occur immediately after a multi-touch gesture.

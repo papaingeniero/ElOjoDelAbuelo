@@ -220,4 +220,30 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - **Drag (1 Finger)**: Video moves freely in X/Y axes (after v3.0.2 fix).
     - **Playback**: Zoom level is maintained while video plays.
 
+### Phase 18.6: Advanced UX Refinements (v3.0.3 - v3.0.4)
+- **Problem 1 (UX)**: Navigating back to the original view was tedious (had to pinch exactly to 1x).
+- **Problem 2 (Glitch)**: Rapidly releasing a pinch gesture was sometimes interpreted as a "tap", causing unintended behavior.
+- **Problem 3 (Glitch)**: Panning while at 1x scale moved the image into empty space (black borders), which felt broken.
+- **Solutions**:
+    1.  **Double-Tap Reset**: Implemented a listener for two quick taps (`< 300ms`) to instantly reset zoom/pan to default.
+    2.  **Smart Auto-Center**: Added logic to force `x=0, y=0` whenever the user pinches out to the minimum scale (1x).
+    3.  **Pan Constraints**: Conditionally blocked `touchmove` (Pan) if the scale is exactly 1x.
+    4.  **Ghost Reset Protection**: Introduced an `isMultiTouch` flag. Using >1 finger sets this flag. The `touchend` logic checks this flag; if the gesture started as a multi-touch (pinch), it *ignores* the release event, preventing the "Double-Tap" logic from firing accidentally.
+- **Verification**:
+    - **Quick Reset**: Double-tap instantly centers the video.
+    - **Stability**: Rapidly pinching and releasing keeps the zoom level steady (no accidental resets).
+    - **Cleanliness**: Pinching out snaps perfectly to the center.
+
+### Phase 19: Settings & Workflow Enhancements (v3.0.5)
+- **Problem**: Managing storage required `adb shell`, and setting up the view for each video was repetitive. Also, the Settings modal was hard to close.
+- **Improvements**:
+    1.  **UI Polish**: Added a clear "X" Close button to the Settings modal header.
+    2.  **Storage Cleaning**: Added a "Zone of Danger" with a **Delete All Videos** button (requires confirmation). Cleans `/sdcard/ElOjoDelAbuelo/` instantly.
+    3.  **View Persistence**: Added "Default View" controls:
+        - **Zoom Slider (1.0x - 5.0x)**: Sets initial magnification.
+        - **Pan X/Y (px)**: Sets initial offset (useful for centering on a specific door/gate).
+        - Includes tooltip recommending `+/- 350px (W)` and `+/- 280px (H)` based on the CIF resolution.
+- **Verification**:
+    - **Defaults**: Set Zoom 2.0x, open video -> Video starts magnified.
+    - **Cleanup**: "Delete All" correctly wipes the directory and refreshes the list to empty.
 

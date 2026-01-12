@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Locale;
 
 /**
  * A robust embedded Web Server/NVR.
@@ -151,6 +152,24 @@ public class NanoHttpServer {
                     serveStats(os);
                 } else if (uri.equals("/api/settings")) {
                     serveSettings(os);
+                } else if (uri.equals("/api/delete_all_videos") && method.equals("POST")) {
+                    // Phase 19: Delete All Handling
+                    File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
+                    if (dir.exists() && dir.isDirectory()) {
+                        File[] files = dir.listFiles();
+                        if (files != null) {
+                            for (File f : files) {
+                                if (f.isFile() && (f.getName().endsWith(".mjpeg") || f.getName().endsWith(".jpg"))) {
+                                    f.delete();
+                                }
+                            }
+                        }
+                    }
+                    os.write("HTTP/1.1 200 OK\r\n".getBytes());
+                    os.write("Content-Type: text/plain\r\n".getBytes());
+                    os.write("\r\n".getBytes());
+                    os.write("Deleted".getBytes());
+
                 } else if (uri.startsWith("/api/save_settings")) {
                     serveSaveSettings(os, uri);
                 } else if (uri.equals("/api/latest_video_meta")) {
@@ -267,9 +286,13 @@ public class NanoHttpServer {
             int time = SentinelService.recordingTimeout;
             boolean active = SentinelService.isDetectorActive;
             int rot = SentinelService.cameraRotation;
+            float defZoom = SentinelService.defaultZoom;
+            int defPanX = SentinelService.defaultPanX;
+            int defPanY = SentinelService.defaultPanY;
 
-            String json = String.format("{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d}",
-                    sens, time, active, rot);
+            String json = String.format(Locale.US,
+                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d}",
+                    sens, time, active, rot, defZoom, defPanX, defPanY);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -291,6 +314,9 @@ public class NanoHttpServer {
             int time = 10;
             boolean active = true;
             int rot = 0;
+            float defZoom = 1.0f;
+            int defPanX = 0;
+            int defPanY = 0;
 
             try {
                 if (uri.contains("?")) {
@@ -309,10 +335,17 @@ public class NanoHttpServer {
                                 active = Boolean.parseBoolean(val);
                             else if (key.equals("rot"))
                                 rot = Integer.parseInt(val);
+                            else if (key.equals("defZoom"))
+                                defZoom = Float.parseFloat(val);
+                            else if (key.equals("defPanX"))
+                                defPanX = Integer.parseInt(val);
+                            else if (key.equals("defPanY"))
+                                defPanY = Integer.parseInt(val);
                         }
                     }
                 }
                 SentinelService.updateSettings(sens, time, active, rot);
+                SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -571,7 +604,11 @@ public class NanoHttpServer {
                 "\n" +
                 "<div id='settings-modal'>\n" +
                 "  <div class='settings-content'>\n" +
-                "     <h3 style='margin-top:0; border-bottom:1px solid #444; padding-bottom:10px;'>Configuración ⚙️</h3>\n"
+                "     <div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:20px;'>\n"
+                +
+                "        <h3 style='margin:0;'>Configuración ⚙️</h3>\n" +
+                "        <span onclick='closeSettings()' style='cursor:pointer; font-size:24px;'>&times;</span>\n" +
+                "     </div>\n"
                 +
                 "     \n" +
                 "     <div class='settings-row'>\n" +
@@ -597,10 +634,37 @@ public class NanoHttpServer {
                 +
                 "              <option value='10'>10 seg</option>\n" +
                 "              <option value='30'>30 seg</option>\n" +
-                "              <option value='60'>60 seg</option>\n" +
                 "           </select>\n" +
                 "        </div>\n" +
                 "     </div>\n" +
+                "     \n" +
+                "     <!-- Phase 19: View Defaults -->\n" +
+                "     <h4 style='border-bottom:1px solid #444; margin-top:20px; padding-bottom:5px; margin-bottom:10px;'>Vista Inicial (Zoom/Pan)</h4>\n"
+                +
+                "     <div style='margin-bottom:15px;'>\n" +
+                "        <label>Zoom: <span id='zoom-label' style='color:#aaa;'>1.0x</span></label>\n" +
+                "        <input type='range' id='def-zoom' min='1' max='5' step='0.1' style='width:100%;' oninput=\"document.getElementById('zoom-label').textContent=this.value+'x'\">\n"
+                +
+                "     </div>\n" +
+                "     <div class='settings-row'>\n" +
+                "        <label>Pan X (px):</label>\n" +
+                "        <input type='number' id='def-pan-x' style='width:60px; background:#333; color:white; border:none; padding:5px;' placeholder='0'>\n"
+                +
+                "     </div>\n" +
+                "     <div class='settings-row'>\n" +
+                "        <label>Pan Y (px):</label>\n" +
+                "        <input type='number' id='def-pan-y' style='width:60px; background:#333; color:white; border:none; padding:5px;' placeholder='0'>\n"
+                +
+                "     </div>\n" +
+                "     <div style='font-size:11px; color:#aaa; margin-top:-10px; margin-bottom:20px;'>\n" +
+                "        * Recomendado: +/- 350px (Ancho) y +/- 280px (Alto) para no perder imagen.\n" +
+                "     </div>\n" +
+                "\n" +
+                "     <!-- Phase 19: Danger Zone -->\n" +
+                "     <h4 style='border-bottom:1px solid #444; margin-top:20px; padding-bottom:5px; color:#c62828; margin-bottom:10px;'>Zona de Peligro</h4>\n"
+                +
+                "     <button class='btn-cancel' onclick='deleteAllVideos()' style='width:100%; margin-bottom:20px;'>🗑️ BORRAR TODOS LOS VIDEOS</button>\n"
+                +
                 "\n" +
                 "     <div class='settings-row'>\n" +
                 "        <label>Rotación:</label>\n" +
@@ -623,6 +687,7 @@ public class NanoHttpServer {
                 "var isPlaying = false;\n" +
                 "var fps = 10;\n" +
                 "var currentObjectUrl = null;\n" +
+                "var appSettings = { defZoom: 1.0, defPanX: 0, defPanY: 0 };\n" +
                 "\n" +
                 "function playVideo(file) {\n" +
                 "  document.getElementById('player-modal').style.display = 'flex';\n" +
@@ -630,6 +695,15 @@ public class NanoHttpServer {
                 "  frames = [];\n" +
                 "  currentFrameIdx = 0;\n" +
                 "  document.getElementById('scrubber').value = 0;\n" +
+                "  \n" +
+                "  // Apply Default View\n" +
+                "  mat.s = appSettings.defZoom || 1.0;\n" +
+                "  mat.x = appSettings.defPanX || 0;\n" +
+                "  mat.y = appSettings.defPanY || 0;\n" +
+                "  mat.initialS = mat.s;\n" +
+                "  drag.initialX = mat.x;\n" +
+                "  drag.initialY = mat.y;\n" +
+                "  updateTransform();\n" +
                 "  \n" +
                 "  // Extract FPS\n" +
                 "  var match = file.match(/_(\\d+)fps/);\n" +
@@ -898,6 +972,13 @@ public class NanoHttpServer {
                 "function closeSettings() {\n" +
                 "    document.getElementById('settings-modal').style.display = 'none';\n" +
                 "}\n" +
+                "function deleteAllVideos() {\n" +
+                "    if(confirm('⚠️ ¡PELIGRO! ¿Seguro que quieres borrar TODOS los videos grabados? Esta acción es irreversible.')) {\n"
+                +
+                "        fetch('/api/delete_all_videos', { method: 'POST' })\n" +
+                "        .then(function() { location.reload(); }).catch(function(e) { alert('Error: ' + e); });\n" +
+                "    }\n" +
+                "}\n" +
                 "function updateSensLabel(val) {\n" +
                 "    var px = 500 - (val * 4.9);\n" +
                 "    document.getElementById('sens-label').textContent = val + '% (' + Math.round(px) + ' px)';\n" +
@@ -910,6 +991,16 @@ public class NanoHttpServer {
                 "     document.getElementById('set-active').checked = data.active;\n" +
                 "     if(data.rot === 180) document.getElementById('rot-180').checked = true;\n" +
                 "     else document.getElementById('rot-0').checked = true;\n" +
+                "     \n" +
+                "     appSettings = data;\n" +
+                "     if(data.defZoom) {\n" +
+                "        document.getElementById('def-zoom').value = data.defZoom;\n" +
+                "        document.getElementById('zoom-label').innerText = parseFloat(data.defZoom).toFixed(1) + 'x';\n"
+                +
+                "     }\n" +
+                "     if(data.defPanX !== undefined) document.getElementById('def-pan-x').value = data.defPanX;\n" +
+                "     if(data.defPanY !== undefined) document.getElementById('def-pan-y').value = data.defPanY;\n" +
+                "     \n" +
                 "     updateSensLabel(data.sens);\n" +
                 "  });\n" +
                 "}\n" +
@@ -918,11 +1009,17 @@ public class NanoHttpServer {
                 "    var sens = document.getElementById('sens-slider').value;\n" +
                 "    var time = document.getElementById('set-time').value;\n" +
                 "    var rot = document.getElementById('rot-180').checked ? 180 : 0;\n" +
+                "    var defZoom = document.getElementById('def-zoom').value;\n" +
+                "    var defPanX = document.getElementById('def-pan-x').value || 0;\n" +
+                "    var defPanY = document.getElementById('def-pan-y').value || 0;\n" +
                 "\n" +
                 "    // Show saving feedback\n" +
                 "    document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "    \n" +
-                "    fetch('/api/save_settings?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot, { method: 'POST' })\n"
+                "    var qs = '?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
+                "             '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY;\n" +
+                "    \n" +
+                "    fetch('/api/save_settings' + qs, { method: 'POST' })\n"
                 +
                 "    .then(function() {\n" +
                 "        setTimeout(function() {\n" +

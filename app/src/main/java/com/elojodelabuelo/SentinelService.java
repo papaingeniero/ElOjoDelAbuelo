@@ -48,7 +48,7 @@ public class SentinelService extends Service {
     private FileOutputStream fileOutputStream;
     private FileOutputStream previewOutputStream; // For mini-mjpeg
     private long lastPreviewTime = 0;
-    
+
     // Phase 9.2: Optimization
     private boolean processNextFrame = true;
 
@@ -57,38 +57,48 @@ public class SentinelService extends Service {
     public static int recordingTimeout = 10; // seconds
     public static volatile boolean isDetectorActive = true;
     public static int cameraRotation = 0; // 0 or 180
-            
+
+    // View Defaults (Phase 19)
+    public static float defaultZoom = 1.0f;
+    public static int defaultPanX = 0;
+    public static int defaultPanY = 0;
+
     // Optimization: Pre-calculated threshold
     private static int currentThreshold = 50;
-    
+
     // Buffer management
     private static final int NUM_BUFFERS = 3;
-    
+
     // Smart Thumbnail Logic
     private int maxMotionScore = -1;
     private byte[] bestFrameJpeg = null;
-    
+
     // Software Rotation Buffer
     /**
      * <b>Ping-Pong Buffer Strategy</b>
      * <p>
-     * A pool of 2 buffers is used to decouple the Prodcuer (Camera Thread) from the Consumer (Processing Thread).
+     * A pool of 2 buffers is used to decouple the Prodcuer (Camera Thread) from the
+     * Consumer (Processing Thread).
      * <ul>
-     *     <li><code>rotationBuffers[index]</code>: The "Back Buffer" being written to by the camera rotation logic.</li>
-     *     <li><code>rotationBuffers[(index + 1) % 2]</code>: The "Front Buffer" currently being read/processed by the detector.</li>
+     * <li><code>rotationBuffers[index]</code>: The "Back Buffer" being written to
+     * by the camera rotation logic.</li>
+     * <li><code>rotationBuffers[(index + 1) % 2]</code>: The "Front Buffer"
+     * currently being read/processed by the detector.</li>
      * </ul>
-     * This eliminates "tearing" artifacts where high-speed motion would otherwise be partially overwritten during processing.
+     * This eliminates "tearing" artifacts where high-speed motion would otherwise
+     * be partially overwritten during processing.
      * </p>
      */
     private byte[][] rotationBuffers; // Pool of buffers
     private int rotationBufferIndex = 0;
 
     // FPS Calculation (Diagnostics) - REMOVED
-    // private int frameCount = 0; // Kept for recording stats if needed, or remove if unused. Keep frameCount for video file naming.
+    // private int frameCount = 0; // Kept for recording stats if needed, or remove
+    // if unused. Keep frameCount for video file naming.
     private int frameCount = 0;
     private long recordingStartTime = 0;
     // Real FPS Removed
-    
+
     // State Synchronization for Long-Polling
     public static final Object statusLock = new Object();
     public static volatile boolean isRecordingPublic = false;
@@ -97,18 +107,24 @@ public class SentinelService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        
+
         // Load Preferences
         SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
         motionSensitivity = prefs.getInt("motionSensitivity", 90);
         recordingTimeout = prefs.getInt("recordingTimeout", 10);
         isDetectorActive = prefs.getBoolean("isDetectorActive", true);
         cameraRotation = prefs.getInt("cameraRotation", 0);
-        
+
+        defaultZoom = prefs.getFloat("defaultZoom", 1.0f);
+        defaultPanX = prefs.getInt("defaultPanX", 0);
+        defaultPanY = prefs.getInt("defaultPanY", 0);
+
         // Calculate initial threshold (Phase 13: Exponential)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 20) currentThreshold = 20;
-        if (currentThreshold > 50000) currentThreshold = 50000;
+        if (currentThreshold < 20)
+            currentThreshold = 20;
+        if (currentThreshold > 50000)
+            currentThreshold = 50000;
 
         // 1. WakeLock
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -151,7 +167,7 @@ public class SentinelService extends Service {
     private void startCamera() {
         try {
             camera = Camera.open();
-            
+
             // --- DIAGNOSTICS AUDIT (Phase 8 - REVISED File Based) ---
             Camera.Parameters params = camera.getParameters();
             writeCameraInfoToFile(params);
@@ -212,31 +228,34 @@ public class SentinelService extends Service {
         PREVIEW_HEIGHT = bestSize.height;
 
         params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        // params.setRotation(cameraRotation); // REMOVED: Hardware rotation not supported for Preview on i9000 driver
-        
+        // params.setRotation(cameraRotation); // REMOVED: Hardware rotation not
+        // supported for Preview on i9000 driver
+
         camera.setParameters(params);
         NanoHttpServer.setLastError("Camera OK. Size: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT);
     }
-    
+
     private void writeCameraInfoToFile(Camera.Parameters params) {
         File logFile = new File(Environment.getExternalStorageDirectory(), "camera_info.txt");
         try {
             java.io.FileWriter writer = new java.io.FileWriter(logFile, false); // Overwrite
-            
+
             writer.write("--- CAMERA CAPABILITIES AUDIT ---\n");
             writer.write("Current Preview Rate: " + params.getPreviewFrameRate() + "\n");
-            
+
             java.util.List<Integer> rates = params.getSupportedPreviewFrameRates();
             if (rates != null) {
                 writer.write("Supported FPS: ");
-                for (Integer fps : rates) writer.write(fps + " ");
+                for (Integer fps : rates)
+                    writer.write(fps + " ");
                 writer.write("\n");
             }
 
             java.util.List<Camera.Size> sizes = params.getSupportedPreviewSizes();
             if (sizes != null) {
                 writer.write("Supported Sizes: ");
-                for (Camera.Size size : sizes) writer.write(size.width + "x" + size.height + " ");
+                for (Camera.Size size : sizes)
+                    writer.write(size.width + "x" + size.height + " ");
                 writer.write("\n");
             }
             writer.write("--------------------------------\n");
@@ -251,12 +270,11 @@ public class SentinelService extends Service {
         public void onPreviewFrame(final byte[] data, final Camera camera) {
             // Phase 13: Camera Watchdog
             if (data == null || data.length == 0) {
-                 isCameraError = true;
-                 // Don't restart here, just flag it for the user to see
-                 return; 
+                isCameraError = true;
+                // Don't restart here, just flag it for the user to see
+                return;
             }
             isCameraError = false; // Recover if we get data
-
 
             // Phase 9.2: Frame Throttling (50% Reduction)
             // Process 1, Skip 1 to save CPU
@@ -268,20 +286,19 @@ public class SentinelService extends Service {
 
             // --- REAL FPS COUNTER REMOVED ---
 
-
             if (thermalGuardian.isOverheating()) {
                 // Pause specific logic or just drop frame
                 // Ensure we return buffer
                 camera.addCallbackBuffer(data);
                 return;
             }
-            
+
             // Software Rotation
             byte[] processedData = data;
             if (cameraRotation == 180) {
-                 processedData = rotateNV21Degree180(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+                processedData = rotateNV21Degree180(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
             }
-            
+
             // Motion Detection Logic
             if (!isDetectorActive) {
                 if (isRecording) {
@@ -297,7 +314,7 @@ public class SentinelService extends Service {
                 // Skip motion logic, but allow streaming below
             } else {
                 int score = motionDetector.getMotionScore(processedData, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                
+
                 // Optimized: Use pre-calculated threshold
                 if (score > currentThreshold) {
                     lastMotionTime = System.currentTimeMillis();
@@ -318,9 +335,10 @@ public class SentinelService extends Service {
                         maxMotionScore = score;
                         // Capture best frame immediately in memory
                         try {
-                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
+                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT,
+                                    null);
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 80, out); 
+                            yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 80, out);
                             bestFrameJpeg = out.toByteArray();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -348,21 +366,25 @@ public class SentinelService extends Service {
                 @Override
                 public void run() {
                     processFrame(finalData);
-                    camera.addCallbackBuffer(data); // Return buffer after processing (Must verify if we need to return 'data' specifically. Yes, 'data' is the buffer owned by Camera)
+                    camera.addCallbackBuffer(data); // Return buffer after processing (Must verify if we need to return
+                                                    // 'data' specifically. Yes, 'data' is the buffer owned by Camera)
                 }
             });
         }
     };
-    
+
     /**
      * Rotates a YUV (NV21) image 180 degrees via software.
      * <p>
-     * <b>Algorithm:</b> Efficiently reverses the Y plane and the UV plane (in pairs)
-     * to achieve a full 180-degree flip. This is necessary because the Galaxy S i9000
+     * <b>Algorithm:</b> Efficiently reverses the Y plane and the UV plane (in
+     * pairs)
+     * to achieve a full 180-degree flip. This is necessary because the Galaxy S
+     * i9000
      * driver does not support hardware rotation for preview callbacks.
      * </p>
      * <p>
-     * <b>Optimization:</b> Direct byte manipulation is used instead of creating Bitmap objects
+     * <b>Optimization:</b> Direct byte manipulation is used instead of creating
+     * Bitmap objects
      * to avoid high Garbage Collection overhead on the 512MB RAM of the device.
      * </p>
      * <p>
@@ -371,21 +393,21 @@ public class SentinelService extends Service {
      * overwrites the buffer while the Background thread is still processing it.
      * </p>
      *
-     * @param data The raw NV21 byte array from the camera.
-     * @param width Frame width.
+     * @param data   The raw NV21 byte array from the camera.
+     * @param width  Frame width.
      * @param height Frame height.
      * @return The rotated byte array (from the pool).
      */
     private byte[] rotateNV21Degree180(byte[] data, int width, int height) {
         int size = width * height * 3 / 2;
-        
+
         // 1. Initialize Buffer Pool (Ping-Pong)
         if (rotationBuffers == null) {
             rotationBuffers = new byte[2][size];
         }
         // Safety: Recreate if resolution changed
         if (rotationBuffers[0].length != size) {
-             rotationBuffers = new byte[2][size];
+            rotationBuffers = new byte[2][size];
         }
 
         // 2. Switch Buffer
@@ -403,7 +425,7 @@ public class SentinelService extends Service {
         // 4. Invert U and V (Writing to targetBuffer)
         for (i = size - 1; i >= width * height; i -= 2) {
             targetBuffer[count++] = data[i - 1]; // V
-            targetBuffer[count++] = data[i];     // U
+            targetBuffer[count++] = data[i]; // U
         }
 
         return targetBuffer;
@@ -418,7 +440,7 @@ public class SentinelService extends Service {
             byte[] jpeg = out.toByteArray();
 
             // Phase 13: Priorities - Record FIRST, then Stream
-            
+
             // 1. Record (Disk I/O)
             if (isRecording) {
                 frameCount++;
@@ -572,17 +594,18 @@ public class SentinelService extends Service {
         }
         closeRecordingFile();
     }
-    
+
     /**
      * Updates global configuration settings and persists them.
      * <p>
      * If the rotation setting changes, this method triggers a camera restart
      * to ensure the buffer sizes and logic are re-initialized correctly.
      * </p>
-     * @param sens Motion sensitivity (0-100)
-     * @param time Recording timeout in seconds
+     * 
+     * @param sens   Motion sensitivity (0-100)
+     * @param time   Recording timeout in seconds
      * @param active Detector active state
-     * @param rot Rotation degree (0 or 180)
+     * @param rot    Rotation degree (0 or 180)
      */
     public static void updateSettings(int sens, int time, boolean active, int rot) {
         motionSensitivity = sens;
@@ -591,11 +614,13 @@ public class SentinelService extends Service {
         boolean rotationChanged = (cameraRotation != rot);
 
         cameraRotation = rot;
-        
+
         // Update Threshold (Phase 13: Exponential)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 20) currentThreshold = 20;
-        if (currentThreshold > 50000) currentThreshold = 50000;
+        if (currentThreshold < 20)
+            currentThreshold = 20;
+        if (currentThreshold > 50000)
+            currentThreshold = 50000;
 
         if (instance != null) {
             SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
@@ -625,6 +650,22 @@ public class SentinelService extends Service {
             }
         }
     }
+
+    public static void updateViewSettings(float zoom, int x, int y) {
+        defaultZoom = zoom;
+        defaultPanX = x;
+        defaultPanY = y;
+
+        if (instance != null) {
+            SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putFloat("defaultZoom", zoom);
+            editor.putInt("defaultPanX", x);
+            editor.putInt("defaultPanY", y);
+            editor.apply();
+        }
+    }
+
     public static File getCurrentRecordingFile() {
         if (instance != null) {
             return instance.currentFile;
