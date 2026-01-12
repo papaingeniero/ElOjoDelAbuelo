@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.14] - 2026-01-12
+### Added
+- **Live View Modal**: Replaced raw stream tab with a proper in-app modal containing the Persistent Header (Battery/Temp) and "Close" button.
+
 ## [v3.0.13] - 2026-01-12
 ### Fixed
 - **SOLVED**: Definitive removal of duplicated garbage code in JS generation.

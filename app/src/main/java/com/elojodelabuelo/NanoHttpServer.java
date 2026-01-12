@@ -588,7 +588,8 @@ public class NanoHttpServer {
                 ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; }\n" +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +
                 "/* Modal Player */\n" +
-                "#player-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; flex-direction: column; }\n"
+                "/* Modal Player */\n" +
+                "#player-modal, #live-view-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; flex-direction: column; }\n"
                 +
                 "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; background-color: #000; width: 100%; height: auto; touch-action: none; }\n"
                 +
@@ -621,7 +622,8 @@ public class NanoHttpServer {
                 commonHeader
                 +
                 "  <div style='text-align:center; padding-bottom:10px; flex-shrink:0;'>\n" +
-                "     <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
+                "     <div class='live-btn' onclick='openLiveView()' style='cursor:pointer;'>🔴 VER CÁMARA EN VIVO</div>\n"
+                +
                 "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: "
                 + SystemStats.getBootTime() + "</div>\n" +
                 "  </div>\n" +
@@ -647,6 +649,17 @@ public class NanoHttpServer {
                 "     <span id='current-frame'>0</span>\n" +
                 "     <input type='range' id='scrubber' min='0' max='100' value='0' disabled>\n" +
                 "     <span id='total-frames'>...</span>\n" +
+                "  </div>\n" +
+                "</div>\n" +
+                "\n" +
+                "<div id='live-view-modal'>\n" +
+                commonHeader +
+                "  <div style='flex:1; display:flex; justify-content:center; align-items:center; background:#000; overflow:hidden;'>\n"
+                +
+                "      <img id='live-stream-img' style='max-width:100%; max-height:100%; object-fit:contain;'>\n" +
+                "  </div>\n" +
+                "  <div class='controls' style='justify-content:center;'>\n" +
+                "      <button class='btn-close' onclick='closeLiveView()'>❌ CERRAR</button>\n" +
                 "  </div>\n" +
                 "</div>\n" +
                 "\n" +
@@ -1023,6 +1036,18 @@ public class NanoHttpServer {
                 "  }, 5000);\n" +
                 "}\n" +
                 "// ------------------------------\n" +
+                "\n" +
+                "// Live View Logic\n" +
+                "function openLiveView() {\n" +
+                "    document.getElementById('live-view-modal').style.display = 'flex';\n" +
+                "    document.getElementById('live-stream-img').src = '/stream';\n" +
+                "    // Prevent user from leaving active stream if back button pressed\n" +
+                "    history.pushState(null, null, location.href);\n" +
+                "}\n" +
+                "function closeLiveView() {\n" +
+                "    document.getElementById('live-view-modal').style.display = 'none';\n" +
+                "    document.getElementById('live-stream-img').src = '';\n" +
+                "}\n" +
                 "\n" +
                 "// Settings Logic\n" +
                 "function openSettings() {\n" +
