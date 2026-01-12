@@ -1364,8 +1364,7 @@ public class NanoHttpServer {
                 "                \"     <span class='stat-temp'>\" + tempIcon + \" \" + temp + \"°C</span>\\n\" +\n" +
                 "                \"     <span class='stat-storage'>💾 \" + freeStorage + \"</span>\\n\" +\n" +
                 "                \"  </div>\\n\";\n" +
-                "    }\n"
-                +
+                "    }\n" +
                 "                   \"<div class='thumb-container'>\" +\n" +
                 "                      \"<img class='thumb' src='/thumbnails/\" + meta.filename + \"' onload='this.style.opacity=1'>\" +\n"
                 +
