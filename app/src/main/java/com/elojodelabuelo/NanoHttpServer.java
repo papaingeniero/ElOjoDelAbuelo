@@ -1350,23 +1350,6 @@ public class NanoHttpServer {
                 "}\n" +
                 "\n" +
 
-                "                   \"<div class='thumb-container'>\" +\n" +
-                "                      \"<img class='thumb' src='/thumbnails/\" + meta.filename + \"' onload='this.style.opacity=1'>\" +\n"
-                +
-                "                   \"</div>\" +\n" +
-                "                   \"<div class='info'><b>\" + meta.filename + \"</b><br>\" + meta.size + \"</div>\" +\n"
-                +
-                "                \"</div>\";\n" +
-                "                \n" +
-                "                var temp = document.createElement('div');\n" +
-                "                temp.innerHTML = newHtml;\n" +
-                "                var newCard = temp.firstChild;\n" +
-                "                card.parentNode.replaceChild(newCard, card);\n" +
-                "                console.log('Hot-Swap completed for: ' + meta.filename);\n" +
-                "             });\n" +
-                "        }\n" +
-                "    }, 3000);\n" +
-                "}\n" +
                 "</script>\n" +
                 "</body></html>";
     }
