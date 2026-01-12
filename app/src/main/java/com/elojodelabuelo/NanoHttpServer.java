@@ -511,15 +511,15 @@ public class NanoHttpServer {
                         ? ".camera-error { background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; animation: blink 1s infinite; z-index: 2000; } @keyframes blink { 50% { opacity: 0.5; } }\\n"
                         : "")
                 +
-                ".header { padding: 20px; text-align: center; background: #1f1f1f; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }\n"
+                ".header { padding: 20px; text-align: center; background: #1f1f1f; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }\n"
                 +
-                ".stats-bar { display: flex; justify-content: space-around; background: #333; padding: 10px; margin: 10px; border-radius: 8px; font-size: 14px; }\n"
+                ".stats-bar { display: flex; justify-content: space-around; background: #333; padding: 10px; margin: 10px; border-radius: 8px; font-size: 14px; flex-shrink: 0; }\n"
                 +
                 ".live-btn { display: inline-block; background: #d32f2f; color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; animation: pulse 2s infinite; }\n"
                 +
                 "@keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }\n"
                 +
-                ".library { flex: 1; padding: 10px; overflow-y: auto; max-height: 60vh; }\n" +
+                ".library { flex: 1; padding: 10px; overflow-y: auto; min-height: 0; }\n" +
                 ".section-title { font-size: 0.9em; text-transform: uppercase; color: #888; margin-bottom: 10px; letter-spacing: 1px; }\n"
                 +
                 ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 15px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s; }\n"
@@ -575,7 +575,7 @@ public class NanoHttpServer {
                 "     <span id='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
                 "     <span id='stat-storage'>💾 " + freeStorage + "</span>\n" +
                 "  </div>\n" +
-                "  <div style='text-align:center; padding-bottom:10px;'>\n" +
+                "  <div style='text-align:center; padding-bottom:10px; flex-shrink:0;'>\n" +
                 "     <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
                 "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: "
                 + SystemStats.getBootTime() + "</div>\n" +
