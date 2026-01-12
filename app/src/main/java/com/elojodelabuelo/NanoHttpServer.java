@@ -813,9 +813,10 @@ public class NanoHttpServer {
                 "        mat.s = newScale;\n" +
                 "        \n" +
                 "        updateTransform();\n" +
-                "    } else if (e.touches.length === 1 && mat.s > 1) {\n" +
+                "    } else if (e.touches.length === 1) {\n" +
                 "        // PAN UPDATE\n" +
                 "        var dx = e.touches[0].pageX - drag.startX;\n" +
+                "        var dy = e.touches[0].pageY - drag.startY;\n" +
                 "        mat.x = drag.initialX + dx;\n" +
                 "        mat.y = drag.initialY + dy;\n" +
                 "        updateTransform();\n" +
