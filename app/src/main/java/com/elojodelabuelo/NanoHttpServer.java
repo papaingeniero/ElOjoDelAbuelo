@@ -748,6 +748,7 @@ public class NanoHttpServer {
                 "var mat = { x: 0, y: 0, s: 1 };\n" +
                 "var drag = { startX: 0, startY: 0, initialX: 0, initialY: 0 };\n" +
                 "var pinch = { dist: 0, midX: 0, midY: 0, initialS: 1, initialX: 0, initialY: 0 };\n" +
+                "var lastTap = 0;\n" +
                 "\n" +
                 "function resetZoom() {\n" +
                 "    mat.x = 0; mat.y = 0; mat.s = 1;\n" +
@@ -805,6 +806,9 @@ public class NanoHttpServer {
                 "        \n" +
                 "        // Clamp\n" +
                 "        newScale = Math.max(1, Math.min(newScale, 5));\n" +
+                "        if (newScale === 1) {\n" +
+                "           mat.x = 0; mat.y = 0;\n" +
+                "        }\n" +
                 "        \n" +
                 "        // Focal Point Logic: Keep mid stationary\n" +
                 "        var ratio = newScale / pinch.initialS;\n" +
@@ -813,7 +817,7 @@ public class NanoHttpServer {
                 "        mat.s = newScale;\n" +
                 "        \n" +
                 "        updateTransform();\n" +
-                "    } else if (e.touches.length === 1) {\n" +
+                "    } else if (e.touches.length === 1 && mat.s > 1.05) {\n" +
                 "        // PAN UPDATE\n" +
                 "        var dx = e.touches[0].pageX - drag.startX;\n" +
                 "        var dy = e.touches[0].pageY - drag.startY;\n" +
@@ -824,6 +828,13 @@ public class NanoHttpServer {
                 "}, { passive: false });\n" +
                 "\n" +
                 "container.addEventListener('touchend', function(e) {\n" +
+                "    var now = new Date().getTime();\n" +
+                "    if (e.touches.length === 0 && (now - lastTap < 300)) {\n" +
+                "        resetZoom();\n" +
+                "        e.preventDefault();\n" +
+                "    }\n" +
+                "    lastTap = now;\n" +
+                "\n" +
                 "    // If dropped to 1 finger, restart pan to prevent jump\n" +
                 "    if (e.touches.length === 1) {\n" +
                 "        drag.startX = e.touches[0].pageX;\n" +

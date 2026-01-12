@@ -5,6 +5,15 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.3] - 2026-01-11
+### Added
+- **Double-Tap Reset**: Implemented a "Quick Reset" gesture. Double-tapping the video instantly resets zoom and position to default.
+
+### Changed
+- **UX Refinement**:
+    - **Smart Pan Constraint**: Disabled panning when the image is at original scale (1x) to prevent dragging the image into empty space.
+    - **Auto-Center**: When pinching out to minimum zoom (1x), the image now automatically snaps to center (0,0), ensuring a clean reset.
+
 ## [v3.0.2] - 2026-01-11
 ### Fixed
 - **Pan Logic Error**: Fixed a critical bug where `dy` (vertical delta) was undefined in the `touchmove` handler, causing the script to crash silently when attempting to pan the image with one finger.
