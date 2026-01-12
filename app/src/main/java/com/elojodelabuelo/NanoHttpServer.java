@@ -1349,22 +1349,7 @@ public class NanoHttpServer {
                 "    }, 3000);\n" +
                 "}\n" +
                 "\n" +
-                "    // Phase 23: DRY Header Generation\n" +
-                "    private String getCommonHeaderHtml(String versionName, String batIcon, int batLevel, String tempIcon, int temp, String freeStorage) {\n"
-                +
-                "         return \"<div class='header' style='position:relative;'>\\n\" +\n" +
-                "                \"   <h1 style='font-size:18px; margin:0; display:inline-block;'>👁️ El Ojo del Abuelo <span style='font-size:0.7em; color:#aaa;'>\" + versionName + \"</span></h1>\\n\" +\n"
-                +
-                "                \"   <span class='settings-btn' style='cursor:pointer; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:24px;' onclick='openSettings()'>⚙️</span>\\n\" +\n"
-                +
-                "                \"</div>\\n\" +\n" +
-                "                \"<div class='stats-bar'>\\n\" +\n" +
-                "                \"     <span class='stat-status'>⏺️ VIGILANDO</span>\\n\" +\n" +
-                "                \"     <span class='stat-bat'>\" + batIcon + \" \" + batLevel + \"%</span>\\n\" +\n" +
-                "                \"     <span class='stat-temp'>\" + tempIcon + \" \" + temp + \"°C</span>\\n\" +\n" +
-                "                \"     <span class='stat-storage'>💾 \" + freeStorage + \"</span>\\n\" +\n" +
-                "                \"  </div>\\n\";\n" +
-                "    }\n" +
+
                 "                   \"<div class='thumb-container'>\" +\n" +
                 "                      \"<img class='thumb' src='/thumbnails/\" + meta.filename + \"' onload='this.style.opacity=1'>\" +\n"
                 +
