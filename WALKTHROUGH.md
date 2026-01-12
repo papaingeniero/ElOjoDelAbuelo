@@ -280,3 +280,14 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - List items show: `📅 12/01/2026 ⏰ 21:30:00`.
     - Tech details are **Bold** and easier to read against the dark background.
 
+### Phase 23: Persistent Header (DRY & Sync) (v3.0.10)
+- **Problem**: When opening a video or Live View, the status header (Battery, Temp, Storage) disappeared, losing context.
+- **Solution**:
+    - **Back-End (DRY)**: Created `getCommonHeaderHtml()` to inject the exact same header block in Main Dashboard, Video Player, and Live View.
+    - **Front-End (Refactor)**: Switched from IDs (`#stat-bat`) to Classes (`.stat-bat`) to allow multiple instances.
+    - **Sync Logic**: JS `updateStats()` now targets `document.querySelectorAll()` to update all headers simultaneously properly.
+- **Verification**:
+    - Open a Video: Header appears above.
+    - Open Live View: Header appears above.
+    - Wait 5s: Battery/Temp updates in ALL visible headers at once.
+

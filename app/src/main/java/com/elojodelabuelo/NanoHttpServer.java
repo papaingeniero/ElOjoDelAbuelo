@@ -550,6 +550,8 @@ public class NanoHttpServer {
         String batIcon = charging ? "⚡" : (batLevel > 20 ? "🔋" : "🪫");
         String tempIcon = temp > 40 ? "🔥" : "🌡️";
 
+        String commonHeader = getCommonHeaderHtml(versionName, batIcon, batLevel, tempIcon, temp, freeStorage);
+
         return "<!DOCTYPE html>\n" +
                 "<html><head>\n" +
                 "<meta charset='UTF-8'>\n" +
@@ -616,19 +618,8 @@ public class NanoHttpServer {
                         ? "<div class='camera-error'>⚠️ ERROR CRÍTICO: CÁMARA NO RESPONDE - REINICIA EL MÓVIL</div>\n"
                         : "")
                 +
-                "<div class='header' style='position:relative;'>\n" +
-                "   <h1 style='font-size:18px; margin:0; display:inline-block;'>👁️ El Ojo del Abuelo <span style='font-size:0.7em; color:#aaa;'>"
-                + versionName + "</span></h1>\n" +
-                "   <span id='settings-btn' style='cursor:pointer; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:24px;' onclick='openSettings()'>⚙️</span>\n"
+                commonHeader
                 +
-                "</div>\n"
-                +
-                "<div class='stats-bar'>\n" +
-                "     <span id='stat-status'>⏺️ VIGILANDO</span>\n" +
-                "     <span id='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
-                "     <span id='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
-                "     <span id='stat-storage'>💾 " + freeStorage + "</span>\n" +
-                "  </div>\n" +
                 "  <div style='text-align:center; padding-bottom:10px; flex-shrink:0;'>\n" +
                 "     <a href='/stream' target='_blank' class='live-btn'>🔴 VER CÁMARA EN VIVO</a>\n" +
                 "     <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: "
@@ -641,6 +632,7 @@ public class NanoHttpServer {
                 "</div>\n" +
                 "\n" +
                 "<div id='player-modal'>\n" +
+                commonHeader + // Phase 23: Persistent Header in Player Modal (Correct Placement)
                 "  <div class='controls' style='justify-content:space-between;'>\n" +
                 "     <span id='video-title'>Video</span>\n" +
                 "     <button class='btn-close' onclick='closePlayer()'>❌</button>\n" +
@@ -1129,18 +1121,20 @@ public class NanoHttpServer {
                 "}\n" +
                 "\n" +
                 "function updateStatusIndicator(isRecording) {\n" +
-                "   var el = document.getElementById('stat-status');\n" +
-                "   if(isRecording) {\n" +
-                "      el.innerHTML = '🔴 GRABANDO';\n" +
-                "      el.style.color = '#ff4444';\n" +
-                "      el.style.fontWeight = 'bold';\n" +
-                "      el.style.animation = 'pulse 1s infinite';\n" +
-                "   } else {\n" +
-                "      el.innerHTML = '⏺️ VIGILANDO...';\n" +
-                "      el.style.color = '#aaaaaa';\n" +
-                "      el.style.fontWeight = 'normal';\n" +
-                "      el.style.animation = 'none';\n" +
-                "   }\n" +
+                "   var els = document.querySelectorAll('.stat-status');\n" +
+                "   els.forEach(function(el) {\n" +
+                "       if(isRecording) {\n" +
+                "          el.innerHTML = '🔴 GRABANDO';\n" +
+                "          el.style.color = '#ff4444';\n" +
+                "          el.style.fontWeight = 'bold';\n" +
+                "          el.style.animation = 'pulse 1s infinite';\n" +
+                "       } else {\n" +
+                "          el.innerHTML = '⏺️ VIGILANDO...';\n" +
+                "          el.style.color = '#aaaaaa';\n" +
+                "          el.style.fontWeight = 'normal';\n" +
+                "          el.style.animation = 'none';\n" +
+                "       }\n" +
+                "   });\n" +
                 "}\n" +
                 "\n" +
                 "// Auto-Refresh Stats\n" +
@@ -1148,9 +1142,12 @@ public class NanoHttpServer {
                 "  fetch('/stats?_=' + Date.now()).then(r => r.json()).then(data => {\n" +
                 "     var batIcon = data.charging ? '⚡' : (data.bat > 20 ? '🔋' : '🪫');\n" +
                 "     var tempIcon = data.temp > 40 ? '🔥' : '🌡️';\n" +
-                "     document.getElementById('stat-bat').textContent = batIcon + ' ' + data.bat + '%';\n" +
-                "     document.getElementById('stat-temp').textContent = tempIcon + ' ' + data.temp + '°C';\n" +
-                "     document.getElementById('stat-storage').textContent = '💾 ' + data.storage;\n" +
+                "     document.querySelectorAll('.stat-bat').forEach(function(el) { el.innerHTML = batIcon + ' ' + data.bat + '%'; });\n"
+                +
+                "     document.querySelectorAll('.stat-temp').forEach(function(el) { el.innerHTML = tempIcon + ' ' + data.temp + '°C'; });\n"
+                +
+                "     document.querySelectorAll('.stat-storage').forEach(function(el) { el.innerHTML = '💾 ' + data.storage; });\n"
+                +
                 "     if(data.recording !== undefined) { updateStatusIndicator(data.recording); currentRecordingState = data.recording; }\n"
                 +
                 "  }).catch(e => console.log('Stats error', e));\n" +
@@ -1336,6 +1333,39 @@ public class NanoHttpServer {
                 "                var newHtml = \n" +
                 "                \"<div class='video-item' onclick=\\\"playVideo('\" + meta.filename + \"')\\\">\" +\n"
                 +
+                // Phase 23: Human-Readable Metadata
+                "                \"<div class='info'>\" +\n" +
+                "                \"     <div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>📅 \" + meta.date + \" &nbsp; ⏰ \" + meta.time + \"</div>\" +\n"
+                +
+                "                \"     <div style='color:#ccc; font-size:13px;'>\" +\n" +
+                "                \"         <b>💾 \" + meta.size + \"</b> &nbsp;|&nbsp; <b>⏳ \" + meta.duration + \"</b>\" +\n"
+                +
+                "                \"     </div>\" +\n" +
+                "                \"</div></div>\";\n" +
+                "                \n" +
+                "                card.outerHTML = newHtml;\n" +
+                "             });\n" +
+                "        }\n" +
+                "    }, 3000);\n" +
+                "}\n" +
+                "\n" +
+                "    // Phase 23: DRY Header Generation\n" +
+                "    private String getCommonHeaderHtml(String versionName, String batIcon, int batLevel, String tempIcon, int temp, String freeStorage) {\n"
+                +
+                "         return \"<div class='header' style='position:relative;'>\\n\" +\n" +
+                "                \"   <h1 style='font-size:18px; margin:0; display:inline-block;'>👁️ El Ojo del Abuelo <span style='font-size:0.7em; color:#aaa;'>\" + versionName + \"</span></h1>\\n\" +\n"
+                +
+                "                \"   <span class='settings-btn' style='cursor:pointer; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:24px;' onclick='openSettings()'>⚙️</span>\\n\" +\n"
+                +
+                "                \"</div>\\n\" +\n" +
+                "                \"<div class='stats-bar'>\\n\" +\n" +
+                "                \"     <span class='stat-status'>⏺️ VIGILANDO</span>\\n\" +\n" +
+                "                \"     <span class='stat-bat'>\" + batIcon + \" \" + batLevel + \"%</span>\\n\" +\n" +
+                "                \"     <span class='stat-temp'>\" + tempIcon + \" \" + temp + \"°C</span>\\n\" +\n" +
+                "                \"     <span class='stat-storage'>💾 \" + freeStorage + \"</span>\\n\" +\n" +
+                "                \"  </div>\\n\";\n" +
+                "    }\n"
+                +
                 "                   \"<div class='thumb-container'>\" +\n" +
                 "                      \"<img class='thumb' src='/thumbnails/\" + meta.filename + \"' onload='this.style.opacity=1'>\" +\n"
                 +
@@ -1355,5 +1385,22 @@ public class NanoHttpServer {
                 "}\n" +
                 "</script>\n" +
                 "</body></html>";
+    }
+
+    // Phase 23: DRY Header Generation
+    private String getCommonHeaderHtml(String versionName, String batIcon, int batLevel, String tempIcon, int temp,
+            String freeStorage) {
+        return "<div class='header' style='position:relative;'>\n" +
+                "   <h1 style='font-size:18px; margin:0; display:inline-block;'>👁️ El Ojo del Abuelo <span style='font-size:0.7em; color:#aaa;'>"
+                + versionName + "</span></h1>\n" +
+                "   <span class='settings-btn' style='cursor:pointer; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:24px;' onclick='openSettings()'>⚙️</span>\n"
+                +
+                "</div>\n" +
+                "<div class='stats-bar'>\n" +
+                "     <span class='stat-status'>⏺️ VIGILANDO</span>\n" +
+                "     <span class='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
+                "     <span class='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
+                "     <span class='stat-storage'>💾 " + freeStorage + "</span>\n" +
+                "  </div>\n";
     }
 }
