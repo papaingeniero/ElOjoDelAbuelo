@@ -201,18 +201,23 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - 3 seconds later -> The card flickers briefly and updates to show the File Size (e.g., "450 KB").
     - The thumbnail becomes static.
 
-### Phase 18: Interactive Pan & Zoom (v2.9.0)
-- **Problem**: When zooming into the video on mobile browsers, the entire webpage would scale, making controls (Close, Play/Pause) huge or inaccessible. UX was poor.
+### Phase 18: Interactive Pan & Zoom (v3.0.2)
+- **Problem**: When zooming into the video on mobile browsers, the entire webpage would scale, making controls (Close, Play/Pause) huge or inaccessible. UX was poor. Early implementations suffered from "jitter", reset bugs, and poor panning UX.
 - **Solution**:
     - **Meta Viewport**: Forced `user-scalable=no` to transfer zoom control to Javascript.
     - **Clipping Container**: Wrapped the video IMG in a `div` with `overflow: hidden`.
-    - **Vanilla JS**: Implemented custom `touchstart` and `touchmove` logic.
+    - **Vanilla JS**: Implemented custom `touchstart` and `touchmove` logic compatible with Android 2.3 (ES3).
         - **1 Finger**: Pan (Translate X/Y).
-        - **2 Fingers**: Zoom (Scale).
+        - **2 Fingers**: Pinch (Scale).
+    - **Math Compatibility**: Implemented custom `getDist` (Math.sqrt) as `Math.hypot` is missing in old Android.
+    - **Gesture Locking**: Used `{ passive: false }` and `e.preventDefault()` to block native browser actions on modern iOS (Safari).
+    - **State Persistence**: Removed logic that reset zoom on every frame, allowing zoom to persist during playback.
+    - **Pan Freedom**: Removed artificial restrictions (previously required zoom > 1x) and fixed variable scope (`dy`) to allow smooth panning at any scale.
+- **Result**: Smooth, interactive zoom and pan that works flawlessly on both 15-year-old Androids and modern iPhones.
 - **Verification**:
-    - Open any video on the mobile.
-    - **Pinch Out**: Only the video zooms. The "Close" button stays fixed.
-    - **Drag**: The zoomed video moves within its frame.
-    - **Pinch In**: Zooms out correctly.
+    - Open any video on mobile.
+    - **Pinch Out**: Video zooms smoothly. Controls stay fixed.
+    - **Drag (1 Finger)**: Video moves freely in X/Y axes (after v3.0.2 fix).
+    - **Playback**: Zoom level is maintained while video plays.
 
 
