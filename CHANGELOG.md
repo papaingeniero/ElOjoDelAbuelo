@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.9] - 2026-01-12
+### Improved
+- **UI**: Dashboard video list now displays formatted Date (DD/MM/YYYY), Time (HH:mm:ss), and FPS instead of raw filenames.
+- **UI**: File Size and Duration metadata are now displayed in **bold** for better readability.
+
 ## [v3.0.8] - 2026-01-12
 ### Added
 - **UX**: Visual indicator (dimming) for watched videos in the current session.

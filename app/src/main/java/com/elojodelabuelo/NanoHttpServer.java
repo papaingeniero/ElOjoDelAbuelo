@@ -498,10 +498,35 @@ public class NanoHttpServer {
                             // Ignore date parse errors
                         }
 
-                        listHtml.append("<div class='info'><b>").append(f.getName()).append("</b><br>")
-                                .append("<span style='color:#aaa; font-size:12px;'>")
-                                .append(sizeStr).append(durationStr)
-                                .append("</span></div>");
+                        // Phase 22: Human-Readable File Metadata
+                        String dateStr = "Unknown Date";
+                        String timeStr = "Unknown Time";
+                        String fpsStr = "?? FPS";
+
+                        // Parse: video_20251201_144000_15fps
+                        java.util.regex.Matcher metaMatcher = java.util.regex.Pattern
+                                .compile("video_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})_(\\d+)fps")
+                                .matcher(f.getName());
+
+                        if (metaMatcher.find()) {
+                            dateStr = "📅 " + metaMatcher.group(3) + "/" + metaMatcher.group(2) + "/"
+                                    + metaMatcher.group(1);
+                            timeStr = "⏰ " + metaMatcher.group(4) + ":" + metaMatcher.group(5) + ":"
+                                    + metaMatcher.group(6);
+                            fpsStr = "🎥 " + metaMatcher.group(7) + " FPS";
+                        }
+
+                        listHtml.append("<div class='info'>")
+                                .append("<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>")
+                                .append(dateStr).append(" &nbsp; ").append(timeStr)
+                                .append("</div>")
+                                .append("<div style='color:#ccc; font-size:13px;'>")
+                                .append("<b>💾 ").append(sizeStr).append("</b>")
+                                .append(" &nbsp;|&nbsp; ")
+                                .append("<b>⏳ ").append(durationStr.replace(" | ", "")).append("</b>")
+                                .append(" &nbsp;|&nbsp; ")
+                                .append(fpsStr)
+                                .append("</div></div>");
                         listHtml.append("</div>");
                     }
                 }

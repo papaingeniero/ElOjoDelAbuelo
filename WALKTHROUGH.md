@@ -270,3 +270,13 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - Metadata appears under the filename (e.g., `1.2 MB | 15s`).
     - Clicking a video dims the card permanently for that session.
 
+### Phase 22: Human-Readable Metadata (v3.0.9)
+- **Problem**: Raw filenames (`video_20260112_...`) were hard to read instantly. Metadata was too gray/dim.
+- **Solution**:
+    - **Parsing**: Extracted Date (`DD/MM/YYYY`) and Time (`HH:mm:ss`) from filenames.
+    - **Styling**: Increased contrast and added bold weight to Size/Duration.
+    - **Layout**: Separated Date/Time (Title) from tech specs (Subtitle).
+- **Verification**:
+    - List items show: `📅 12/01/2026 ⏰ 21:30:00`.
+    - Tech details are **Bold** and easier to read against the dark background.
+
