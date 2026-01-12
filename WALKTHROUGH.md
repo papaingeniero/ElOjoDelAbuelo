@@ -247,3 +247,15 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - **Defaults**: Set Zoom 2.0x, open video -> Video starts magnified.
     - **Cleanup**: "Delete All" correctly wipes the directory and refreshes the list to empty.
 
+### Phase 20: Live View Calibration HUD (v3.0.6)
+- **Problem**: Finding the perfect "Default Pan/Zoom" values blindly was difficult.
+- **Solution**: Added a real-time HUD (Head-Up Display) overlay in the top-left corner of the video player.
+- **Functionality**:
+    - Shows: `ZOOM: 1.2x | X: -45 | Y: 120`.
+    - Updates instantly as you pinch or drag.
+    - Allows precise calibration: Open video -> Adjust view -> Note numbers -> Enter in Settings -> Save.
+- **Verification**:
+    - Open video: Green text appears.
+    - Pinch/Drag: Numbers update fluidly.
+    - Reset: Numbers return to 1.0x / 0 / 0.
+

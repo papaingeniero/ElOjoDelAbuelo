@@ -591,7 +591,9 @@ public class NanoHttpServer {
                 "     <span id='video-title'>Video</span>\n" +
                 "     <button class='btn-close' onclick='closePlayer()'>❌</button>\n" +
                 "  </div>\n" +
-                "  <div id='canvas-container'>\n" +
+                "  <div id='canvas-container' style='position:relative;'>\n" +
+                "     <div id='hud-stats' style='position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:#0f0; padding:4px 8px; font-family:monospace; font-size:12px; pointer-events:none; z-index:100; border-radius:4px;'>ZOOM: 1.0x | X: 0 | Y: 0</div>\n"
+                +
                 "     <img id='video-player'>\n" +
                 "  </div>\n" +
                 "  <div class='controls'>\n" +
@@ -834,6 +836,9 @@ public class NanoHttpServer {
                 "    var t = 'translate(' + mat.x + 'px, ' + mat.y + 'px) scale(' + mat.s + ')';\n" +
                 "    playerImg.style.transform = t;\n" +
                 "    playerImg.style.webkitTransform = t;\n" +
+                "    var hud = document.getElementById('hud-stats');\n" +
+                "    if(hud) hud.textContent = 'ZOOM: ' + mat.s.toFixed(1) + 'x | X: ' + Math.round(mat.x) + ' | Y: ' + Math.round(mat.y);\n"
+                +
                 "}\n" +
                 "\n" +
                 "// Helpers (ES3 Safe)\n" +
