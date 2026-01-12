@@ -259,3 +259,14 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - Pinch/Drag: Numbers update fluidly.
     - Reset: Numbers return to 1.0x / 0 / 0.
 
+### Phase 21: UX Improvements (v3.0.8)
+- **Problem**: Hard to distinguish viewed videos and missing critical info like duration/size.
+- **Solution**:
+    - **Visual Indicator**: Videos fade/dim (`opacity 0.6`) after being clicked in the current session.
+    - **Metadata**: Each card now displays File Size (MB) and Estimated Duration (s).
+- **Functionality**:
+    - Duration is calculated mathematically (File Modified Time - Filename Timestamp), avoiding slow file opening.
+- **Verification**:
+    - Metadata appears under the filename (e.g., `1.2 MB | 15s`).
+    - Clicking a video dims the card permanently for that session.
+

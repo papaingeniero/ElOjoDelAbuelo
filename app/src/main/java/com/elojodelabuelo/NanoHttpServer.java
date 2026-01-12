@@ -474,8 +474,34 @@ public class NanoHttpServer {
                             listHtml.append("<div class='icon'>📼</div>");
                         }
 
-                        listHtml.append("<div class='info'><b>").append(f.getName()).append("</b><br>").append(sizeKb)
-                                .append(" KB</div>");
+                        // Phase 21: Metadata (Size & Duration)
+                        String sizeStr;
+                        if (f.length() > 1024 * 1024) {
+                            sizeStr = String.format(Locale.US, "%.1f MB", f.length() / (1024.0 * 1024.0));
+                        } else {
+                            sizeStr = (f.length() / 1024) + " KB";
+                        }
+
+                        String durationStr = "";
+                        try {
+                            // Extract creation timestamp from filename: video_yyyyMMdd_HHmmss
+                            if (timestamp.length() >= 15) {
+                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss",
+                                        Locale.US);
+                                java.util.Date creationDate = sdf.parse(timestamp);
+                                long durationMs = f.lastModified() - creationDate.getTime();
+                                if (durationMs > 0) {
+                                    durationStr = " | " + (durationMs / 1000) + "s";
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Ignore date parse errors
+                        }
+
+                        listHtml.append("<div class='info'><b>").append(f.getName()).append("</b><br>")
+                                .append("<span style='color:#aaa; font-size:12px;'>")
+                                .append(sizeStr).append(durationStr)
+                                .append("</span></div>");
                         listHtml.append("</div>");
                     }
                 }
@@ -523,7 +549,9 @@ public class NanoHttpServer {
                 +
                 ".section-title { font-size: 0.9em; text-transform: uppercase; color: #888; margin-bottom: 10px; letter-spacing: 1px; }\n"
                 +
-                ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 15px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s; }\n"
+                ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 15px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s, opacity 0.5s, filter 0.5s; }\n"
+                +
+                ".video-item.watched { opacity: 0.5; filter: grayscale(100%); }\n"
                 +
                 ".video-item:active { transform: scale(0.98); background: #3d3d3d; }\n" +
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
@@ -693,6 +721,15 @@ public class NanoHttpServer {
                 "var appSettings = { defZoom: 1.0, defPanX: 0, defPanY: 0 };\n" +
                 "\n" +
                 "function playVideo(file) {\n" +
+                "  // Phase 21: Mark as watched (Visual Indicator)\n" +
+                "  var items = document.getElementsByClassName('video-item');\n" +
+                "  for(var i=0; i<items.length; i++) {\n" +
+                "     if(items[i].getAttribute('onclick').indexOf(file) !== -1) {\n" +
+                "         items[i].classList.add('watched');\n" +
+                "         break;\n" +
+                "     }\n" +
+                "  }\n" +
+                "  \n" +
                 "  document.getElementById('player-modal').style.display = 'flex';\n" +
                 "  document.getElementById('video-title').textContent = file;\n" +
                 "  frames = [];\n" +
