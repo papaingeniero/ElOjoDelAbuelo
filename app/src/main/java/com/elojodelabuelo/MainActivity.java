@@ -48,14 +48,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         try {
             // Phase 26: Active Monitor - Wake & Brightness
             Window window = getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            // window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+            // WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+            // WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+            // WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-            WindowManager.LayoutParams layoutParams = window.getAttributes();
-            layoutParams.screenBrightness = 1.0f; // Max Brightness
-            window.setAttributes(layoutParams);
+            // WindowManager.LayoutParams layoutParams = window.getAttributes();
+            // layoutParams.screenBrightness = 1.0f; // Max Brightness
+            // window.setAttributes(layoutParams);
 
             setContentView(R.layout.activity_main);
 
