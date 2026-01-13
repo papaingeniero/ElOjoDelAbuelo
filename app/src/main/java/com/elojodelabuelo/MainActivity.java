@@ -45,48 +45,61 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            // Phase 26: Active Monitor - Wake & Brightness
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // Phase 26: Active Monitor - Wake & Brightness
-        Window window = getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            WindowManager.LayoutParams layoutParams = window.getAttributes();
+            layoutParams.screenBrightness = 1.0f; // Max Brightness
+            window.setAttributes(layoutParams);
 
-        WindowManager.LayoutParams layoutParams = window.getAttributes();
-        layoutParams.screenBrightness = 1.0f; // Max Brightness
-        window.setAttributes(layoutParams);
+            setContentView(R.layout.activity_main);
 
-        setContentView(R.layout.activity_main);
+            monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
+            monitorView.getHolder().addCallback(this);
 
-        monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
-        monitorView.getHolder().addCallback(this);
+            Button btnActivate = (Button) findViewById(R.id.btn_activate);
+            Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
 
-        Button btnActivate = (Button) findViewById(R.id.btn_activate);
-        Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
+            // Phase 9: Auto-start Surveillance on Launch
+            Intent autoStartIntent = new Intent(this, SentinelService.class);
+            startService(autoStartIntent);
+            Toast.makeText(this, "Auto-Iniciando Vigilancia...", Toast.LENGTH_SHORT).show();
 
-        // Phase 9: Auto-start Surveillance on Launch
-        Intent autoStartIntent = new Intent(this, SentinelService.class);
-        startService(autoStartIntent);
-        Toast.makeText(this, "Auto-Iniciando Vigilancia...", Toast.LENGTH_SHORT).show();
+            btnActivate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        Intent intent = new Intent(MainActivity.this, SentinelService.class);
+                        startService(intent);
+                        Toast.makeText(MainActivity.this, "Servicio Iniciado", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Error btnStart: " + e.getMessage(), Toast.LENGTH_LONG)
+                                .show();
+                    }
+                }
+            });
 
-        btnActivate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SentinelService.class);
-                startService(intent);
-                Toast.makeText(MainActivity.this, "Servicio Iniciado", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        btnDeactivate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SentinelService.class);
-                stopService(intent);
-                Toast.makeText(MainActivity.this, "Servicio Detenido", Toast.LENGTH_SHORT).show();
-            }
-        });
+            btnDeactivate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        Intent intent = new Intent(MainActivity.this, SentinelService.class);
+                        stopService(intent);
+                        Toast.makeText(MainActivity.this, "Servicio Detenido", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Error btnStop: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error onCreate: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -114,24 +127,29 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onResume() {
         super.onResume();
-        // Phase 26: Apply Digital Zoom to SurfaceView Layout
-        if (monitorView != null) {
-            SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
-            float zoom = prefs.getFloat("defaultZoom", 1.0f);
-            int panX = prefs.getInt("defaultPanX", 0);
-            int panY = prefs.getInt("defaultPanY", 0);
+        try {
+            // Phase 26: Apply Digital Zoom to SurfaceView Layout
+            if (monitorView != null) {
+                SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
+                float zoom = prefs.getFloat("defaultZoom", 1.0f);
+                int panX = prefs.getInt("defaultPanX", 0);
+                int panY = prefs.getInt("defaultPanY", 0);
 
-            DisplayMetrics metrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-            int width = (int) (metrics.widthPixels * zoom);
-            int height = (int) (metrics.heightPixels * zoom);
+                int width = (int) (metrics.widthPixels * zoom);
+                int height = (int) (metrics.heightPixels * zoom);
 
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-            params.leftMargin = -panX;
-            params.topMargin = -panY;
-            params.gravity = android.view.Gravity.CENTER; // Center first, then offset
-            monitorView.setLayoutParams(params);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                params.leftMargin = -panX;
+                params.topMargin = -panY;
+                params.gravity = android.view.Gravity.CENTER; // Center first, then offset
+                monitorView.setLayoutParams(params);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error onResume: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
