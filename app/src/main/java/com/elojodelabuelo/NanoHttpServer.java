@@ -177,6 +177,15 @@ public class NanoHttpServer {
                     serveLatestVideoMeta(os);
                 } else if (uri.startsWith("/wait_status")) {
                     serveWaitStatus(os, uri);
+                } else if (uri.equals("/api/debug")) {
+                    StringBuilder sb = new StringBuilder();
+                    if (SentinelService.debugLogs != null) {
+                        for (String s : SentinelService.debugLogs) {
+                            sb.append(s).append("\n");
+                        }
+                    }
+                    String response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n" + sb.toString();
+                    os.write(response.getBytes());
                 } else {
                     serveDashboard(os);
                 }
@@ -435,6 +444,7 @@ public class NanoHttpServer {
         private void send404(OutputStream os) throws IOException {
             os.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
         }
+
     }
 
     private String generateDashboardHtml() {

@@ -31,8 +31,18 @@ import android.os.StatFs;
 import java.util.Arrays;
 import java.util.Comparator;
 import android.view.SurfaceHolder; // For Zero-Copy
+import java.util.ArrayList;
+import java.util.List;
 
 public class SentinelService extends Service {
+
+    public static List<String> debugLogs = new ArrayList<String>();
+
+    public static void logToWeb(String msg) {
+        debugLogs.add(System.currentTimeMillis() + ": " + msg);
+        if (debugLogs.size() > 50)
+            debugLogs.remove(0);
+    }
 
     private static final String TAG = "Sentinel";
     private static SentinelService instance;

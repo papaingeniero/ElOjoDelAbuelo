@@ -45,6 +45,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SentinelService.logToWeb("MainActivity: onCreate START");
         try {
             // Phase 26: Active Monitor - Wake & Brightness
             Window window = getWindow();
@@ -58,6 +59,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             // window.setAttributes(layoutParams);
 
             setContentView(R.layout.activity_main);
+            SentinelService.logToWeb("MainActivity: setContentView SUCCESS");
 
             monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
             monitorView.getHolder().addCallback(this);
@@ -105,6 +107,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onStart() {
         super.onStart();
+        SentinelService.logToWeb("MainActivity: onStart START");
         try {
             Intent intent = new Intent(this, SentinelService.class);
             // Fix: Use BIND_AUTO_CREATE to ensure service creation and binding
@@ -127,9 +130,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onResume() {
         super.onResume();
+        SentinelService.logToWeb("MainActivity: onResume START");
         try {
             // Phase 26: Apply Digital Zoom to SurfaceView Layout
             if (monitorView != null) {
+                SentinelService.logToWeb("MainActivity: onResume CONFIG SURFACE");
                 SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
                 float zoom = prefs.getFloat("defaultZoom", 1.0f);
                 int panX = prefs.getInt("defaultPanX", 0);
