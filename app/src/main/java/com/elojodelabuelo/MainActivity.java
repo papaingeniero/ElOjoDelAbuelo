@@ -1,6 +1,7 @@
 package com.elojodelabuelo;
 
 import android.app.Activity;
+import android.content.Context; // Added for BIND_AUTO_CREATE
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -91,8 +92,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onStart() {
         super.onStart();
-        Intent intent = new Intent(this, SentinelService.class);
-        bindService(intent, connection, 0); // 0 = Don't auto-create, must be started by btn
+        try {
+            Intent intent = new Intent(this, SentinelService.class);
+            // Fix: Use BIND_AUTO_CREATE to ensure service creation and binding
+            bindService(intent, connection, BIND_AUTO_CREATE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error binding service: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

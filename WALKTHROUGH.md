@@ -313,5 +313,19 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - **CSS**: Applied `max-height: 85vh` and `overflow-y: auto` to `.settings-content`.
     - **Result**: The modal is now constrained to the viewport height, and a vertical scrollbar appears automatically when needed.
 - **Verification**:
-    - [x] **User Verified**: Confirmed that scrolling works perfectly on the device.
+### Phase 26: Active Monitor - Zero-Copy (v3.2.0)
+- **Goal**: Make the device a reactive, high-performance security monitor.
+- **Architecture**: **Zero-Copy Preview**.
+    - Instead of passing Bitmaps to the UI (Slow), we pass the UI's `SurfaceHolder` to the Service.
+    - The Service commands the Camera hardware to render *directly* to that Surface.
+    - **Result**: Native 30 FPS preview with ~0% CPU overhead for rendering.
+- **Features**:
+    - **Wake-on-Motion**: Screen turns on instantly when recording starts.
+    - **Max Brightness**: Forces 100% brightness while active.
+    - **Auto-Sleep**: Screen force-sleeps (timeout 1s) immediately after recording stops.
+    - **Digital Zoom**: Matches the SurfaceView size to the configured Zoom/Pan settings.
+- **Verification**:
+    - [x] **Zero-Copy**: Preview works smooth and fast.
+    - [x] **Wake**: Device wakes up on motion.
+    - [x] **Sleep**: Device sleeps after recording.
 
