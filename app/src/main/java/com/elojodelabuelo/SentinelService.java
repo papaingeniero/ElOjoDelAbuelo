@@ -15,6 +15,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.Binder; // For Zero-Copy Binding
+import android.provider.Settings; // For Screen Off Logic
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -28,12 +30,22 @@ import android.content.SharedPreferences;
 import android.os.StatFs;
 import java.util.Arrays;
 import java.util.Comparator;
+import android.view.SurfaceHolder; // For Zero-Copy
 
 public class SentinelService extends Service {
 
     private static final String TAG = "Sentinel";
     private static SentinelService instance;
     private static final int NOTIFICATION_ID = 1;
+
+    // Binder for Zero-Copy
+    private final IBinder binder = new LocalBinder();
+
+    public class LocalBinder extends Binder {
+        SentinelService getService() {
+            return SentinelService.this;
+        }
+    }
 
     private PowerManager.WakeLock wakeLock;
     private Camera camera;
@@ -129,10 +141,11 @@ public class SentinelService extends Service {
         if (currentThreshold > 50000)
             currentThreshold = 50000;
 
-        // 1. WakeLock
+        // 1. WakeLock (Bright for Active Monitor)
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ElOjoDelAbuelo:SentinelLock");
-        wakeLock.acquire();
+        // Phase 26: SCREEN_BRIGHT_WAKE_LOCK | ACQUIRE_CAUSES_WAKEUP
+        wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "ElOjoDelAbuelo:ActiveMonitor");
 
         // 2. Foreground Service
         instance = this;
@@ -328,7 +341,14 @@ public class SentinelService extends Service {
                             statusLock.notifyAll();
                         }
                         updateNotification(true);
+                        updateNotification(true);
                         openNewRecordingFile();
+
+                        // Phase 26: Active Monitor - Wake Screen
+                        if (!wakeLock.isHeld()) {
+                            wakeLock.acquire();
+                            Log.d(TAG, "Motion Detected! Waking Screen...");
+                        }
                     }
                 }
 
@@ -357,7 +377,15 @@ public class SentinelService extends Service {
                         statusLock.notifyAll();
                     }
                     updateNotification(false);
+                    updateNotification(false);
                     closeRecordingFile();
+
+                    // Phase 26: Active Monitor - Sleep Screen
+                    if (wakeLock.isHeld()) {
+                        wakeLock.release();
+                        Log.d(TAG, "Recording Finished. Sleeping Screen...");
+                    }
+                    forceScreenOff();
                 }
             } // End
               // of
@@ -663,7 +691,53 @@ public class SentinelService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
+    }
+
+    // Zero-Copy Surface Management
+    public void attachSurface(SurfaceHolder holder) {
+        if (camera != null) {
+            try {
+                camera.stopPreview();
+                camera.setPreviewDisplay(holder);
+                camera.startPreview();
+                Log.d(TAG, "Zero-Copy: Surface ATTACHED. Direct Preview Active.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void detachSurface() {
+        if (camera != null && dummySurface != null) {
+            try {
+                camera.stopPreview();
+                camera.setPreviewTexture(dummySurface);
+                camera.startPreview();
+                Log.d(TAG, "Zero-Copy: Surface DETACHED. Background Preview Restored.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void forceScreenOff() {
+        try {
+            // Android 2.3 Hack: Set timeout to 1s to force sleep
+            final int originalTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT,
+                    60000);
+            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, 1000);
+
+            // Restore functionality after 3s (enough to sleep)
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, originalTimeout);
+                }
+            }, 3000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

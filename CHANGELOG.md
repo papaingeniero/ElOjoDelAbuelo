@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.2.0] - 2026-01-13
+### Added
+- **Active Monitor**: The device now wakes up instantly when motion is detected.
+- **Max Brightness**: Screen brightness is forced to 100% during recording for clear monitoring.
+- **Zero-Copy Preview**: Implemented Hardware-Direct video preview for consistent 30 FPS without CPU overhead.
+- **Auto-Sleep**: Screen turns off automatically 1 second after recording stops to save battery.
+
 ## [v3.1.1] - 2026-01-13
 ### Changed
 - **UX**: Detailed Settings Modal now has vertical scrolling (`max-height: 85vh`), improving usability on small screens.
