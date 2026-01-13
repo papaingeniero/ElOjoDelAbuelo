@@ -61,8 +61,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             setContentView(R.layout.activity_main);
             SentinelService.logToWeb("MainActivity: setContentView SUCCESS");
 
-            monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
-            monitorView.getHolder().addCallback(this);
+            // monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
+            // monitorView.getHolder().addCallback(this);
+            SentinelService.logToWeb("MainActivity: SurfaceView SKIPPED (DEBUGGING)");
 
             Button btnActivate = (Button) findViewById(R.id.btn_activate);
             Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
