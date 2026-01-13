@@ -1,22 +1,21 @@
 package com.elojodelabuelo;
 
 import android.app.Activity;
-import android.content.Context; // Added for BIND_AUTO_CREATE
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
+import android.os.IBinder;
+import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
-import android.content.ComponentName;
-import android.content.ServiceConnection;
-import android.os.IBinder;
-import android.content.SharedPreferences;
-import android.util.DisplayMetrics;
 
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
@@ -30,9 +29,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             SentinelService.LocalBinder localBinder = (SentinelService.LocalBinder) binder;
             service = localBinder.getService();
             isBound = true;
-            // If surface is already ready, attach it now
+            // If surface is already ready (and lazy loaded), attach it now
             if (monitorView != null && monitorView.getHolder().getSurface().isValid()) {
-                service.attachSurface(monitorView.getHolder());
+                try {
+                    service.attachSurface(monitorView.getHolder());
+                } catch (Exception e) {
+                    SentinelService.logToWeb("MainActivity: Auto-Attach Error: " + e.getMessage());
+                }
             }
         }
 
@@ -47,27 +50,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onCreate(savedInstanceState);
         SentinelService.logToWeb("MainActivity: onCreate START");
         try {
-            // Phase 26: Active Monitor - Wake & Brightness
-            Window window = getWindow();
+            // Window flags commented out for debugging stability
+            // Window window = getWindow();
             // window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
             // WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
             // WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
             // WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-            // WindowManager.LayoutParams layoutParams = window.getAttributes();
-            // layoutParams.screenBrightness = 1.0f; // Max Brightness
-            // window.setAttributes(layoutParams);
-
             setContentView(R.layout.activity_main);
             SentinelService.logToWeb("MainActivity: setContentView SUCCESS");
 
-            monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
-            monitorView.getHolder().addCallback(this);
-            // SentinelService.logToWeb("MainActivity: SurfaceView SKIPPED (DEBUGGING)");
-            SentinelService.logToWeb("MainActivity: SurfaceView INIT SUCCESS");
+            // monitorView is NOT initialized here. Lazy loading strategy.
+            SentinelService.logToWeb("MainActivity: SurfaceView SKIPPED (LAZY LOADING)");
 
             Button btnActivate = (Button) findViewById(R.id.btn_activate);
-
             Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
             Button btnConnectVideo = (Button) findViewById(R.id.btn_connect_video); // DEBUG
 
@@ -103,23 +99,45 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 }
             });
 
-            // DEBUG: Manual Video Connect
+            // DEBUG: Manual Video Connect (Lazy Load)
             btnConnectVideo.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     try {
-                        if (isBound && service != null && monitorView != null) {
-                            SentinelService.logToWeb("MainActivity: Manual Connect Triggered");
-                            service.attachSurface(monitorView.getHolder());
-                            Toast.makeText(MainActivity.this, "Conectando Video...", Toast.LENGTH_SHORT).show();
+                        SentinelService.logToWeb("MainActivity: Manual Connect Triggered");
+
+                        // Initialize SurfaceView Programmatically
+                        if (monitorView == null) {
+                            FrameLayout container = (FrameLayout) findViewById(R.id.monitor_container);
+                            if (container != null) {
+                                monitorView = new SurfaceView(MainActivity.this);
+                                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                        FrameLayout.LayoutParams.MATCH_PARENT,
+                                        FrameLayout.LayoutParams.MATCH_PARENT);
+                                monitorView.setLayoutParams(params);
+                                monitorView.getHolder().addCallback(MainActivity.this);
+                                container.addView(monitorView, 0); // Add at index 0 (behind buttons)
+                                SentinelService.logToWeb("MainActivity: Lazy SurfaceView Added");
+                                Toast.makeText(MainActivity.this, "Creando Superficie...", Toast.LENGTH_SHORT).show();
+                            } else {
+                                SentinelService.logToWeb("MainActivity: Fatal - Container not found");
+                            }
                         } else {
-                            Toast.makeText(MainActivity.this, "Servicio no conectado", Toast.LENGTH_SHORT).show();
+                            // If already added, just try to attach
+                            if (isBound && service != null) {
+                                service.attachSurface(monitorView.getHolder());
+                                Toast.makeText(MainActivity.this, "Re-conectando...", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(MainActivity.this, "Servicio no conectado", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     } catch (Exception e) {
                         SentinelService.logToWeb("MainActivity: Manual Connect ERROR: " + e.getMessage());
+                        e.printStackTrace();
                     }
                 }
             });
+
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error onCreate: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -132,8 +150,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         SentinelService.logToWeb("MainActivity: onStart START");
         try {
             Intent intent = new Intent(getApplicationContext(), SentinelService.class);
-            boolean result = getApplicationContext().bindService(intent, connection,
-                    BIND_AUTO_CREATE);
+            boolean result = getApplicationContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
             SentinelService.logToWeb("MainActivity: bindService CALLED. Result: " + result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,7 +189,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
                 params.leftMargin = -panX;
                 params.topMargin = -panY;
-                params.gravity = android.view.Gravity.CENTER; // Center first, then offset
+                params.gravity = android.view.Gravity.CENTER;
                 monitorView.setLayoutParams(params);
             }
         } catch (Exception e) {
@@ -187,8 +204,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         SentinelService.logToWeb("MainActivity: surfaceCreated");
         try {
             if (isBound && service != null) {
-                // service.attachSurface(holder); // DISABLED for debug12 - Manual Only
-                SentinelService.logToWeb("MainActivity: surfaceCreated (WAITING FOR MANUAL TRIGGER)");
+                service.attachSurface(holder);
+                SentinelService.logToWeb("MainActivity: surfaceCreated ATTACHED");
             }
         } catch (Exception e) {
             SentinelService.logToWeb("MainActivity: surfaceCreated ERROR: " + e.getMessage());
