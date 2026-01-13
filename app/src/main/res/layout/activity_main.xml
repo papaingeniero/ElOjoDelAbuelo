@@ -5,11 +5,13 @@
     android:background="#000000">
 
     <!-- Zero-Copy Monitor Surface -->
-    <!-- SurfaceView Removed for Lazy Loading (v3.2.1-debug13) -->
-    <FrameLayout
-        android:id="@+id/monitor_container"
+    <!-- Software Preview (Pseudo Zero-Copy) -->
+    <ImageView
+        android:id="@+id/camera_preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:background="#000000" />
 
     <!-- Overlay UI -->
     <LinearLayout

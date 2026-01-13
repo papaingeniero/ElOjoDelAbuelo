@@ -6,22 +6,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements SurfaceHolder.Callback {
+public class MainActivity extends Activity implements SentinelService.UiPreviewCallback {
 
     private SentinelService service;
     private boolean isBound = false;
-    private SurfaceView monitorView;
+    private ImageView previewImage;
+    private Bitmap currentBitmap;
+    private long lastFrameTime = 0;
+
+    // FPS Throttling for UI (15 FPS max)
+    private static final long MIN_FRAME_INTERVAL_MS = 66;
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -29,137 +36,159 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             SentinelService.LocalBinder localBinder = (SentinelService.LocalBinder) binder;
             service = localBinder.getService();
             isBound = true;
-            // If surface is already ready (and lazy loaded), attach it now
-            if (monitorView != null && monitorView.getHolder().getSurface().isValid()) {
-                try {
-                    service.attachSurface(monitorView.getHolder());
-                } catch (Exception e) {
-                    SentinelService.logToWeb("MainActivity: Auto-Attach Error: " + e.getMessage());
-                }
-            }
+            SentinelService.setUiCallback(MainActivity.this); // Register for frames
+            SentinelService.logToWeb("MainActivity: Registered UiPreviewCallback");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             isBound = false;
+            SentinelService.setUiCallback(null);
         }
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SentinelService.logToWeb("MainActivity: onCreate START");
+
+        // Window Flags for Wake & Brightness (Active Monitor)
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        setContentView(R.layout.activity_main);
+
+        previewImage = (ImageView) findViewById(R.id.camera_preview);
+        previewImage.setVisibility(View.INVISIBLE); // Hidden until connected
+
+        Button btnActivate = (Button) findViewById(R.id.btn_activate);
+        Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
+        Button btnConnectVideo = (Button) findViewById(R.id.btn_connect_video);
+
+        // Auto-start Service
+        Intent autoStartIntent = new Intent(this, SentinelService.class);
+        startService(autoStartIntent);
+
+        btnActivate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    startService(new Intent(MainActivity.this, SentinelService.class));
+                    Toast.makeText(MainActivity.this, "Servicio Iniciado", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                }
+            }
+        });
+
+        btnDeactivate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    stopService(new Intent(MainActivity.this, SentinelService.class));
+                    Toast.makeText(MainActivity.this, "Servicio Detenido", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                }
+            }
+        });
+
+        // Toggle Video Visibility
+        btnConnectVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (previewImage.getVisibility() == View.VISIBLE) {
+                    previewImage.setVisibility(View.INVISIBLE);
+                    SentinelService.logToWeb("MainActivity: Preview HIDDEN");
+                } else {
+                    applyZoomAndPan(); // Apply layout params before showing
+                    previewImage.setVisibility(View.VISIBLE);
+                    SentinelService.logToWeb("MainActivity: Preview SHOWN");
+                }
+            }
+        });
+    }
+
+    private void applyZoomAndPan() {
         try {
-            // Window flags commented out for debugging stability
-            // Window window = getWindow();
-            // window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-            // WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-            // WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-            // WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
+            float zoom = prefs.getFloat("defaultZoom", 1.0f);
+            int panX = prefs.getInt("defaultPanX", 0);
+            int panY = prefs.getInt("defaultPanY", 0);
 
-            setContentView(R.layout.activity_main);
-            SentinelService.logToWeb("MainActivity: setContentView SUCCESS");
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-            // monitorView is NOT initialized here. Lazy loading strategy.
-            SentinelService.logToWeb("MainActivity: SurfaceView SKIPPED (LAZY LOADING)");
+            int width = (int) (metrics.widthPixels * zoom);
+            int height = (int) (metrics.heightPixels * zoom);
 
-            Button btnActivate = (Button) findViewById(R.id.btn_activate);
-            Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
-            Button btnConnectVideo = (Button) findViewById(R.id.btn_connect_video); // DEBUG
+            // Use FrameLayout.LayoutParams because standard ImageView is usually within one
+            // (or root)
+            // Root is FrameLayout in activity_main.xml
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
 
-            // Phase 9: Auto-start Surveillance on Launch
-            Intent autoStartIntent = new Intent(this, SentinelService.class);
-            startService(autoStartIntent);
-            Toast.makeText(this, "Auto-Iniciando Vigilancia...", Toast.LENGTH_SHORT).show();
+            // Center gravity, then offset with margins
+            params.gravity = android.view.Gravity.CENTER;
+            params.leftMargin = -panX;
+            params.topMargin = -panY;
 
-            btnActivate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        Intent intent = new Intent(MainActivity.this, SentinelService.class);
-                        startService(intent);
-                        Toast.makeText(MainActivity.this, "Servicio Iniciado", Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error btnStart: " + e.getMessage(), Toast.LENGTH_LONG)
-                                .show();
-                    }
-                }
-            });
-
-            btnDeactivate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        Intent intent = new Intent(MainActivity.this, SentinelService.class);
-                        stopService(intent);
-                        Toast.makeText(MainActivity.this, "Servicio Detenido", Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error btnStop: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-
-            // DEBUG: Manual Video Connect (Lazy Load)
-            btnConnectVideo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        SentinelService.logToWeb("MainActivity: Manual Connect Triggered");
-
-                        // Initialize SurfaceView Programmatically
-                        if (monitorView == null) {
-                            FrameLayout container = (FrameLayout) findViewById(R.id.monitor_container);
-                            if (container != null) {
-                                monitorView = new SurfaceView(MainActivity.this);
-                                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.MATCH_PARENT,
-                                        FrameLayout.LayoutParams.MATCH_PARENT);
-                                monitorView.setLayoutParams(params);
-                                monitorView.getHolder().addCallback(MainActivity.this);
-
-                                // ANDROID 2.3 LEGACY MAGIC
-                                monitorView.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-                                monitorView.setZOrderMediaOverlay(true);
-
-                                container.addView(monitorView, 0); // Add at index 0 (behind buttons)
-                                SentinelService.logToWeb("MainActivity: Lazy SurfaceView Added (PUSH_BUFFERS)");
-                                Toast.makeText(MainActivity.this, "Creando Superficie...", Toast.LENGTH_SHORT).show();
-                            } else {
-                                SentinelService.logToWeb("MainActivity: Fatal - Container not found");
-                            }
-                        } else {
-                            // If already added, just try to attach
-                            if (isBound && service != null) {
-                                service.attachSurface(monitorView.getHolder());
-                                Toast.makeText(MainActivity.this, "Re-conectando...", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(MainActivity.this, "Servicio no conectado", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } catch (Exception e) {
-                        SentinelService.logToWeb("MainActivity: Manual Connect ERROR: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-            });
-
+            previewImage.setLayoutParams(params);
+            SentinelService.logToWeb("MainActivity: Zoom Applied: " + zoom + "x");
         } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error onCreate: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            SentinelService.logToWeb("Error applying zoom: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void onFrame(final byte[] jpegData) {
+        // Run on UI Thread to update Image
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // 1. Check Visibility & Throttling
+                    if (previewImage.getVisibility() != View.VISIBLE)
+                        return;
+
+                    long now = System.currentTimeMillis();
+                    if (now - lastFrameTime < MIN_FRAME_INTERVAL_MS)
+                        return; // Skip frame
+                    lastFrameTime = now;
+
+                    // 2. Decode Bitmap
+                    // Only decode if we have valid data
+                    if (jpegData != null && jpegData.length > 0) {
+                        Bitmap nextBitmap = BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
+
+                        if (nextBitmap != null) {
+                            // 3. Set new Bitmap
+                            previewImage.setImageBitmap(nextBitmap);
+
+                            // 4. Recycle OLD Bitmap (Memory Safety)
+                            if (currentBitmap != null && currentBitmap != nextBitmap && !currentBitmap.isRecycled()) {
+                                currentBitmap.recycle();
+                            }
+                            currentBitmap = nextBitmap;
+                        }
+                    }
+                } catch (OutOfMemoryError oom) {
+                    System.gc(); // Panic GC
+                    SentinelService.logToWeb("MainActivity: OOM Error!");
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        SentinelService.logToWeb("MainActivity: onStart START");
         try {
             Intent intent = new Intent(getApplicationContext(), SentinelService.class);
-            boolean result = getApplicationContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
-            SentinelService.logToWeb("MainActivity: bindService CALLED. Result: " + result);
+            getApplicationContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error binding service: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -169,68 +198,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (isBound) {
             getApplicationContext().unbindService(connection);
             isBound = false;
+            SentinelService.setUiCallback(null);
+        }
+        // Cleanup on stop
+        if (currentBitmap != null && !currentBitmap.isRecycled()) {
+            currentBitmap.recycle();
+            currentBitmap = null;
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        SentinelService.logToWeb("MainActivity: onResume START");
-        try {
-            // Phase 26: Apply Digital Zoom to SurfaceView Layout
-            if (monitorView != null) {
-                SentinelService.logToWeb("MainActivity: onResume CONFIG SURFACE");
-                SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
-                float zoom = prefs.getFloat("defaultZoom", 1.0f);
-                int panX = prefs.getInt("defaultPanX", 0);
-                int panY = prefs.getInt("defaultPanY", 0);
-
-                DisplayMetrics metrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-                int width = (int) (metrics.widthPixels * zoom);
-                int height = (int) (metrics.heightPixels * zoom);
-
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                params.leftMargin = -panX;
-                params.topMargin = -panY;
-                params.gravity = android.view.Gravity.CENTER;
-                monitorView.setLayoutParams(params);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error onResume: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    // Surface Callbacks for Zero-Copy
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        SentinelService.logToWeb("MainActivity: surfaceCreated");
-        try {
-            if (isBound && service != null) {
-                service.attachSurface(holder);
-                SentinelService.logToWeb("MainActivity: surfaceCreated ATTACHED");
-            }
-        } catch (Exception e) {
-            SentinelService.logToWeb("MainActivity: surfaceCreated ERROR: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // Handled by Service
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        try {
-            if (isBound && service != null) {
-                service.detachSurface();
-                SentinelService.logToWeb("MainActivity: surfaceDestroyed DETACHED");
-            }
-        } catch (Exception e) {
-            SentinelService.logToWeb("MainActivity: surfaceDestroyed ERROR: " + e.getMessage());
+        if (previewImage.getVisibility() == View.VISIBLE) {
+            applyZoomAndPan();
         }
     }
 }

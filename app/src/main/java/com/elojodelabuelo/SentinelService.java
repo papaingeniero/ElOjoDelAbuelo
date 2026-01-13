@@ -57,6 +57,17 @@ public class SentinelService extends Service {
         }
     }
 
+    // Interface for Software Preview (Pseudo Zero-Copy)
+    public interface UiPreviewCallback {
+        void onFrame(byte[] jpegData);
+    }
+
+    private static UiPreviewCallback uiPreviewCallback;
+
+    public static void setUiCallback(UiPreviewCallback cb) {
+        uiPreviewCallback = cb;
+    }
+
     private PowerManager.WakeLock wakeLock;
     private Camera camera;
     private SurfaceTexture dummySurface;
@@ -530,6 +541,15 @@ public class SentinelService extends Service {
                 Log.e(TAG, "Stream broadcast failed: " + e.getMessage());
             }
 
+            // 3. UI Preview (Software "Zero-Copy")
+            if (uiPreviewCallback != null) {
+                try {
+                    uiPreviewCallback.onFrame(jpeg);
+                } catch (Exception e) {
+                    // Ignore UI errors
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -781,27 +801,14 @@ public class SentinelService extends Service {
             camera.release();
             camera = null;
         }
-        if (httpServer != null) {
-            httpServer.stop();
-        }
         if (processingThread != null) {
             processingThread.quit();
         }
-        closeRecordingFile();
+        if (httpServer != null) {
+            httpServer.stop();
+        }
     }
 
-    /**
-     * Updates global configuration settings and persists them.
-     * <p>
-     * If the rotation setting changes, this method triggers a camera restart
-     * to ensure the buffer sizes and logic are re-initialized correctly.
-     * </p>
-     * 
-     * @param sens   Motion sensitivity (0-100)
-     * @param time   Recording timeout in seconds
-     * @param active Detector active state
-     * @param rot    Rotation degree (0 or 180)
-     */
     public static void updateSettings(int sens, int time, boolean active, int rot) {
         motionSensitivity = sens;
         recordingTimeout = time;
@@ -859,6 +866,11 @@ public class SentinelService extends Service {
             editor.putInt("defaultPanY", y);
             editor.apply();
         }
+    }
+
+    // Phase 25: Public Status Accessor
+    public static boolean isServiceRunning() {
+        return instance != null;
     }
 
     public static File getCurrentRecordingFile() {
