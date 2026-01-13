@@ -709,11 +709,25 @@ public class SentinelService extends Service {
         if (camera != null) {
             try {
                 camera.stopPreview();
-                camera.setPreviewDisplay(holder);
-                camera.startPreview();
-                Log.d(TAG, "Zero-Copy: Surface ATTACHED. Direct Preview Active.");
-            } catch (IOException e) {
+                try {
+                    camera.setPreviewDisplay(holder);
+                    camera.startPreview();
+                    SentinelService.logToWeb("Zero-Copy: Surface ATTACHED. Direct Preview Active.");
+                } catch (Exception e) {
+                    SentinelService.logToWeb("Zero-Copy Error: " + e.getMessage());
+                    e.printStackTrace();
+                    try {
+                        // Fallback to dummy surface if real surface fails
+                        camera.setPreviewTexture(dummySurface);
+                        camera.startPreview();
+                        SentinelService.logToWeb("Zero-Copy: Fallback to Dummy Surface.");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            } catch (Exception e) { // Catch IOException and RuntimeException
                 e.printStackTrace();
+                SentinelService.logToWeb("attachSurface FATAL: " + e.getMessage());
             }
         }
     }
@@ -722,11 +736,16 @@ public class SentinelService extends Service {
         if (camera != null && dummySurface != null) {
             try {
                 camera.stopPreview();
-                camera.setPreviewTexture(dummySurface);
-                camera.startPreview();
-                Log.d(TAG, "Zero-Copy: Surface DETACHED. Background Preview Restored.");
-            } catch (IOException e) {
+                try {
+                    camera.setPreviewTexture(dummySurface);
+                    camera.startPreview();
+                    SentinelService.logToWeb("Zero-Copy: Surface DETACHED. Background Preview Restored.");
+                } catch (Exception ex) {
+                    SentinelService.logToWeb("Zero-Copy Detach Error: " + ex.getMessage());
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
+                SentinelService.logToWeb("detachSurface FATAL: " + e.getMessage());
             }
         }
     }
