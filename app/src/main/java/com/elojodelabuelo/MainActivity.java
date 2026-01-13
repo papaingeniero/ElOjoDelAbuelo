@@ -61,9 +61,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             setContentView(R.layout.activity_main);
             SentinelService.logToWeb("MainActivity: setContentView SUCCESS");
 
-            // monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
-            // monitorView.getHolder().addCallback(this);
-            SentinelService.logToWeb("MainActivity: SurfaceView SKIPPED (DEBUGGING)");
+            monitorView = (SurfaceView) findViewById(R.id.camera_monitor);
+            monitorView.getHolder().addCallback(this);
+            // SentinelService.logToWeb("MainActivity: SurfaceView SKIPPED (DEBUGGING)");
+            SentinelService.logToWeb("MainActivity: SurfaceView INIT SUCCESS");
 
             Button btnActivate = (Button) findViewById(R.id.btn_activate);
             Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
@@ -163,8 +164,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     // Surface Callbacks for Zero-Copy
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        if (isBound && service != null) {
-            service.attachSurface(holder);
+        SentinelService.logToWeb("MainActivity: surfaceCreated");
+        try {
+            if (isBound && service != null) {
+                service.attachSurface(holder);
+                SentinelService.logToWeb("MainActivity: surfaceCreated ATTACHED");
+            }
+        } catch (Exception e) {
+            SentinelService.logToWeb("MainActivity: surfaceCreated ERROR: " + e.getMessage());
         }
     }
 
@@ -175,8 +182,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        if (isBound && service != null) {
-            service.detachSurface();
+        try {
+            if (isBound && service != null) {
+                service.detachSurface();
+                SentinelService.logToWeb("MainActivity: surfaceDestroyed DETACHED");
+            }
+        } catch (Exception e) {
+            SentinelService.logToWeb("MainActivity: surfaceDestroyed ERROR: " + e.getMessage());
         }
     }
 }
