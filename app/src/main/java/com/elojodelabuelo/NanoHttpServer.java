@@ -179,7 +179,7 @@ public class NanoHttpServer {
                     serveWaitStatus(os, uri);
                 } else if (uri.equals("/api/debug")) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append("--- DEBUG ONLINE (v3.2.1-debug5) ---\n"); // Header with Version
+                    sb.append("--- DEBUG ONLINE (v3.2.1-debug7) ---\n"); // Header with Version
                     if (SentinelService.debugLogs != null) {
                         for (String s : SentinelService.debugLogs) {
                             sb.append(s).append("\n");
