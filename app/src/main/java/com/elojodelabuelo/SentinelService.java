@@ -210,28 +210,38 @@ public class SentinelService extends Service {
             writeCameraInfoToFile(params);
             // -----------------------------------
 
-            // setupCameraParameters(); // Already called above? No, wait. Order matters.
             setupCameraParameters();
 
             // Calculate buffer size
-            // DEBUG: Disable Buffers for now. Just use standard callback to rule out buffer
-            // size mismatch.
-            /*
-             * int bufferSize = PREVIEW_WIDTH * PREVIEW_HEIGHT *
-             * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
-             * for (int i = 0; i < NUM_BUFFERS; i++) {
-             * camera.addCallbackBuffer(new byte[bufferSize]);
-             * }
-             */
+            int bufferSize = PREVIEW_WIDTH * PREVIEW_HEIGHT * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
+            for (int i = 0; i < NUM_BUFFERS; i++) {
+                camera.addCallbackBuffer(new byte[bufferSize]);
+            }
 
-            dummySurface = new SurfaceTexture(10);
-            camera.setPreviewTexture(dummySurface);
+            // ANDROID 2.3 HACK: Try NULL/Dummy for Preview Display
+            // SurfaceTexture is API 11+. Galaxy S i9000 is API 10.
+            // Using SurfaceTexture on API 10 might be the cause of silent failure.
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= 11) {
+                    dummySurface = new SurfaceTexture(10);
+                    camera.setPreviewTexture(dummySurface);
+                } else {
+                    // For API < 11, strictly we need a SurfaceHolder.
+                    // But some drivers accept null or we rely on the trick that we don't call
+                    // startPreview until we have a surface?
+                    // No, we want background recording.
+                    // Let's try passing NULL first. If it crashes, we know we need a 1x1
+                    // SurfaceView.
+                    camera.setPreviewDisplay(null);
+                }
+            } catch (Exception e) {
+                NanoHttpServer.setLastError("Surface Setup Error: " + e.getMessage());
+                // Swallow and hope
+            }
 
-            // camera.setPreviewCallbackWithBuffer(previewCallback);
-            camera.setPreviewCallback(previewCallback); // FALLBACK: Standard callback (high GC but reliable)
-
+            camera.setPreviewCallbackWithBuffer(previewCallback);
             camera.startPreview();
-            NanoHttpServer.setLastError("Camera Started (Standard Callback)");
+            NanoHttpServer.setLastError("Camera Started (Buffered, Null/Texture Display)");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -327,8 +337,7 @@ public class SentinelService extends Service {
             // Process 1, Skip 1 to save CPU
             processNextFrame = !processNextFrame;
             if (!processNextFrame) {
-                // camera.addCallbackBuffer(data); // Must return buffer! -> DISABLED for
-                // standard callback
+                camera.addCallbackBuffer(data); // Must return buffer!
                 return;
             }
 
@@ -337,7 +346,7 @@ public class SentinelService extends Service {
             if (thermalGuardian.isOverheating()) {
                 // Pause specific logic or just drop frame
                 // Ensure we return buffer
-                // camera.addCallbackBuffer(data); // DISABLED
+                camera.addCallbackBuffer(data);
                 return;
             }
 
@@ -438,7 +447,7 @@ public class SentinelService extends Service {
                 public void run() {
                     // if (frameCount % 30 == 0) SentinelService.logToWeb("Processor: Start");
                     processFrame(finalData);
-                    // camera.addCallbackBuffer(data); // DISABLED for standard callback
+                    camera.addCallbackBuffer(data);
                 }
             });
         }
