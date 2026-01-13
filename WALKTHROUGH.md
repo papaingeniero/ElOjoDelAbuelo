@@ -283,11 +283,35 @@ This document tracks the implementation progress and verification of "El Ojo Del
 ### Phase 23: Persistent Header (DRY & Sync) (v3.0.10)
 - **Problem**: When opening a video or Live View, the status header (Battery, Temp, Storage) disappeared, losing context.
 - **Solution**:
-    - **Back-End (DRY)**: Created `getCommonHeaderHtml()` to inject the exact same header block in Main Dashboard, Video Player, and Live View.
-    - **Front-End (Refactor)**: Switched from IDs (`#stat-bat`) to Classes (`.stat-bat`) to allow multiple instances.
-    - **Sync Logic**: JS `updateStats()` now targets `document.querySelectorAll()` to update all headers simultaneously properly.
+    - **Back-End- **JS**: Updated `pollStatus()` and `updateStats()` to use `document.querySelectorAll()` for synchronized updates.
+- **UX (v3.0.14)**: Upgraded "Live View" from a raw browser tab to a fully integrated in-app modal with the persistent header and close button.
+
+## Challenges & Fixes
+- **Issue**: Initial implementation injected Java code directly into the JavaScript string, causing syntax errors and UI unresponsiveness.
+- **Fix**: Surgically removed the leaked Java code from the JS generation logic in `NanoHttpServer.java`.
+- **Outcome**: UI interaction restored, header visibility verified on device (v3.0.13), Live View Modal added (v3.0.14).
+
+## Verification
+- [x] **Dashboard**: Header visible and updating.
+- [x] **Player Modal**: Header visible over video player.
+- [x] **Live View**: Header visible during live streaming.
+- [x] **Synchronization**: Battery/Temp updates reflect in all headers simultaneously.
+
+### Phase 24: Auto Storage Management (v3.1.0)
+- **Problem**: The device would eventually run out of space, stopping recordings properly.
+- **Solution**: "Circular Buffer" logic.
+    - **Settings**: New "Minimum Free Space" input in settings (Default: 500MB).
+    - **Logic**: After every recording, `SentinelService` checks free space. If < Limit, it deletes the oldest videos until space is recovered.
 - **Verification**:
-    - Open a Video: Header appears above.
-    - Open Live View: Header appears above.
-    - Wait 5s: Battery/Temp updates in ALL visible headers at once.
+    - [x] **UI**: "Min Space" field appears in Settings and persists value.
+    - [x] **Logic**: Verified `StatFs` calculation and file deletion loop in code.
+    - [x] **Safety**: Logic only triggers on low space and respects the 500MB buffer.
+
+### Phase 25: Scrollable Settings Modal (v3.1.1)
+- **Problem**: As settings options grew (Auto-Storage, Rotation, Defaults), the modal became too tall for mobile screens, cutting off the "Save" button.
+- **Solution**:
+    - **CSS**: Applied `max-height: 85vh` and `overflow-y: auto` to `.settings-content`.
+    - **Result**: The modal is now constrained to the viewport height, and a vertical scrollbar appears automatically when needed.
+- **Verification**:
+    - [x] **User Verified**: Confirmed that scrolling works perfectly on the device.
 

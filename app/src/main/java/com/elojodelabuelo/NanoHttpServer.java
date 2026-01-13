@@ -608,7 +608,7 @@ public class NanoHttpServer {
                 "/* Settings Modal */\n" +
                 "#settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }\n"
                 +
-                ".settings-content { background: #222; padding: 25px; border-radius: 12px; width: 85%; max-width: 400px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }\n"
+                ".settings-content { background: #222; padding: 25px; border-radius: 12px; width: 85%; max-width: 400px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto; }\n"
                 +
                 ".settings-row { margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }\n"
                 +
