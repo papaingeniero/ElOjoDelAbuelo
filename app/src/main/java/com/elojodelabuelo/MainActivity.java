@@ -110,9 +110,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         SentinelService.logToWeb("MainActivity: onStart START");
         try {
             Intent intent = new Intent(getApplicationContext(), SentinelService.class);
-            // Fix: Use ApplicationContext for binding to prevent Activity leaks/crashes
-            getApplicationContext().bindService(intent, connection, BIND_AUTO_CREATE);
-            SentinelService.logToWeb("MainActivity: bindService CALLED");
+            boolean result = getApplicationContext().bindService(intent, connection, BIND_AUTO_CREATE);
+            SentinelService.logToWeb("MainActivity: bindService CALLED. Result: " + result);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error binding service: " + e.getMessage(), Toast.LENGTH_LONG).show();
