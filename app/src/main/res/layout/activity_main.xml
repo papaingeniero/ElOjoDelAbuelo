@@ -38,6 +38,15 @@
             android:textSize="18sp"
             android:layout_marginBottom="16dp" />
 
+        <!-- DEBUG: Manual Connect Button -->
+        <Button
+            android:id="@+id/btn_connect_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CONECTAR VIDEO"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp" />
+
         <Button
             android:id="@+id/btn_deactivate"
             android:layout_width="match_parent"

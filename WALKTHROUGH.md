@@ -329,3 +329,15 @@ This document tracks the implementation progress and verification of "El Ojo Del
     - [x] **Wake**: Device wakes up on motion.
     - [x] **Sleep**: Device sleeps after recording.
 
+## Phase 26.1: Troubleshooting "Zero-Copy" Crash (v3.2.1)
+
+**Issue**: `MainActivity` crashes immediately upon launch on Android 2.3 devices.
+**Cause**: Hardware Race Condition. The `SentinelService` holds the Camera resource. When `MainActivity` launches, it attempts to "steal" the preview display (`attachSurface`) via `SurfaceHolder`. On legacy hardware (Galaxy S i9000), calling `camera.setPreviewDisplay()` or `camera.startPreview()` while the camera is actively processing frames for motion detection causes a `RuntimeException: startPreview failed`.
+**Resolution Path**:
+1.  **Service Binding**: Moved to `getApplicationContext()` to prevent Context leaks.
+2.  **Surface Locking**: Enforced strict `try-catch` blocks around all Camera API calls.
+3.  **Manual Attachment**: (v3.2.1-debug12) Disabled automatic surface attachment in `surfaceCreated`. Introduced a manual trigger to separate UI initialization from Hardware resource switching, allowing for stabilized testing.
+
+## Verification
+*   [ ] **Zero-Copy**: The preview should appear on the `SurfaceView` without duplicating frame buffers.
+*   [ ] **Background Rec**: Recording continues even when screen is off (mapped to dummy surface).

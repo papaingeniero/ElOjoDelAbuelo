@@ -67,7 +67,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             SentinelService.logToWeb("MainActivity: SurfaceView INIT SUCCESS");
 
             Button btnActivate = (Button) findViewById(R.id.btn_activate);
+
             Button btnDeactivate = (Button) findViewById(R.id.btn_deactivate);
+            Button btnConnectVideo = (Button) findViewById(R.id.btn_connect_video); // DEBUG
 
             // Phase 9: Auto-start Surveillance on Launch
             Intent autoStartIntent = new Intent(this, SentinelService.class);
@@ -97,6 +99,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                         Toast.makeText(MainActivity.this, "Servicio Detenido", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, "Error btnStop: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+
+            // DEBUG: Manual Video Connect
+            btnConnectVideo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        if (isBound && service != null && monitorView != null) {
+                            SentinelService.logToWeb("MainActivity: Manual Connect Triggered");
+                            service.attachSurface(monitorView.getHolder());
+                            Toast.makeText(MainActivity.this, "Conectando Video...", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Servicio no conectado", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        SentinelService.logToWeb("MainActivity: Manual Connect ERROR: " + e.getMessage());
                     }
                 }
             });
@@ -167,8 +187,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         SentinelService.logToWeb("MainActivity: surfaceCreated");
         try {
             if (isBound && service != null) {
-                service.attachSurface(holder);
-                SentinelService.logToWeb("MainActivity: surfaceCreated ATTACHED");
+                // service.attachSurface(holder); // DISABLED for debug12 - Manual Only
+                SentinelService.logToWeb("MainActivity: surfaceCreated (WAITING FOR MANUAL TRIGGER)");
             }
         } catch (Exception e) {
             SentinelService.logToWeb("MainActivity: surfaceCreated ERROR: " + e.getMessage());
