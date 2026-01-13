@@ -18,12 +18,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import android.view.SurfaceView;
+import android.view.SurfaceHolder;
 
 public class MainActivity extends Activity implements SentinelService.UiPreviewCallback {
 
     private SentinelService service;
     private boolean isBound = false;
     private ImageView previewImage;
+    private SurfaceView dummySurfaceView; // Declared
     private Bitmap currentBitmap;
     private long lastFrameTime = 0;
 
@@ -50,6 +53,30 @@ public class MainActivity extends Activity implements SentinelService.UiPreviewC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        previewImage = (ImageView) findViewById(R.id.cameraPreview);
+        dummySurfaceView = (SurfaceView) findViewById(R.id.dummySurfaceView);
+
+        // Setup Dummy Surface Callback
+        dummySurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                SentinelService.logToWeb("MainActivity: Dummy Surface Created. Feeding to Sentinel...");
+                SentinelService.setRemoteSurface(holder);
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                SentinelService.logToWeb("MainActivity: Dummy Surface Destroyed.");
+            }
+        });
+        // Ensure it's push buffers (legacy required for some 2.3 devices)
+        dummySurfaceView.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         // Window Flags for Wake & Brightness (Active Monitor)
         Window window = getWindow();
@@ -60,7 +87,7 @@ public class MainActivity extends Activity implements SentinelService.UiPreviewC
 
         setContentView(R.layout.activity_main);
 
-        previewImage = (ImageView) findViewById(R.id.camera_preview);
+        previewImage = (ImageView) findViewById(R.id.cameraPreview);
         previewImage.setVisibility(View.INVISIBLE); // Hidden until connected
 
         Button btnActivate = (Button) findViewById(R.id.btn_activate);

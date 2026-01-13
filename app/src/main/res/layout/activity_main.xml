@@ -7,11 +7,19 @@
     <!-- Zero-Copy Monitor Surface -->
     <!-- Software Preview (Pseudo Zero-Copy) -->
     <ImageView
-        android:id="@+id/camera_preview"
+        android:id="@+id/cameraPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:background="#000000" />
+        android:scaleType="matrix"
+        android:src="@android:drawable/ic_menu_camera" />
+
+    <!-- DUMMY SURFACE: Necessary for Android 2.3 Camera Driver to start properly -->
+    <SurfaceView
+        android:id="@+id/dummySurfaceView"
+        android:layout_width="1px"
+        android:layout_height="1px"
+        android:layout_gravity="top|left"
+        android:visibility="visible" />
 
     <!-- Overlay UI -->
     <LinearLayout

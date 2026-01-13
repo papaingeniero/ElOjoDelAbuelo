@@ -249,6 +249,46 @@ public class SentinelService extends Service {
         }
     }
 
+    // Phase 27: Remote Surface Helper (The "Nuclear" Option for Android 2.3)
+    public static void setRemoteSurface(final SurfaceHolder holder) {
+        if (instance != null && instance.processingHandler != null) {
+            instance.processingHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    instance.restartCameraWithSurface(holder);
+                }
+            });
+        }
+    }
+
+    private void restartCameraWithSurface(SurfaceHolder holder) {
+        try {
+            if (camera != null) {
+                camera.stopPreview();
+                // Don't release, just reset display
+            } else {
+                camera = Camera.open();
+                setupCameraParameters();
+                // Buffers need re-adding? usually yes if preview stopped?
+                // Actually addCallbackBuffer persists but buffers in queue are cleared.
+                // Re-adding buffers is safer.
+                int bufferSize = PREVIEW_WIDTH * PREVIEW_HEIGHT * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
+                for (int i = 0; i < NUM_BUFFERS; i++) {
+                    camera.addCallbackBuffer(new byte[bufferSize]);
+                }
+                camera.setPreviewCallbackWithBuffer(previewCallback);
+            }
+
+            camera.setPreviewDisplay(holder);
+            camera.startPreview();
+            SentinelService.logToWeb("Camera Restarted with REMOTE SURFACE (Nuclear Fix)");
+            NanoHttpServer.setLastError("Camera OK (Remote Surface)");
+        } catch (Exception e) {
+            SentinelService.logToWeb("Remote Surface Restart Failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     // Globals to store actual size
     private int PREVIEW_WIDTH = 320;
     private int PREVIEW_HEIGHT = 240;
