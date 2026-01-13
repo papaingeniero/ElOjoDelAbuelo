@@ -116,8 +116,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                                         FrameLayout.LayoutParams.MATCH_PARENT);
                                 monitorView.setLayoutParams(params);
                                 monitorView.getHolder().addCallback(MainActivity.this);
+
+                                // ANDROID 2.3 LEGACY MAGIC
+                                monitorView.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+                                monitorView.setZOrderMediaOverlay(true);
+
                                 container.addView(monitorView, 0); // Add at index 0 (behind buttons)
-                                SentinelService.logToWeb("MainActivity: Lazy SurfaceView Added");
+                                SentinelService.logToWeb("MainActivity: Lazy SurfaceView Added (PUSH_BUFFERS)");
                                 Toast.makeText(MainActivity.this, "Creando Superficie...", Toast.LENGTH_SHORT).show();
                             } else {
                                 SentinelService.logToWeb("MainActivity: Fatal - Container not found");
