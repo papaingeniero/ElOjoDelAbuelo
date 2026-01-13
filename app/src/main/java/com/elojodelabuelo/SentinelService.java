@@ -544,10 +544,20 @@ public class SentinelService extends Service {
             // 3. UI Preview (Software "Zero-Copy")
             if (uiPreviewCallback != null) {
                 try {
+                    // Log only occasionally or check specific condition if verbose needed,
+                    // but for now we need to know if it ENTERS here.
+                    // SentinelService.logToWeb("Service: Sending Frame to UI"); // Too noisy for
+                    // every frame?
+                    // Let's rely on MainActivity log first. But if MainActivity sees NOTHING, maybe
+                    // this is null.
+
                     uiPreviewCallback.onFrame(jpeg);
                 } catch (Exception e) {
                     // Ignore UI errors
+                    SentinelService.logToWeb("Service: UI Callback Failed: " + e.getMessage());
                 }
+            } else {
+                // SentinelService.logToWeb("Service: UI Callback is NULL");
             }
 
         } catch (Exception e) {
