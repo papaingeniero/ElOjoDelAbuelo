@@ -210,18 +210,28 @@ public class SentinelService extends Service {
             writeCameraInfoToFile(params);
             // -----------------------------------
 
+            // setupCameraParameters(); // Already called above? No, wait. Order matters.
             setupCameraParameters();
 
             // Calculate buffer size
-            int bufferSize = PREVIEW_WIDTH * PREVIEW_HEIGHT * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
-            for (int i = 0; i < NUM_BUFFERS; i++) {
-                camera.addCallbackBuffer(new byte[bufferSize]);
-            }
+            // DEBUG: Disable Buffers for now. Just use standard callback to rule out buffer
+            // size mismatch.
+            /*
+             * int bufferSize = PREVIEW_WIDTH * PREVIEW_HEIGHT *
+             * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
+             * for (int i = 0; i < NUM_BUFFERS; i++) {
+             * camera.addCallbackBuffer(new byte[bufferSize]);
+             * }
+             */
 
             dummySurface = new SurfaceTexture(10);
             camera.setPreviewTexture(dummySurface);
-            camera.setPreviewCallbackWithBuffer(previewCallback);
+
+            // camera.setPreviewCallbackWithBuffer(previewCallback);
+            camera.setPreviewCallback(previewCallback); // FALLBACK: Standard callback (high GC but reliable)
+
             camera.startPreview();
+            NanoHttpServer.setLastError("Camera Started (Standard Callback)");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -317,7 +327,8 @@ public class SentinelService extends Service {
             // Process 1, Skip 1 to save CPU
             processNextFrame = !processNextFrame;
             if (!processNextFrame) {
-                camera.addCallbackBuffer(data); // Must return buffer!
+                // camera.addCallbackBuffer(data); // Must return buffer! -> DISABLED for
+                // standard callback
                 return;
             }
 
@@ -326,7 +337,7 @@ public class SentinelService extends Service {
             if (thermalGuardian.isOverheating()) {
                 // Pause specific logic or just drop frame
                 // Ensure we return buffer
-                camera.addCallbackBuffer(data);
+                // camera.addCallbackBuffer(data); // DISABLED
                 return;
             }
 
@@ -417,31 +428,17 @@ public class SentinelService extends Service {
             isRecordingPublic = isRecording;
 
             final byte[] finalData = processedData; // Need final for inner class if not using lambda
+
+            // Log every 30 frames (approx 1 sec)
+            if (frameCount % 30 == 0)
+                SentinelService.logToWeb("Cam: Frame Arrived");
+
             processingHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    // if (frameCount % 30 == 0) SentinelService.logToWeb("Processor: Start");
                     processFrame(finalData);
-                    camera.addCallbackBuffer(data); // Return
-                                                    // buffer
-                                                    // after
-                                                    // processing
-                                                    // (Must
-                                                    // verify
-                                                    // if
-                                                    // we
-                                                    // need
-                                                    // to
-                                                    // return
-                                                    // 'data'
-                                                    // specifically.
-                                                    // Yes,
-                                                    // 'data'
-                                                    // is
-                                                    // the
-                                                    // buffer
-                                                    // owned
-                                                    // by
-                                                    // Camera)
+                    // camera.addCallbackBuffer(data); // DISABLED for standard callback
                 }
             });
         }
@@ -542,22 +539,20 @@ public class SentinelService extends Service {
             }
 
             // 3. UI Preview (Software "Zero-Copy")
+            // DEBUG: Explicit check
             if (uiPreviewCallback != null) {
+                // SentinelService.logToWeb("Service: Calling UI Callback. Data size: " +
+                // jpeg.length);
                 try {
-                    // Log only occasionally or check specific condition if verbose needed,
-                    // but for now we need to know if it ENTERS here.
-                    // SentinelService.logToWeb("Service: Sending Frame to UI"); // Too noisy for
-                    // every frame?
-                    // Let's rely on MainActivity log first. But if MainActivity sees NOTHING, maybe
-                    // this is null.
-
                     uiPreviewCallback.onFrame(jpeg);
                 } catch (Exception e) {
-                    // Ignore UI errors
                     SentinelService.logToWeb("Service: UI Callback Failed: " + e.getMessage());
                 }
             } else {
-                // SentinelService.logToWeb("Service: UI Callback is NULL");
+                if (isRecording) { // Only log this spam if we are recording, otherwise it fills log
+                    // SentinelService.logToWeb("Service: UI Callback is NULL (Frames dropped from
+                    // UI)");
+                }
             }
 
         } catch (Exception e) {
