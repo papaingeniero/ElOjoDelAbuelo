@@ -1,6 +1,6 @@
 # 👁️ El Ojo Del Abuelo (Sentinel Project)
 
-### Galaxy S i9000 Autonomous NVR System
+### Galaxy S i9000 Autonomous NVR System 
 
 **Mission:** To upcycle a legacy Samsung Galaxy S (i9000) device into a high-performance, autonomous IP security camera by overcoming Android 2.3 hardware limitations through advanced software engineering.
 
