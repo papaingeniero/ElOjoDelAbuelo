@@ -4,66 +4,54 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Zero-Copy Monitor Surface -->
-    <!-- Software Preview (Pseudo Zero-Copy) -->
-    <ImageView
+    <!-- Layer 1: Full Screen Magic Mirror -->
+    <!-- scaleType="matrix" allows us to manual Zoom/Pan -->
+    <SurfaceView
         android:id="@+id/cameraPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="matrix"
-        android:src="@android:drawable/ic_menu_camera" />
+        android:layout_centerInParent="true" />
 
-    <!-- DUMMY SURFACE: Necessary for Android 2.3 Camera Driver to start properly -->
-    <SurfaceView
-        android:id="@+id/dummySurfaceView"
-        android:layout_width="1px"
-        android:layout_height="1px"
-        android:layout_gravity="top|left"
-        android:visibility="visible" />
+    <!-- Layer 2: Floating HUD / Status -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:background="#80000000"
+        android:padding="8dp"
+        android:text="El Ojo Del Abuelo"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:layout_marginTop="16dp" />
 
-    <!-- Overlay UI -->
+    <!-- Layer 3: Floating Controls (Bottom) -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="16dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="El Ojo Del Abuelo"
-            android:textSize="24sp"
-            android:textColor="#FFFFFF"
-            android:shadowColor="#000000"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="3"
-            android:layout_marginBottom="32dp" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#80000000"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:weightSum="2">
 
         <Button
             android:id="@+id/btn_activate"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="ACTIVAR VIGILANCIA"
-            android:textSize="18sp"
-            android:layout_marginBottom="16dp" />
-
-        <!-- DEBUG: Manual Connect Button -->
-        <Button
-            android:id="@+id/btn_connect_video"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="CONECTAR VIDEO"
-            android:textSize="18sp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginRight="8dp"
+            android:layout_weight="1"
+            android:text="ACTIVAR"
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/btn_deactivate"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="DESACTIVAR"
-            android:textSize="18sp" />
-
+            android:layout_marginLeft="8dp"
+            android:layout_weight="1"
+            android:text="SALIR"
+            android:textSize="16sp" />
     </LinearLayout>
+
 </FrameLayout>

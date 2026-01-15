@@ -15,8 +15,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.Binder; // For Zero-Copy Binding
-import android.provider.Settings; // For Screen Off Logic
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -30,34 +28,14 @@ import android.content.SharedPreferences;
 import android.os.StatFs;
 import java.util.Arrays;
 import java.util.Comparator;
-import android.view.SurfaceHolder; // For Zero-Copy
-import java.util.ArrayList;
-import java.util.List;
 
 public class SentinelService extends Service {
-
-    public static List<String> debugLogs = new ArrayList<String>();
-
-    public static void logToWeb(String msg) {
-        debugLogs.add(System.currentTimeMillis() + ": " + msg);
-        if (debugLogs.size() > 50)
-            debugLogs.remove(0);
-    }
 
     private static final String TAG = "Sentinel";
     private static SentinelService instance;
     private static final int NOTIFICATION_ID = 1;
 
-    // Binder for Zero-Copy
-    private final IBinder binder = new LocalBinder();
-
-    public class LocalBinder extends Binder {
-        SentinelService getService() {
-            return SentinelService.this;
-        }
-    }
-
-    // Interface for Software Preview (Pseudo Zero-Copy)
+    // --- SOFTWARE PREVIEW INTERFACE ---
     public interface UiPreviewCallback {
         void onFrame(byte[] jpegData);
     }
@@ -67,6 +45,7 @@ public class SentinelService extends Service {
     public static void setUiCallback(UiPreviewCallback cb) {
         uiPreviewCallback = cb;
     }
+    // ----------------------------------
 
     private PowerManager.WakeLock wakeLock;
     private Camera camera;
@@ -162,11 +141,10 @@ public class SentinelService extends Service {
         if (currentThreshold > 50000)
             currentThreshold = 50000;
 
-        // 1. WakeLock (Bright for Active Monitor)
+        // 1. WakeLock
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        // Phase 26: SCREEN_BRIGHT_WAKE_LOCK | ACQUIRE_CAUSES_WAKEUP
-        wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-                "ElOjoDelAbuelo:ActiveMonitor");
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ElOjoDelAbuelo:SentinelLock");
+        wakeLock.acquire();
 
         // 2. Foreground Service
         instance = this;
@@ -218,74 +196,14 @@ public class SentinelService extends Service {
                 camera.addCallbackBuffer(new byte[bufferSize]);
             }
 
-            // ANDROID 2.3 HACK: Try NULL/Dummy for Preview Display
-            // SurfaceTexture is API 11+. Galaxy S i9000 is API 10.
-            // Using SurfaceTexture on API 10 might be the cause of silent failure.
-            try {
-                if (android.os.Build.VERSION.SDK_INT >= 11) {
-                    dummySurface = new SurfaceTexture(10);
-                    camera.setPreviewTexture(dummySurface);
-                } else {
-                    // For API < 11, strictly we need a SurfaceHolder.
-                    // But some drivers accept null or we rely on the trick that we don't call
-                    // startPreview until we have a surface?
-                    // No, we want background recording.
-                    // Let's try passing NULL first. If it crashes, we know we need a 1x1
-                    // SurfaceView.
-                    camera.setPreviewDisplay(null);
-                }
-            } catch (Exception e) {
-                NanoHttpServer.setLastError("Surface Setup Error: " + e.getMessage());
-                // Swallow and hope
-            }
-
+            dummySurface = new SurfaceTexture(10);
+            camera.setPreviewTexture(dummySurface);
             camera.setPreviewCallbackWithBuffer(previewCallback);
             camera.startPreview();
-            NanoHttpServer.setLastError("Camera Started (Buffered, Null/Texture Display)");
 
         } catch (Exception e) {
             e.printStackTrace();
             NanoHttpServer.setLastError("Camera Error: " + e.toString());
-        }
-    }
-
-    // Phase 27: Remote Surface Helper (The "Nuclear" Option for Android 2.3)
-    public static void setRemoteSurface(final SurfaceHolder holder) {
-        if (instance != null && instance.processingHandler != null) {
-            instance.processingHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    instance.restartCameraWithSurface(holder);
-                }
-            });
-        }
-    }
-
-    private void restartCameraWithSurface(SurfaceHolder holder) {
-        try {
-            if (camera != null) {
-                camera.stopPreview();
-                // Don't release, just reset display
-            } else {
-                camera = Camera.open();
-                setupCameraParameters();
-                // Buffers need re-adding? usually yes if preview stopped?
-                // Actually addCallbackBuffer persists but buffers in queue are cleared.
-                // Re-adding buffers is safer.
-                int bufferSize = PREVIEW_WIDTH * PREVIEW_HEIGHT * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8;
-                for (int i = 0; i < NUM_BUFFERS; i++) {
-                    camera.addCallbackBuffer(new byte[bufferSize]);
-                }
-                camera.setPreviewCallbackWithBuffer(previewCallback);
-            }
-
-            camera.setPreviewDisplay(holder);
-            camera.startPreview();
-            SentinelService.logToWeb("Camera Restarted with REMOTE SURFACE (Nuclear Fix)");
-            NanoHttpServer.setLastError("Camera OK (Remote Surface)");
-        } catch (Exception e) {
-            SentinelService.logToWeb("Remote Surface Restart Failed: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -422,14 +340,7 @@ public class SentinelService extends Service {
                             statusLock.notifyAll();
                         }
                         updateNotification(true);
-                        updateNotification(true);
                         openNewRecordingFile();
-
-                        // Phase 26: Active Monitor - Wake Screen
-                        if (!wakeLock.isHeld()) {
-                            wakeLock.acquire();
-                            Log.d(TAG, "Motion Detected! Waking Screen...");
-                        }
                     }
                 }
 
@@ -458,15 +369,7 @@ public class SentinelService extends Service {
                         statusLock.notifyAll();
                     }
                     updateNotification(false);
-                    updateNotification(false);
                     closeRecordingFile();
-
-                    // Phase 26: Active Monitor - Sleep Screen
-                    if (wakeLock.isHeld()) {
-                        wakeLock.release();
-                        Log.d(TAG, "Recording Finished. Sleeping Screen...");
-                    }
-                    forceScreenOff();
                 }
             } // End
               // of
@@ -477,17 +380,31 @@ public class SentinelService extends Service {
             isRecordingPublic = isRecording;
 
             final byte[] finalData = processedData; // Need final for inner class if not using lambda
-
-            // Log every 30 frames (approx 1 sec)
-            if (frameCount % 30 == 0)
-                SentinelService.logToWeb("Cam: Frame Arrived");
-
             processingHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    // if (frameCount % 30 == 0) SentinelService.logToWeb("Processor: Start");
                     processFrame(finalData);
-                    camera.addCallbackBuffer(data);
+                    camera.addCallbackBuffer(data); // Return
+                                                    // buffer
+                                                    // after
+                                                    // processing
+                                                    // (Must
+                                                    // verify
+                                                    // if
+                                                    // we
+                                                    // need
+                                                    // to
+                                                    // return
+                                                    // 'data'
+                                                    // specifically.
+                                                    // Yes,
+                                                    // 'data'
+                                                    // is
+                                                    // the
+                                                    // buffer
+                                                    // owned
+                                                    // by
+                                                    // Camera)
                 }
             });
         }
@@ -587,20 +504,13 @@ public class SentinelService extends Service {
                 Log.e(TAG, "Stream broadcast failed: " + e.getMessage());
             }
 
-            // 3. UI Preview (Software "Zero-Copy")
-            // DEBUG: Explicit check
+            // 3. UI Preview (Software Mirror)
+            // Just pass the reference. Zero copy cost here.
             if (uiPreviewCallback != null) {
-                // SentinelService.logToWeb("Service: Calling UI Callback. Data size: " +
-                // jpeg.length);
                 try {
                     uiPreviewCallback.onFrame(jpeg);
                 } catch (Exception e) {
-                    SentinelService.logToWeb("Service: UI Callback Failed: " + e.getMessage());
-                }
-            } else {
-                if (isRecording) { // Only log this spam if we are recording, otherwise it fills log
-                    // SentinelService.logToWeb("Service: UI Callback is NULL (Frames dropped from
-                    // UI)");
+                    // Ignore UI errors to protect Service
                 }
             }
 
@@ -775,72 +685,7 @@ public class SentinelService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
-    }
-
-    // Zero-Copy Surface Management
-    public void attachSurface(SurfaceHolder holder) {
-        if (camera != null) {
-            try {
-                camera.stopPreview();
-                try {
-                    camera.setPreviewDisplay(holder);
-                    camera.startPreview();
-                    SentinelService.logToWeb("Zero-Copy: Surface ATTACHED. Direct Preview Active.");
-                } catch (Exception e) {
-                    SentinelService.logToWeb("Zero-Copy Error: " + e.getMessage());
-                    e.printStackTrace();
-                    try {
-                        // Fallback to dummy surface if real surface fails
-                        camera.setPreviewTexture(dummySurface);
-                        camera.startPreview();
-                        SentinelService.logToWeb("Zero-Copy: Fallback to Dummy Surface.");
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            } catch (Exception e) { // Catch IOException and RuntimeException
-                e.printStackTrace();
-                SentinelService.logToWeb("attachSurface FATAL: " + e.getMessage());
-            }
-        }
-    }
-
-    public void detachSurface() {
-        if (camera != null && dummySurface != null) {
-            try {
-                camera.stopPreview();
-                try {
-                    camera.setPreviewTexture(dummySurface);
-                    camera.startPreview();
-                    SentinelService.logToWeb("Zero-Copy: Surface DETACHED. Background Preview Restored.");
-                } catch (Exception ex) {
-                    SentinelService.logToWeb("Zero-Copy Detach Error: " + ex.getMessage());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                SentinelService.logToWeb("detachSurface FATAL: " + e.getMessage());
-            }
-        }
-    }
-
-    private void forceScreenOff() {
-        try {
-            // Android 2.3 Hack: Set timeout to 1s to force sleep
-            final int originalTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT,
-                    60000);
-            Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, 1000);
-
-            // Restore functionality after 3s (enough to sleep)
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, originalTimeout);
-                }
-            }, 3000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        return null;
     }
 
     @Override
@@ -855,14 +700,27 @@ public class SentinelService extends Service {
             camera.release();
             camera = null;
         }
-        if (processingThread != null) {
-            processingThread.quit();
-        }
         if (httpServer != null) {
             httpServer.stop();
         }
+        if (processingThread != null) {
+            processingThread.quit();
+        }
+        closeRecordingFile();
     }
 
+    /**
+     * Updates global configuration settings and persists them.
+     * <p>
+     * If the rotation setting changes, this method triggers a camera restart
+     * to ensure the buffer sizes and logic are re-initialized correctly.
+     * </p>
+     * 
+     * @param sens   Motion sensitivity (0-100)
+     * @param time   Recording timeout in seconds
+     * @param active Detector active state
+     * @param rot    Rotation degree (0 or 180)
+     */
     public static void updateSettings(int sens, int time, boolean active, int rot) {
         motionSensitivity = sens;
         recordingTimeout = time;
@@ -922,15 +780,47 @@ public class SentinelService extends Service {
         }
     }
 
-    // Phase 25: Public Status Accessor
-    public static boolean isServiceRunning() {
-        return instance != null;
-    }
-
     public static File getCurrentRecordingFile() {
         if (instance != null) {
             return instance.currentFile;
         }
         return null;
+    }
+
+    // --- HARDWARE PREVIEW ANCHOR (FINAL) ---
+    public static void setPreviewSurface(android.view.SurfaceHolder holder) {
+        if (instance != null && instance.camera != null) {
+            try {
+                // 1. FRENAR
+                instance.camera.stopPreview();
+                
+                // 2. CAMBIAR SUPERFICIE
+                if (holder != null) {
+                    instance.camera.setPreviewDisplay(holder);
+                } else {
+                    instance.camera.setPreviewDisplay(null);
+                }
+                
+                // 3. RECUPERACIÓN CRÍTICA: Rellenar buffers o el Callback no funcionará
+                // Calculamos el tamaño del buffer (NV21)
+                int bufferSize = instance.PREVIEW_WIDTH * instance.PREVIEW_HEIGHT * android.graphics.ImageFormat.getBitsPerPixel(android.graphics.ImageFormat.NV21) / 8;
+                
+                // Reiniciamos el callback por seguridad
+                instance.camera.setPreviewCallbackWithBuffer(null);
+                instance.camera.setPreviewCallbackWithBuffer(instance.previewCallback);
+                
+                // Añadimos 3 buffers nuevos a la cola (NUM_BUFFERS)
+                for (int i = 0; i < 3; i++) {
+                    instance.camera.addCallbackBuffer(new byte[bufferSize]);
+                }
+                
+                // 4. ARRANCAR
+                instance.camera.startPreview();
+                
+            } catch (Exception e) {
+                android.util.Log.e(TAG, "Error switching surface: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 }
