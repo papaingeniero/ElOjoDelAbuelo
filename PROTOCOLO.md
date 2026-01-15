@@ -11,7 +11,8 @@ Este documento define el estándar de calidad y el flujo de trabajo obligatorio 
     *   **Hybrid Mode**: Si se requiere procesamiento (Motion/Web), usar buffers manuales (`addCallbackBuffer`).
 
 ## 2. FLUJO DE IMPLEMENTACIÓN
-1.  **Análisis**: Entender el impacto en CPU y Memoria antes de codificar.
+1.  **Autorización Explícita**: NUNCA modificar código, ejecutar comandos de Git, ni subir cambios a GitHub sin pedir permiso explícito al usuario primero.
+2.  **Análisis**: Entender el impacto en CPU y Memoria antes de codificar.
 2.  **Código Defensivo**: Todo bloque crítico (Cámara, I/O) debe tener `try-catch` para evitar crasheos fatales.
 3.  **Compatibilidad**: Usar APIs compatibles con API 10 (ej: `SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS`).
 
