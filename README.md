@@ -6,7 +6,7 @@
 
 ---
 
-## 🚀 Technical Features
+## 🚀 Technical Features 
 
 This project is not just a webcam app; it is a showcase of optimization for constrained environments (Single Core 1GHz, 512MB RAM).
 
