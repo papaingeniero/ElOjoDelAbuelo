@@ -36,6 +36,8 @@ public class SentinelService extends Service {
     private static final int NOTIFICATION_ID = 1;
 
     // --- SOFTWARE PREVIEW INTERFACE ---
+    public static java.util.List<String> debugLogs = java.util.Collections.synchronizedList(new java.util.ArrayList<String>());
+    
     public interface UiPreviewCallback {
         void onFrame(byte[] jpegData);
     }
