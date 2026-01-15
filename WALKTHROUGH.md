@@ -5,6 +5,9 @@
 
 ## Changes Implemented
 
+### 0. Quick Fix (`v3.3.1`)
+- **Manifest**: Forced `android:screenOrientation="landscape"` in `AndroidManifest.xml` to fix the 90-degree rotation issue on the i9000 caused by the new Hardware Preview layer.
+
 ### 1. View Layer (`res/layout/activity_main.xml`)
 - Replaced the CPU-intensive `ImageView` with a lightweight `SurfaceView`.
 - **Why?** `SurfaceView` provides a dedicated drawing surface embedded in the view hierarchy, allowing the Camera hardware to write directly to display memory (overlay) without touching the DALVIK VM or consuming CPU cycles for Bitmap decoding.
