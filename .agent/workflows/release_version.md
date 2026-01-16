@@ -16,8 +16,8 @@ Sigue estos pasos estrictamente cuando el usuario solicite una "Release" o "Nuev
 2.  Edita `CHANGELOG.md`:
     *   Añade una nueva entrada con la fecha de hoy y la versión.
     *   Describe los cambios bajo `### Added`, `### Fixed`, o `### Changed`.
-3.  Edita `WALKTHROUGH.md` (Raíz):
-    *   Actualiza el contenido para reflejar el estado actual del proyecto.
+3.  Edita `BITACORA.md` (Raíz):
+    *   Añade (append) la crónica de esta versión al final del archivo.
 
 ## 3. Control de Versiones (Git)
 1.  **Stage**: `git add .`
