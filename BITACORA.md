@@ -99,7 +99,9 @@ El móvil ardía (40°C) intentando procesar 30 imágenes por segundo. Además, 
 ## 🚀 Phase 9.1: Resolución Nativa (CIF)
 
 ### 📜 1. La Historia (El Problema)
-Usábamos una resolución "cercana a 320x240", pero el hardware prefería otras, causando escalados lentos.
+El sensor permitía llegar a 640x480, pero tomamos una decisión consciente: **Sacrificar píxeles por Longevidad.**
+Queremos que el Abuelo trabaje 24/7 sin degradar su batería ni quemar sus circuitos. Procesar video VGA a 30fps mantenía el procesador demasiado "despierto".
+Elegimos **352x288 (CIF)** porque es el **Punto Dulce**: suficiente detalle forense para identificar un intruso, pero tan ligero que el móvil trabaja "fresquito", asegurando años de vida útil. Además, eliminamos el escalado por software que causaba la resolución anterior de 320x240.
 
 ### 🛠️ 2. La Solución (Ingeniería)
 Forzamos la búsqueda explícita de **352x288 (CIF)**. Es la resolución estándar de vídeo antiguo y coincide perfectamente con la matriz del sensor, eliminando interpolación.
