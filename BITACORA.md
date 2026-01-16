@@ -31,9 +31,25 @@ El sensor de cámara del Galaxy S i9000 está montado "de lado" (landscape nativ
 Creamos `SentinelService.rotateNV21Degree180`:
 *   **No usamos Matrix**: Java `Matrix` es lento y genera basura (GC) en cada frame.
 *   **Manipulación de Bytes**: Iteramos sobre el array de bytes `NV21` invirtiendo el orden de lectura para rotar la imagen pixel a pixel manualmente.
+    ```java
+    // LOGICA SIMPLIFICADA (180 Grados)
+    // 1. Invertir Y (Luminancia)
+    for (int i = 0; i < totalPixels; i++) {
+        output[i] = input[totalPixels - 1 - i];
+    }
+    // 2. Invertir UV (Color), pero de 2 en 2 bytes (V, U)
+    for (int i = 0; i < totalUV; i += 2) {
+        output[startUV + i] = input[endUV - 2 - i];     // V
+        output[startUV + i+1] = input[endUV - 1 - i];   // U
+    }
+    ```
 
 ### 🎓 3. Lecciones Aprendidas
-*   **NV21 Raw Format**: Entender cómo se guardan los bytes de luminancia (Y) y color (UV) es esencial para manipular imagen a bajo nivel sin librerías.
+*   **Anatomía del NV21 (YUV)**:
+    *   A diferencia del RGB (donde cada píxel tiene 3 bytes: Rojo, Verde, Azul), el formato de cámara NV21 separa la luz del color.
+    *   **Plano Y (Luminancia)**: Los primeros `Width * Height` bytes son solo la imagen en blanco y negro (la luz).
+    *   **Plano UV (Crominancia)**: Al final vienen los bytes de color entrelazados (V, U, V, U...).
+    *   **El Truco**: Para rotar 180 grados sin destruir la imagen, hay que invertir el bloque Y por un lado, y el bloque UV por otro, teniendo cuidado de no mezclar V con U. ¡Es cirugía de bytes!
 
 ---
 
@@ -117,22 +133,43 @@ Falsos positivos infinitos (fantasmas) por una curva de sensibilidad lineal. Y a
 
 ---
 
-## 🚀 Phase 17: Inyección de Live Preview (El Parásito)
+## 🚀 Phase 17: Inyección de Live Preview (El Parásito Cliente)
 **Versión**: v2.8
 
 ### 📜 1. La Historia (El Problema)
-El usuario tenía que imaginar qué estaba pasando. No había vídeo en vivo en la lista de grabaciones.
+Inicialmente, la miniatura de cada video en la lista era un simple frame estático: aquel con mayor cantidad de movimiento detectado. Intuíamos que sería representativo, pero **un solo frame no cuenta la historia completa**.
+La idea ideal era clara: **Miniaturas de video a cámara rápida**.
+Pero nos topamos con un muro de rendimiento. "El Abuelo" (i9000) no podía ponerse a procesar un resumen de video *después* de grabar, porque si ocurría otro evento de movimiento inmediatamente, la CPU estaría ocupada editando el anterior y colapsaría. No podíamos permitir ese riesgo de seguridad.
+
+**La Estrategia del Ahorro (Backend)**:
+Decidimos generar la miniatura *al vuelo*, mientras grabábamos el video principal.
+*   Del torrente de 30 frames/segundo que escupe la cámara:
+    *   Enviamos **1 de cada 2** al video principal (15fps). Suficiente para seguridad y ahorra 50% de CPU.
+    *   Enviamos **1 de cada 10** a un segundo archivo MJPEG (la miniatura). Esto es 10 veces menos trabajo que un video normal.
+Con esto logramos tener en el navegador una lista de videos donde cada tarjeta reproducía un bucle rápido del suceso. ¡Espectacular!
+
+**El Último Salto (UX)**:
+Ya teníamos miniaturas animadas de los videos pasados. Si el abuelo detectaba movimiento, nos avisaba con un mensaje rojo. Podíamos abrir el "Live View" manual... pero, ¿y si pudiéramos ir un paso más allá?
+Pensamos: *"Sería increíble si, en el instante exacto en que empieza a grabar, apareciera una nueva tarjeta en la lista mostrando la miniatura a cámara rápida de LO QUE ESTÁ OCURRIENDO AHORA MISMO"*.
+Eso daría una sensación de poder y control total al usuario. Pero volvíamos al problema: ¿Cómo crear ese resumen en tiempo real sin cargar al Abuelo?
+La respuesta fue genial: **¿Y si no lo hace el Abuelo?**
 
 ### 🛠️ 2. La Solución (Ingeniería)
-**"Smart Injection"**:
-1.  JS detecta que ha empezado una grabación (polling).
-2.  Inyecta una tarjeta HTML nueva en el DOM "al vuelo".
-3.  Abre una conexión oculta `/stream` y anima esa tarjeta.
-4.  Cuando termina la grabación, hace "Hot-Swap" y cambia la tarjeta animada por el enlace al archivo final estático.
+Diseñamos una arquitectura donde el trabajo duro se delega al cliente (Navegador):
 
-### 📖 4. Glosario
-*   **Polling**: Preguntar al servidor "¿Hay algo nuevo?" repetidamente cada X segundos.
-*   **DOM Injection**: Insertar elementos HTML mediante código Javascript.
+1.  **Backend (Ahorro Extremo)**:
+    *   Del stream de cámara (30fps), guardamos 1 de cada 2 frames para el video principal (15fps).
+    *   Y solo **1 de cada 10** para el archivo de miniatura en disco. La CPU descansa.
+2.  **Frontend (El "Parásito")**:
+    *   Cuando el móvil detecta movimiento, la web (que está esperando respuesta) recibe el aviso y muestra "🔴 GRABANDO".
+    *   Inmediatamente, inyecta una tarjeta de video nueva en la lista.
+    *   **Magia de JS**: El navegador se conecta al `/stream` en vivo, roba frames, los acumula en un array en memoria y los reproduce en bucle.
+    *   El usuario ve el resumen creándose en vivo.
+
+**Resultado**: Una experiencia de usuario espectacular y moderna a **coste cero** para la CPU del servidor.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Computación en el Borde (Client-Side)**: Si tu servidor es Hardware Legacy, usa la potencia de los móviles modernos de tus usuarios para renderizar, animar y procesar.
 
 ---
 
