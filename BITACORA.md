@@ -96,7 +96,7 @@ El móvil ardía (40°C) intentando procesar 30 imágenes por segundo. Además, 
 
 ---
 
-## 🚀 Phase 9.1: Resolución Nativa (CIF)
+## 🚀 Phase 9.1: Resolución Nativa (CIF) 352x288 para Optimización Térmica y Longevidad.
 
 ### 📜 1. La Historia (El Problema)
 El sensor permitía llegar a 640x480, pero tomamos una decisión consciente: **Sacrificar píxeles por Longevidad.**

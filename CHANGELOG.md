@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.3.3] - 2026-01-17
+### Changed
+- **Documentation**: Finalized `BITACORA.md` with deep historical context, detailed engineering decisions (nv21, thermal optimization), and "Client Parasite" architecture storytelling.
+
 ## [v3.3.2] - 2026-01-16
 ### Changed
 - **Developer Experience**: Refactored the development protocol from a single markdown file to a structured Agentic Architecture (`.agent/rules` and `.agent/workflows`).
