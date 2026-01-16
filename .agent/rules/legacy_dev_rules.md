@@ -9,6 +9,7 @@ Estas reglas son MANDATORIAS y deben ser seguidas por el agente en cada interacc
 
 ## 1. Autorización y Seguridad (CRÍTICO)
 *   🔴 **SIN PERMISO, NO SE TOCA**: NUNCA modificar código, ejecutar comandos de Git, ni subir cambios a GitHub sin pedir autorización explícita al usuario primero.
+*   🇪🇸 **Idioma**: Todo el proyecto (Commits, Docs, Código) debe estar en **ESPAÑOL**.
 *   👀 **Lectura Permitida**: Eres libre de leer archivos, listar directorios y consultar el estado de Git proactivamente.
 
 ## 2. Restricciones Físicas (Hardware Legacy)
