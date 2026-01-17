@@ -273,3 +273,31 @@ AHORA:
 *   **Workflow**: Serie de pasos ordenados para completar una tarea repetitiva.
 *   **Legacy Code**: Código heredado o antiguo que debemos mantener (nuestro código de Android 2.3).
 *   **Append**: Acción de añadir contenido al final de un archivo sin borrar lo anterior.
+
+---
+
+## 🚀 Phase 27: Adaptación Ergonómica (El Móvil Murciélago)
+**Fecha**: 17 de Enero de 2026 | **Versión**: v3.4.1
+
+### 📜 1. La Historia (El Problema)
+El Usuario necesitaba montar el móvil en su ubicación final, pero por la distribución del cable USB, el teléfono debía estar físicamente **boca abajo** (conector de carga hacia arriba).
+El problema surgió con la arquitectura "Zero-Copy":
+1.  La interfaz de Android rota automáticamente... pero la cámara NO.
+2.  Al usar `SurfaceView` directo (`PUSH_BUFFERS`), el hardware de la cámara "pinta" en la pantalla ignorando por completo la orientación de la ventana.
+3.  Resultado: Una interfaz correcta, pero una imagen de videovigilancia invertida (el techo en el suelo).
+
+### 🛠️ 2. La Solución (Ingeniería)
+La solución requirió dos niveles de intervención:
+
+1.  **Nivel Sistema (UI)**: Usamos `reverseLandscape` en el `AndroidManifest.xml` para decirle a Android que la posición "natural" de la app es con el móvil invertido 180º.
+2.  **Nivel Hardware (Cámara)**: Tuvimos que inyectar una orden directa al driver:
+    ```java
+    // 4. FIX ROTACIÓN
+    instance.camera.setDisplayOrientation(180);
+    ```
+    *Dificultad*: Al detener y reiniciar el preview para aplicar la rotación, se rompía la detección de movimiento porque se limpiaban los `CallbackBuffers`. Tuvimos que regenerar y reasignar los buffers manualmente en el proceso de reinicio.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Reverse Landscape**: Es un modo poco conocido pero vital para instalaciones industriales/fijas donde el cableado manda sobre la estética.
+*   **Push Buffers vs Rotación**: Cuando usas renderizado directo a hardware (`PUSH_BUFFERS`), tú eres responsable de todo. El sistema operativo no te ayuda a rotar la imagen.
+*   **Buffer Hell**: Si usas `setPreviewCallbackWithBuffer`, jamás debes detener la cámara (`stopPreview`) sin volver a rellenar la cola de buffers (`addCallbackBuffer`) antes de arrancar de nuevo, o la cámara se quedará ciega (Callback muerto).

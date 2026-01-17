@@ -816,7 +816,10 @@ public class SentinelService extends Service {
                     instance.camera.addCallbackBuffer(new byte[bufferSize]);
                 }
                 
-                // 4. ARRANCAR
+                // 4. FIX ROTACIÓN: Girar 180 grados la imagen hardware
+                instance.camera.setDisplayOrientation(180);
+
+                // 5. ARRANCAR
                 instance.camera.startPreview();
                 
             } catch (Exception e) {

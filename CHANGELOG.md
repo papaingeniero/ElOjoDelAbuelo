@@ -5,6 +5,14 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.4.1] - 2026-01-17
+### Fixed
+- **Camera Rotation**: Implemented `setDisplayOrientation(180)` in `SentinelService`. The `reverseLandscape` in Manifest only rotated the UI; this fix forces the Hardware Camera Preview to match the inverted orientation.
+
+## [v3.4.0] - 2026-01-17
+### Changed
+- **Ergonomics**: Changed `screenOrientation` to `reverseLandscape` in `AndroidManifest.xml`. This rotates the UI and Camera 180 degrees to accommodate devices mounted with the USB port facing upwards.
+
 ## [v3.3.3] - 2026-01-17
 ### Changed
 - **Documentation**: Finalized `BITACORA.md` with deep historical context, detailed engineering decisions (nv21, thermal optimization), and "Client Parasite" architecture storytelling.
