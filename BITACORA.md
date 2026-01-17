@@ -341,3 +341,36 @@ Estamos investigando si el problema es un conflicto de Layouts (`FrameLayout` vs
 2.  La conexión entre la Cámara y el `SurfaceView` de la UI. La cámara graba en el `dummySurface` (invisible), pero no "pinta" en la pantalla del usuario.
 **Lección**: "Clean Slate" funciona para estabilidad, pero requiere recablear manualmente las conexiones vitales que antes hacían librerías o código legacy implícito.
 **Acción**: Protocolo de Ruptura activado. Volver a Planificación para Fase 28.13 (Recableado).
+
+### ✅ Éxito (v3.5.10): La Restauración del Gold Master
+**Resultado**: Estabilidad total recuperada.
+**Solución**:
+1.  **Hybrid MainActivity**: Mantuvimos la limpieza visual (`Theme.NoTitleBar.Fullscreen` en Manifest) pero recuperamos el `SurfaceHolder.Callback` en Java para pilotar la cámara.
+2.  **SentinelService Bridge**: Implementamos `setPreviewSurface` para conectar el `Surfaceholder` de la UI con la cámara del Servicio.
+3.  **Gold Master Restore**: Restauramos el código exacto de `SentinelService.java` (lógica de buffers manual y rotación de bytes) que sabíamos que funcionaba en el hardware del Galaxy S.
+**Estado Final**: Tenemos Fullscreen (Visual Upgrade) + Estabilidad (Gold Master). Estamos listos para, ahora sí, reintentar cosas nuevas sobre cimientos sólidos.
+
+---
+
+## 🚀 Phase 29: Zoom y Pan Validado (Hardware Scaling)
+**Versión**: v3.6.0
+
+### 📜 1. La Historia (El Problema)
+Teníamos una funcionalidad de Zoom digital validada en un "Sandbox" aislado, pero necesitábamos integrarla en la aplicación principal (`MainActivity`) sin romper la delicada estabilidad del `SentinelService` ("Gold Master"). El reto era reemplazar la UI antigua por una nueva capaz de redimensionar la superficie de video (Hardware Scaling) manteniendo la lógica de negocio intacta.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Aplicamos una cirugía de trasplante completo de UI ("Clean Slate UI"):
+
+1.  **Layout Puro**: Simplificamos `activity_main.xml` a un `FrameLayout` contenedor y un `SurfaceView`. Eliminamos cualquier `RelativeLayout` legacy que causara conflictos de posicionamiento.
+2.  **Lógica de Zoom (Hardware Scaling)**:
+    *   Leemos las preferencias `defaultZoom`, `defaultPanX` y `defaultPanY`.
+    *   Si `zoom > 1.0`, calculamos un tamaño de `SurfaceView` mayor que la pantalla física (ej: 2x = 1600x960 en una pantalla de 800x480).
+    *   Usamos márgenes negativos (`leftMargin`, `topMargin`) en `FrameLayout.LayoutParams` para desplazar la ventana de visualización (Pan).
+    *   El hardware de video se encarga de mostrar solo la porción visible. Coste de CPU: 0%.
+3.  **Integración de Servicio**:
+    *   `MainActivity` inicia `SentinelService` automáticamente.
+    *   Se conecta al servicio mediante `SentinelService.setPreviewSurface(holder)` en los callbacks de `SurfaceHolder`.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Divide y Vencerás**: Validar funcionalidades complejas (como manipular SurfaceViews gigantes) en actividades aisladas (Sandbox) antes de integrarlas reduce el riesgo de romper el sistema principal.
+*   **Hardware Scaling**: Manipular el tamaño del `SurfaceView` es la forma más eficiente de hacer Zoom en Android 2.3, ya que evita el procesamiento de bitmaps por software.

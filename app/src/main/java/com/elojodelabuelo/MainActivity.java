@@ -11,33 +11,29 @@ import android.widget.FrameLayout;
 import android.util.Log;
 import android.widget.Toast;
 
-// RECUPERAMOS: implements SurfaceHolder.Callback (Vital para ver la cámara)
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "MainUI";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // 1. CLEAN SETUP: Sin window flags conflictivas (El Manifest manda)
         try {
-            // 1. CLEAN SETUP: Confiamos en el Manifest para el FullScreen
             setContentView(R.layout.activity_main);
             
-            // 2. RECUPERAMOS: Configuración de Hardware (Vital para Android 2.3)
+            // 2. Hardware Preview Setup (Vital para Android 2.3)
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.cameraPreview);
             if (surfaceView != null) {
                 SurfaceHolder holder = surfaceView.getHolder();
                 holder.addCallback(this);
-                // LA LÍNEA MÁGICA DEL GALAXY S:
                 holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
             }
 
-            // 3. RECUPERAMOS: Auto-Start del Servicio (Para que vaya la Web)
-            Intent autoStartIntent = new Intent(this, SentinelService.class);
-            startService(autoStartIntent);
+            // 3. Auto-Start del Cerebro (Servicio)
+            startService(new Intent(this, SentinelService.class));
             
-            // Feedback visual seguro
-            try { Toast.makeText(this, "Vigilancia Iniciada", Toast.LENGTH_SHORT).show(); } catch(Exception e){}
-
+            // 4. Botones
             setupButtons();
             
         } catch (Exception e) {
@@ -46,67 +42,96 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void setupButtons() {
-        try {
-            Button btnActivate = (Button) findViewById(R.id.btn_activate);
-            Button btnExit = (Button) findViewById(R.id.btn_deactivate);
-            
-            if (btnActivate != null) {
-                btnActivate.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        startService(new Intent(MainActivity.this, SentinelService.class));
-                        Toast.makeText(MainActivity.this, "Reiniciando...", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-            
-            if (btnExit != null) {
-                btnExit.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        stopService(new Intent(MainActivity.this, SentinelService.class));
-                        finish();
-                    }
-                });
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error setupButtons", e);
+        Button btnRestart = (Button) findViewById(R.id.btn_activate);
+        Button btnTest = (Button) findViewById(R.id.btn_test_zoom);
+        
+        if (btnRestart != null) {
+            btnRestart.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    startService(new Intent(MainActivity.this, SentinelService.class));
+                    Toast.makeText(MainActivity.this, "Servicio Reiniciado", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        
+        // Botón auxiliar por si queremos forzar redibujado
+        if (btnTest != null) {
+            btnTest.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                     SurfaceView surface = (SurfaceView) findViewById(R.id.cameraPreview);
+                     if(surface != null) surface.requestLayout();
+                     Toast.makeText(MainActivity.this, "Refrescando...", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        applyZoomLogic();
+    }
+    
+    // --- LA FÓRMULA DEL SANDBOX (VALIDADA) ---
+    private void applyZoomLogic() {
         try {
-            // 4. MANTENEMOS: Estabilidad visual (Sin Zoom por ahora)
-            // Esto asegura que la superficie tenga el tamaño correcto para pintar
-            SurfaceView sv = (SurfaceView) findViewById(R.id.cameraPreview);
-            if (sv != null) {
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT, 
-                    FrameLayout.LayoutParams.MATCH_PARENT
-                );
-                sv.setLayoutParams(params);
+            SurfaceView surface = (SurfaceView) findViewById(R.id.cameraPreview);
+            if (surface == null) return;
+
+            // Leer Preferencias
+            android.content.SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
+            float zoom = prefs.getFloat("defaultZoom", 1.0f);
+            int panX = prefs.getInt("defaultPanX", 0);
+            int panY = prefs.getInt("defaultPanY", 0);
+
+            // Feedback visual
+            if (zoom > 1.01f) {
+                Toast.makeText(this, "Zoom: " + zoom + "x", Toast.LENGTH_SHORT).show();
             }
+
+            // Calcular Pantalla
+            android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            int screenW = metrics.widthPixels;
+            int screenH = metrics.heightPixels;
+
+            FrameLayout.LayoutParams params;
+
+            if (zoom <= 1.01f) {
+                // MODO NATIVO
+                params = new FrameLayout.LayoutParams(-1, -1); // MATCH_PARENT
+            } else {
+                // MODO ZOOM (Hardware Scaling)
+                int targetW = (int) (screenW * zoom);
+                int targetH = (int) (screenH * zoom);
+                int baseLeft = (screenW - targetW) / 2;
+                int baseTop = (screenH - targetH) / 2;
+
+                params = new FrameLayout.LayoutParams(targetW, targetH);
+                params.leftMargin = baseLeft + panX;
+                params.topMargin = baseTop + panY;
+                params.gravity = android.view.Gravity.TOP | android.view.Gravity.LEFT; 
+            }
+            
+            surface.setLayoutParams(params);
+            surface.requestLayout(); // Forzar al driver
+
         } catch (Exception e) {
-            Log.e(TAG, "Error in onResume", e);
+            Log.e(TAG, "Error Zoom UI", e);
         }
     }
 
-    // --- 5. RECUPERAMOS: El Puente Cámara <-> Pantalla ---
-
+    // --- CONEXIÓN CON EL SERVICIO (NO TOCAR) ---
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        // Conectar la tubería de video
         SentinelService.setPreviewSurface(holder);
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // Nada que hacer aquí, el servicio controla el tamaño
-    }
+    public void surfaceChanged(SurfaceHolder holder, int f, int w, int h) {}
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // Desconectar para evitar fugas de memoria
         SentinelService.setPreviewSurface(null);
     }
 }
