@@ -72,3 +72,14 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
 *   Cuando generes una lista de tareas en `task.md`, la última tarea de la fase de **Ejecución** SIEMPRE debe ser un paso explícito de Git:
     *   `[ ] Commit & Tag vX.X.X (Snapshot)`
 *   Esto actúa como barrera de seguridad antes de pasar a la fase de **Verificación** o a la siguiente iteración.
+
+## 8. Protocolo de Ruptura (Circuit Breaker)
+Qué hacer cuando una Verificación FALLA:
+1.  🛑 **STOP**: Prohibido iniciar inmediatamente una sub-fase de corrección rápida ("Hotfix Loop").
+2.  📝 **LOG**: Documentar el fallo en `BITACORA.md` (Ver Regla 5).
+3.  💾 **SAVE (Commit de Estado Roto)**:
+    *   **NUNCA borrar código** (`git restore`) si hay trabajo sustancial.
+    *   Hacer un commit con el estado actual roto para no perder el trabajo.
+    *   Prefijo del commit: `chore(debug): Snapshot intento fallido...`
+    *   (Opcional) Poner un Tag si es relevante: `vX.X.X-BROKEN`.
+4.  🧠 **RETHINK**: Volver obligatoriamente a la fase de **Planificación** para la siguiente iteración.

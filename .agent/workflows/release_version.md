@@ -5,36 +5,36 @@ description: Proceso estandarizado para publicar una nueva versión (Release)
 # Workflow: Publicar Nueva Versión
 
 Sigue estos pasos estrictamente cuando el usuario solicite una "Release" o "Nueva Versión".
+Este workflow implementa las salvaguardas definidas en `legacy_dev_rules.md`.
 
-## 1. Preparación
-1.  Pregunta al usuario el tipo de cambio (Fix, Feature, Hotfix) para decidir el número de versión.
-2.  Confirma que el código compila y ha sido probado (según lo que diga el usuario).
+## 1. Safety Check (Semáforo)
+1.  **Ejecuta**: `git status --porcelain`
+2.  **Verifica**:
+    *   Si hay salida (archivos modificados o unstaged antes de empezar): **STOP**. Se aplica la Regla del Semáforo Rojo.
+    *   Exige al usuario consolidar los cambios pendientes antes de iniciar la Release.
+    *   Solo continúa si el output está vacío (clean state).
 
-## 2. Versionado
-1.  Edita `app/build.gradle`:
-    *   Incrementa `versionName` al nuevo número (ej: "3.3.2").
-2.  Edita `CHANGELOG.md`:
-    *   Añade una nueva entrada con la fecha de hoy y la versión.
-    *   Describe los cambios bajo `### Added`, `### Fixed`, o `### Changed`.
-3.  Edita `BITACORA.md` (Raíz):
-    *   Añade (append) la crónica de esta versión al final del archivo.
+## 2. Preparación y Documentación
+1.  **Bitácora (Fuente de Verdad)**:
+    *   Edita `BITACORA.md` (append).
+    *   Añade la crónica completa de los cambios de esta versión.
+    *   Este texto SERÁ el cuerpo del commit, así que esfuérzate.
+2.  **Versionado**:
+    *   Edita `app/build.gradle`: Incrementa `versionName`.
+    *   Edita `CHANGELOG.md`: Añade entrada estandar.
 
-## 3. Control de Versiones (Git)
+## 3. Ejecución de Release (Git)
 1.  **Stage**: `git add .`
-2.  **Commit**:
-    *   Mensaje sugerido: `tipo: Descripción breve vX.Y.Z`
-    *   Ejemplo: `fix: Corrección de memoria v3.3.2`
-    *   COMENTARIO: Pide confirmación al usuario antes de hacer el commit real.
-3.  **Push (Rama)**:
+    *   Esto capturará: build.gradle, CHANGELOG, BITACORA y el código modificado.
+2.  **Commit (Sincronizado)**:
+    *   *Subject*: `tipo: Descripción breve vX.Y.Z`
+    *   *Body*: **COPIA LITERAL** del texto añadido a `BITACORA.md`.
+    *   Ejecuta el commit.
+3.  **Tag**:
+    *   Crea y sube el tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`
+4.  **Push Main**:
     *   `git push origin main`
-    *   COMENTARIO: Pide confirmación explícita.
 
-## 4. Congelado (Tagging)
-1.  Crea la etiqueta oficial:
-    *   `git tag vX.Y.Z` (ej: `git tag v3.3.2`)
-2.  Sube la etiqueta:
-    *   `git push origin vX.Y.Z`
-    *   ⚠️ Importante: Asegúrate de pushear el tag explícitamente.
-
-## 5. Cierre
-1.  Informa al usuario de que la versión vX.Y.Z está publicada y segura.
+## 4. Cierre
+1.  Confirma que `git status` vuelve a estar limpio.
+2.  Informa al usuario: "Release vX.Y.Z desplegada, documentada y etiquetada."
