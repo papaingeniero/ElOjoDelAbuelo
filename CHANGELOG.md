@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.8] - 2026-01-17
+### Fixed
+- **Clean Slate**: Reescritura completa de `MainActivity` y `layout` para eliminar conflictos de ventana.
+- **Refactor**: Eliminación de `setFlags` y atributos legacy que causaban conflictos en Android 2.3.
+- **Safety**: Bloques `try-catch` globales en `onCreate` y `onResume`.
+
 ## [v3.5.7] - 2026-01-17
 ### Fixed
 - **Conflict Resolution**: Removed `getWindow().setFlags(...)` in `MainActivity.java` to resolve a fatal conflict with the `Theme.NoTitleBar.Fullscreen` defined in the Manifest on Android 2.3. The theme now solely handles the full-screen behavior.
