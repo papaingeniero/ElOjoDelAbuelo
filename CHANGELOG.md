@@ -273,6 +273,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Rotation Toggle (0°/180°).
 - **Animated Thumbnails**: Dashboard now renders a live 1fps preview using a secondary MJPEG stream.
 
+## v3.5.8 (Hotfix: Clean Slate)
+- **FIX**: Reescritura completa de `MainActivity` y `layout` para eliminar conflictos de ventana.
+- **REF**: Eliminación de `setFlags` y atributos legacy en XML.
+- **SAFE**: `try-catch` blocks en `onCreate` y `onResume`.
+
+## v3.5.7 (Hotfix: Window Flags)
+- **FIX**: `WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS` was causing a black bar at the bottom of the screen on some devices. Replaced with `FLAG_LAYOUT_NO_LIMITS` for full-screen immersion.
+
 ### Changed
 - **Performance**: Relocated the motion threshold calculation (`500 - sensitivity * 4.9`) out of the `onPreviewFrame` hot loop. It is now calculated only upon settings change, saving ~15% CPU per frame.
 - **API**: Added endpoints `/api/settings` (GET) and `/api/save_settings` (POST) to `NanoHttpServer`.
