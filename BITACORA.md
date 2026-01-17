@@ -333,3 +333,11 @@ Al intentar este truco en Android 2.3 (API 10):
 *   Curiosamente, el **Servicio de fondo sigue vivo** y vigilando, pero nos quedamos sin pantalla (monitor apagado).
 
 Estamos investigando si el problema es un conflicto de Layouts (`FrameLayout` vs `LayoutParams`), un límite de memoria de video al pedir superficies gigantes, o una incompatibilidad del `WindowManager` de Samsung con nuestros trucos de posicionamiento.
+
+### ❌ Intento Fallido (v3.5.8): Clean Slate Parcial
+**Síntoma**: La aplicación ya no crashea al inicio (¡Éxito Parcial! 🚀), pero muestra una pantalla negra y el servidor Web no responde.
+**Causa**: "Lobotomía" excesiva. Al limpiar `MainActivity`, eliminamos:
+1.  El auto-arranque del `SentinelService`.
+2.  La conexión entre la Cámara y el `SurfaceView` de la UI. La cámara graba en el `dummySurface` (invisible), pero no "pinta" en la pantalla del usuario.
+**Lección**: "Clean Slate" funciona para estabilidad, pero requiere recablear manualmente las conexiones vitales que antes hacían librerías o código legacy implícito.
+**Acción**: Protocolo de Ruptura activado. Volver a Planificación para Fase 28.13 (Recableado).
