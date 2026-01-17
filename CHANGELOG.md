@@ -5,6 +5,41 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.7] - 2026-01-17
+### Fixed
+- **Conflict Resolution**: Removed `getWindow().setFlags(...)` in `MainActivity.java` to resolve a fatal conflict with the `Theme.NoTitleBar.Fullscreen` defined in the Manifest on Android 2.3. The theme now solely handles the full-screen behavior.
+
+## [v3.5.6] - 2026-01-17
+### Fixed
+- **Manifest Revert**: Reverted `screenOrientation` to `landscape` and added `configChanges="orientation|keyboardHidden"` in `AndroidManifest.xml`. The `reverseLandscape` option was causing a native crash on the targeted Samsung Android 2.3 ROM. Priority is stability over native rotation.
+- **Theme**: Applied `Theme.NoTitleBar.Fullscreen` directly in Manifest for cleaner startup.
+
+## [v3.5.5] - 2026-01-17
+### Fixed
+- **Defensive Crash Prevention**: Completely rewrote `MainActivity` to be "Defensive". Removed `requestWindowFeature` (potential conflict), added `instanceof` checks for `LayoutParams` (to prevent XML cache mismatch crashes), and wrapped `onCreate` and `onResume` in global `try-catch(Throwable)` blocks. The app should now degrade gracefully instead of Force Closing.
+
+## [v3.5.4] - 2026-01-17
+### Fixed
+- **Robust UI Initialization**: "Armored" `MainActivity.onResume` with a NullPtr check for `SurfaceView` and a global `try-catch(Throwable)` block to prevent Force Close on startup. If UI initialization fails, the app will now stay open and show a Toast error instead of crashing.
+
+## [v3.5.3] - 2026-01-17
+### Fixed
+- **Startup Crash**: Fixed a critical crash on launch caused by an invalid `android:layout_centerInParent` attribute in a FrameLayout and ensured `requestWindowFeature` is called strictly *before* `setContentView` in `MainActivity`.
+
+## [v3.5.2] - 2026-01-17
+### Fixed
+- **Zoom Persistence**: Modified `MainActivity.onResume` to read Zoom/Pan settings directly from `SharedPreferences` ("SentinelPrefs") instead of relying on static variables, ensuring the correct value is applied after a web configuration change and app restart. Debug Toast updated to show "Zoom Disco: X.Xx".
+
+## [v3.5.1] - 2026-01-17
+### Fixed
+- **Visual Clean**: Removed residual "El Ojo Del Abuelo" text overlay for a completely clean view.
+- **Hardware Zoom**: Fixed `onResume` logic to use specific `FrameLayout.LayoutParams`, ensuring the digital zoom actually scales the SurfaceView on the physical screen. Added Debug Toast.
+
+## [v3.5.0] - 2026-01-17
+### Added
+- **Visual Upgrade**: Fully immersive Full-Screen mode in `MainActivity` (No title, no status bar).
+- **Hardware Zoom**: `MainActivity` now applies the Zoom/Pan settings directly to the display Surface using `LayoutParams`, allowing "Zero-CPU" digital zoom on the physical screen.
+
 ## [v3.4.1] - 2026-01-17
 ### Fixed
 - **Camera Rotation**: Implemented `setDisplayOrientation(180)` in `SentinelService`. The `reverseLandscape` in Manifest only rotated the UI; this fix forces the Hardware Camera Preview to match the inverted orientation.

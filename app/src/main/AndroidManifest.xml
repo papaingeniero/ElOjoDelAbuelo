@@ -21,7 +21,9 @@
 
         <activity android:name=".MainActivity"
             android:label="ElOjoDelAbuelo"
-            android:screenOrientation="reverseLandscape"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

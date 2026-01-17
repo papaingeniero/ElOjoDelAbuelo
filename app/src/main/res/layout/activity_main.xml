@@ -4,28 +4,11 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Layer 1: Full Screen Magic Mirror -->
-    <!-- scaleType="matrix" allows us to manual Zoom/Pan -->
     <SurfaceView
         android:id="@+id/cameraPreview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true" />
+        android:layout_height="match_parent" />
 
-    <!-- Layer 2: Floating HUD / Status -->
-    <TextView
-        android:id="@+id/statusText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:background="#80000000"
-        android:padding="8dp"
-        android:text="El Ojo Del Abuelo"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:layout_marginTop="16dp" />
-
-    <!-- Layer 3: Floating Controls (Bottom) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

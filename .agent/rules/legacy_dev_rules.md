@@ -34,7 +34,13 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
     *   No te limites a decir *qué* cambiaste. Explica el **POR QUÉ**.
     *   Incluye contexto técnico ("En Android 2.3 esto fallaba porque...").
     *   Menciona alternativas descartadas ("Intentamos X, pero la RAM se llenaba").
+    *   No te limites a decir *qué* cambiaste. Explica el **POR QUÉ**.
+    *   Incluye contexto técnico ("En Android 2.3 esto fallaba porque...").
+    *   Menciona alternativas descartadas ("Intentamos X, pero la RAM se llenaba").
     *   El objetivo es que un estudiante lea el commit y aprenda una lección de ingeniería.
+*   **Sincronización Bitácora-Commit**: Si el commit incluye una nueva entrada en `BITACORA.md`, el cuerpo del mensaje del commit **DEBE INCLUIR COPIA LITERAL** del texto añadido a la Bitácora.
+    *   No resumas. Copia y pega el contenido Markdown completo en el cuerpo del commit.
+    *   Aprovecha que Git permite mensajes largos para preservar la narrativa técnica íntegra.
 
 ## 5. Documentación Viva (BITACORA.md)
 *   **Archivo Maestro**: El archivo `BITACORA.md` en la raíz es nuestro "Pergamino Infinito" acumulativo.
@@ -43,10 +49,26 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
     *   **CHANGELOG.md (Universal)**: Se registra **TODO** (Phases, Fixes, Typos, Versiones). Es el notario del proyecto.
     *   **BITACORA.md (Selecta)**: Se añade **SOLO** si es relevante técnicamente (Retos, Arquitectura, Lecciones).
         *   **NO incluir en Bitácora**: Cambios menores, correcciones de typos, subidas de versión rutinarias.
-*   **Estructura del Reporte**:
+*   **Registro de Fallos (La Bitácora de Guerra)**:
+    *   Si una Phase (o sub-phase) FALLA en su verificación, **ES OBLIGATORIO** documentar el intento fallido en `BITACORA.md` inmediatamente, antes de planificar la siguiente solución.
+    *   Formato: `### ❌ Intento Fallido (vX.X.X): [Descripción Breve]`. Explicar qué se probó y por qué no funcionó.
+    *   *Objetivo*: Evitar ciclos infinitos de prueba y error repitiendo los mismos pasos en el futuro.
+*   **Estructura del Reporte Exitoso**:
     1.  **Título con Icono 🚀**: Atractivo y descriptivo.
     2.  **El Problema (Storytelling) 📜**: Narrativa de qué sucedía antes (ej: "El móvil se calentaba...").
     3.  **La Solución (Ingeniería) 🛠️**: Explicación técnica profunda. Usar diagramas ASCII si ayuda. Justificar decisiones.
     4.  **Lecciones Aprendidas 🎓**: Lista de conceptos clave para el estudiante (ej: "Aprendimos que el GC en Android 2.3 es lento").
     5.  **Glosario 📖**: Definiciones breves de términos técnicos complejos.
     6.  **Estilo Visual**: Uso generoso de emojis (✅, ⚠️, ℹ️) para facilitar la lectura.
+
+## 6. La Regla del Semáforo Rojo (Integridad de Git)
+*   🚦 **NO SUBIR VERSIÓN CON CAMBIOS PENDIENTES**: Está estrictamente **PROHIBIDO** incrementar el `versionName` en `build.gradle` si el comando `git status` muestra archivos modificados (dirty state) que no pertenecen a la nueva versión.
+*   **Acción Requerida**: Si hay cambios pendientes:
+    1.  **Commitear**: Si son cambios válidos, haz un commit antes de seguir.
+    2.  **Revertir**: Si son pruebas fallidas, límpialas (`git restore`).
+*   **Excepción**: El único momento donde `git status` puede estar "sucio" es justo después de editar los archivos para la *nueva* versión (build.gradle, changelog, código), momento en el cual procedemos inmediatamente al Commit de Release.
+
+## 7. Estructura de Tareas (Safety Check)
+*   Cuando generes una lista de tareas en `task.md`, la última tarea de la fase de **Ejecución** SIEMPRE debe ser un paso explícito de Git:
+    *   `[ ] Commit & Tag vX.X.X (Snapshot)`
+*   Esto actúa como barrera de seguridad antes de pasar a la fase de **Verificación** o a la siguiente iteración.

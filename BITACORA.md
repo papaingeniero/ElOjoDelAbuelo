@@ -301,3 +301,35 @@ La solución requirió dos niveles de intervención:
 *   **Reverse Landscape**: Es un modo poco conocido pero vital para instalaciones industriales/fijas donde el cableado manda sobre la estética.
 *   **Push Buffers vs Rotación**: Cuando usas renderizado directo a hardware (`PUSH_BUFFERS`), tú eres responsable de todo. El sistema operativo no te ayuda a rotar la imagen.
 *   **Buffer Hell**: Si usas `setPreviewCallbackWithBuffer`, jamás debes detener la cámara (`stopPreview`) sin volver a rellenar la cola de buffers (`addCallbackBuffer`) antes de arrancar de nuevo, o la cámara se quedará ciega (Callback muerto).
+
+---
+
+## 🚀 Phase 28: La Búsqueda de la Pantalla Perfecta (Full Screen, Rotación y Zoom Zero-Copy)
+**Estado**: En Progreso (v3.5.7 - Fallida)
+
+### 📜 1. La Historia (El Objetivo)
+Queríamos convertir el móvil en un monitor de vigilancia profesional definitivo. Los objetivos eran ambiciosos:
+1.  **Limpieza Total**: Eliminar las barras negras de sistema y el título de la app ("El Ojo Del Abuelo") para aprovechar cada píxel de la pantalla.
+2.  **Orientación Correcta**: Ver la cámara "al derecho" aunque el móvil esté "al revés" (por el cable USB).
+3.  **Zoom Hardware**: Aplicar el Zoom digital definido en la web (ej: 2.0x) directamente en la pantalla del móvil, pero **sin gastar CPU** (nada de procesado de bitmaps).
+
+### 🛠️ 2. Avances Logrados (Ingeniería)
+Hasta ahora hemos conquistado dos hitos importantes:
+*   **Limpieza UI**: Logramos eliminar el texto y las barras usando temas FullScreen.
+*   **Rotación Hardware**: Descubrimos que girar el Manifest (`reverseLandscape`) solo rotaba los botones, pero la cámara seguía invertida. La solución fue hablarle al driver directamente: `camera.setDisplayOrientation(180)`. Esto arregló la imagen sin tocar píxeles.
+
+### ⚠️ 3. El Desafío Actual: Zoom Zero-Copy
+Aquí es donde estamos atascados.
+**La Técnica**:
+Para hacer Zoom sin gastar CPU, intentamos un truco de ilusionismo.
+*   En lugar de escalar la imagen por software (lento), creamos un `SurfaceView` **gigante** (más grande que la pantalla física).
+*   Si la pantalla es 800x480 y queremos Zoom 2x, hacemos el Surface de 1600x960.
+*   Luego intentamos mover ese lienzo gigante (`Translation X/Y` o Margenes) para centrar la zona de interés.
+*   Teóricamente, el hardware de vídeo solo pintaría la parte visible, logrando un Zoom perfecto a coste cero.
+
+**El Problema (Crash)**:
+Al intentar este truco en Android 2.3 (API 10):
+*   La aplicación **cierra la ventana de interfaz** inmediatamente al abrirse (Force Close silencioso).
+*   Curiosamente, el **Servicio de fondo sigue vivo** y vigilando, pero nos quedamos sin pantalla (monitor apagado).
+
+Estamos investigando si el problema es un conflicto de Layouts (`FrameLayout` vs `LayoutParams`), un límite de memoria de video al pedir superficies gigantes, o una incompatibilidad del `WindowManager` de Samsung con nuestros trucos de posicionamiento.
