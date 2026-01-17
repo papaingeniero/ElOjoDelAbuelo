@@ -47,6 +47,34 @@ public class SentinelService extends Service {
     public static void setUiCallback(UiPreviewCallback cb) {
         uiPreviewCallback = cb;
     }
+
+    // Phase 28.13: Hybrid Surface Bridge
+    public static void setPreviewSurface(android.view.SurfaceHolder holder) {
+        if (instance != null && instance.camera != null) {
+            try {
+                instance.camera.stopPreview();
+                if (holder != null) {
+                    try {
+                        instance.camera.setPreviewDisplay(holder);
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error setting preview display", e);
+                    }
+                } else {
+                    try {
+                        // Revert to dummy texture for background recording
+                        if (instance.dummySurface != null) {
+                            instance.camera.setPreviewTexture(instance.dummySurface);
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error reverting to dummy surface", e);
+                    }
+                }
+                instance.camera.startPreview();
+            } catch (Exception e) {
+                Log.e(TAG, "Error switching surface", e);
+            }
+        }
+    }
     // ----------------------------------
 
     private PowerManager.WakeLock wakeLock;

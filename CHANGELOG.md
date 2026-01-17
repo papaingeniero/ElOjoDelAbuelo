@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.5.9] - 2026-01-17
+### Fixed
+- **Hybrid Fix**: Recuperación de `SurfaceHolder.Callback` en `MainActivity` para conectar la cámara a la pantalla.
+- **Bridge**: Nuevo método `SentinelService.setPreviewSurface` para alternar dinámicamente entre `SurfaceView` (Foreground) y `dummyTexture` (Background).
+- **Auto-Start**: Restaurado el inicio automático del servicio al abrir la App para garantizar disponibilidad Web.
+
 ## [v3.5.8] - 2026-01-17
 ### Fixed
 - **Clean Slate**: Reescritura completa de `MainActivity` y `layout` para eliminar conflictos de ventana.
