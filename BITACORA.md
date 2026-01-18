@@ -374,3 +374,18 @@ Aplicamos una cirugía de trasplante completo de UI ("Clean Slate UI"):
 ### 🎓 3. Lecciones Aprendidas
 *   **Divide y Vencerás**: Validar funcionalidades complejas (como manipular SurfaceViews gigantes) en actividades aisladas (Sandbox) antes de integrarlas reduce el riesgo de romper el sistema principal.
 *   **Hardware Scaling**: Manipular el tamaño del `SurfaceView` es la forma más eficiente de hacer Zoom en Android 2.3, ya que evita el procesamiento de bitmaps por software.
+
+---
+
+## 🚀 Phase 30: Ergonomía Final (Reverse Landscape)
+**Versión**: v3.6.1
+
+### 📜 1. La Historia (El Retoque Final)
+El usuario confirmó que la arquitectura de Zoom/Pan funciona perfectamente. Sin embargo, para la instalación física definitiva (el móvil "murciélago" colgado boca abajo por el cable USB), era necesario invertir la interfaz.
+
+### 🛠️ 2. La Solución (Ingeniería)
+*   **Reverse Landscape**: Modificamos el `AndroidManifest.xml` para forzar `screenOrientation="reverseLandscape"`.
+*   Esto asegura que tanto la UI (botones) como el Preview de cámara (que ya tenía `setDisplayOrientation(180)`) estén perfectamente sincronizados verticalmente.
+
+### ✅ Estado Final
+El sistema es estable, funcional y ergonómico.
