@@ -458,3 +458,31 @@ Tras múltiples instalaciones de prueba (Snapshots), el sistema de archivos de A
 ### 🛠️ 2. La Solución (Ingeniería)
 En lugar de formatear el dispositivo (Reset de Fábrica), optamos por una solución lateral: **Cambio de Identidad**.
 Migramos permanentemente el `applicationId` a `com.elojodelabuelo.rescue`. Para el sistema operativo, es una aplicación nueva y limpia. Para nosotros, es el mismo viejo "Abuelo" con un pasaporte nuevo.
+
+---
+
+## 🚀 Phase 35: Modo Centinela (Ojos que ven, Corazón que no siente)
+**Versión**: v3.9.0
+
+### 📜 1. El Problema (Discreción vs. Usabilidad)
+El "Abuelo" grababa muy bien, pero tenía dos defectos:
+1.  Gastaba batería manteniendo la pantalla encendida innecesariamente.
+2.  Al encenderse por movimiento, el **Keyguard (Bloqueo de Pantallas)** de CyanogenMod tapaba la cámara, mostrando el patrón de desbloqueo en lugar del intruso.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos el **Modo Centinela**:
+*   **Reposo**: Pantalla apagada.
+*   **Alerta**: Al recibir `ACTION_REC_START` (Movimiento), la pantalla se enciende al máximo brillo (Intimidación + Feedback).
+*   **Pase VIP**: Usamos Flags de Ventana (`FLAG_DISMISS_KEYGUARD | FLAG_SHOW_WHEN_LOCKED`) para que la Activity se dibuje **ENCIMA** del bloqueo de seguridad.
+*   **Enfriamiento**: Al parar de grabar (`ACTION_REC_STOP`), forzamos el apagado del display en 1 segundo.
+
+### 🏺 3. Cronología de Batalla (Arqueología)
+Para llegar aquí, tuvimos que iterar científicamente:
+
+| Versión | Estado | Diagnóstico |
+| :--- | :--- | :--- |
+| **v3.9.0-dev** | ❌ FALLO | Implementamos WakeLock, pero el "Slide to Unlock" bloqueaba la vista. (Commit: `b238379`) |
+| **v3.9.1-dev** | ✅ ÉXITO | Añadimos `addFlags()` en `onCreate`. La app salta el bloqueo olímpicamente. |
+
+### 🎓 4. Lecciones Aprendidas
+*   **Meta-Ingeniería**: Aprendimos a no borrar nuestros errores. El fallo de la v3.9.0-dev quedó registrado en Git y nos enseñó que el *Context* de Android 2.3 requiere permisos explícitos de ventana para saltarse la seguridad del sistema.

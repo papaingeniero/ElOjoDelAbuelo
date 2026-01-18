@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.0] - 2026-01-18
+### Added
+- **Sentinel Mode**:
+    - **Smart Screen**: Screen wakes up with max brightness on motion detection (`ACTION_REC_START`).
+    - **Power Saving**: Screen sleeps automatically 1s after recording stops.
+    - **VIP Pass**: App dismisses Keyguard ("Slide to Unlock") and shows over Lockscreen using `FLAG_DISMISS_KEYGUARD`.
+
 ## [v3.8.0] - 2026-01-18
 ### Added
 - **Hot-Swap Zoom**: Broadcast system to apply View Settings (Zoom/Pan) instantly without restarting the app.
