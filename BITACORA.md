@@ -408,3 +408,20 @@ Sin embargo, necesitábamos una forma segura de detener el servicio y cerrar la 
 
 ### ✅ Estado Final
 El "Ojo del Abuelo" ha alcanzado su madurez operativa. Visualización limpia, control gestual y apagado seguro.
+
+---
+
+## 🚀 Phase 32: Stealth UI (Diseño Fantasma)
+**Versión**: v3.7.1
+
+### 📜 1. La Historia (El Retoque Estético)
+El "Kill Switch" funcionaba, pero visualmente era un "pegote". Una franja negra tapaba la parte inferior de la cámara y el botón era demasiado llamativo. En un sistema de vigilancia, la interfaz debe ser invisible.
+
+### 🛠️ 2. La Solución (Ingeniería)
+*   **Transparencia Extrema**: Eliminamos el fondo del contenedor (`LinearLayout`).
+*   **Botón Fantasma**: Rediseñamos el botón de apagado para usar un color Rojo Rubí con una transparencia del 75% (Alpha `0x40`).
+*   **Posicionamiento Estratégico**: Lo movimos a la esquina inferior derecha, reduciendo su tamaño al mínimo utilizable.
+*   **Resultado**: El botón es visible solo si lo buscas, dejando el 99% de la pantalla libre para el video.
+
+### ✅ Estado Final
+Interfaz limpia, funcional y estéticamente agradable.
