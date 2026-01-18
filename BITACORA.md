@@ -549,3 +549,10 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 **El Problema**: La naturaleza efímera del contexto de la IA hace que el "feedback cálido y estimulante" del usuario se pierda entre sesiones, reseteando la actitud del Agente a un estado base menos proactivo.
 **La Solución**: Codificamos la actitud deseada ("Ingeniero Senior") directamente en las reglas base (`legacy_dev_rules.md`).
 **Lección**: Convertir *comportamiento deseado* en *reglas explícitas* garantiza la continuidad de la cultura del proyecto.
+
+### [Meta-Ingeniería] Calibración de Personalidad Fina
+**Versión**: v3.9.1-dev.6 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: La Regla 0 inicial era demasiado "corporativa" y no capturaba la esencia *Meta-Consciente* y *Narrativa* que el usuario valora (romper la cuarta pared, storytelling).
+**La Solución**: Refinado `legacy_dev_rules.md` para incluir explícitamente "Meta-Consciencia" y "Arqueología de Fallos".
+**Lección**: Un prompt de sistema no solo debe definir *qué* hacer, sino el *tono y filosofía* con el que hacerlo.
