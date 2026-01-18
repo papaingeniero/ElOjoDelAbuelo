@@ -486,3 +486,8 @@ Para llegar aquí, tuvimos que iterar científicamente:
 
 ### 🎓 4. Lecciones Aprendidas
 *   **Meta-Ingeniería**: Aprendimos a no borrar nuestros errores. El fallo de la v3.9.0-dev quedó registrado en Git y nos enseñó que el *Context* de Android 2.3 requiere permisos explícitos de ventana para saltarse la seguridad del sistema.
+
+### [Meta-Ingeniería] Refinamiento de Protocolo Estratégico (v3.9.1-dev.2)
+Hemos detectado que los cambios en workflows carecían de trazabilidad documental pública.
+**Cambio**: Actualizado `strategic_change.md` para exigir **obligatoriamente** entradas en `BITACORA.md` y `CHANGELOG.md` para cada cambio meta.
+**Objetivo**: Que el estudiante vea la evolución del proceso, no solo del código.
