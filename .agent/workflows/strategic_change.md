@@ -23,10 +23,10 @@ Usa este workflow cuando modifiques archivos en `.agent/` o cambies la forma de 
 El metatrabajo debe ser visible. No basta con el código.
 1.  **BITACORA.md**:
     *   Añade una entrada breve narrando el cambio de proceso.
-    *   Usa el prefijo `[Meta-Ingeniería]` para distinguirlo.
+    *   **Formato Obligatorio**: `### [Meta-Ingeniería] Título | Fecha: DD de Mes de YYYY`.
 2.  **CHANGELOG.md**:
-    *   Busca (o crea) la sección `### Engineering & Process` dentro de la versión actual (Unreleased).
-    *   Añade el cambio. *Ejemplo*: "- Establecido protocolo X para evitar Y."
+    *   Si es la primera entrada del día, crea header: `## [vX.Y.Z-dev.N] - YYYY-MM-DD`.
+    *   Añade el cambio bajo `### Engineering & Process`.
 
 ## 4. El Commit Pedagógico (Regla de Oro)
 Los commits de tipo `meta` son lecciones para los estudiantes.

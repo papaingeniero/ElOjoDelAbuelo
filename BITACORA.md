@@ -535,3 +535,10 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 *   **Try-Catch Humano**: El paso `[2.1] STOP` actúa como una excepción controlada. Sin esa instrucción explícita, la tendencia natural de la LLM sería arreglar el error inmediatamente, perdiendo la historia (el commit del fallo).
 
 ---
+
+### [Meta-Ingeniería] Refuerzo de Metadatos Temporales
+**Versión**: v3.9.1-dev.4 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: El Agente, absorto en la lógica del grafo, olvidaba incluir la dimensión temporal (Fechas) en las entradas de documentación Meta.
+**La Solución**: Modificado `strategic_change.md` para hacer **explícito** el formato de fecha requerido en Bitácora y Changelog.
+**Lección**: "Si no está escrito en el script, no existe". La memoria implícita no funciona para procesos repetitivos.
