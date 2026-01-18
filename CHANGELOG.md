@@ -5,7 +5,14 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v3.9.1-dev] - 2026-01-18
+## [v3.9.1-dev.11] - 2026-01-18
+### Compliance & Engineering
+- **Policy Change**: Adopted **Absolute Traceability**. The entire repository (Code + Docs) is now treated as a single product entity. Any change to artifacts triggers a semantic version bump.
+- **Audit (Web Performance)**: Investigated suspect web client traffic ("Client Parasite").
+    - **Finding**: Confirmed "Burst Profile" behavior. High load on open (2.59MB/min), negligible load on idle (6.7KB/min).
+    - **Verdict**: Validated architecture. Passive heat generation from web client is physically impossible.
+
+## [v3.9.1-dev.10] - 2026-01-18
 ### Engineering & Process
 - **Language Policy**: Reverted to **Spanish Only** for all artifacts (Commits, Code, Docs) to prioritize educational accessibility for the target audience.
 - **Polish (Docs)**: Removed minor text duplication in `legacy_dev_rules.md` to achieve pristine documentation state.
