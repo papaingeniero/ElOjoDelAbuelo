@@ -50,6 +50,7 @@ public class SentinelService extends Service {
     // ----------------------------------
 
     private PowerManager.WakeLock wakeLock;
+    private PowerManager.WakeLock screenLock; // Lock para pantalla
     private Camera camera;
     private SurfaceTexture dummySurface;
     private NanoHttpServer httpServer;
@@ -128,6 +129,11 @@ public class SentinelService extends Service {
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ElOjoDelAbuelo:SentinelLock");
         wakeLock.acquire();
+
+        // 1.5 Screen Lock (ENCENDER PANTALLA)
+        // SCREEN_BRIGHT + ACQUIRE_CAUSES_WAKEUP enciende la pantalla al activarlo
+        screenLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "ElOjoDelAbuelo:ScreenLock");
+        screenLock.setReferenceCounted(false); // Asegurar que release siempre funciona
 
         // 2. Foreground Service
         instance = this;
@@ -296,6 +302,14 @@ public class SentinelService extends Service {
                     if (!isRecording) {
                         isRecording = true;
                         isRecordingPublic = true;
+                        
+                        // --- NUEVO: ENCENDER PANTALLA ---
+                        if (screenLock != null) {
+                             screenLock.acquire(); // ¡ZAS! Pantalla encendida
+                        }
+                        try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch(Exception e){}
+                        // --------------------------------
+
                         synchronized (statusLock) {
                             statusLock.notifyAll();
                         }
@@ -427,6 +441,13 @@ public class SentinelService extends Service {
     }
 
     private synchronized void closeRecordingFile() {
+        // --- NUEVO: SOLTAR PANTALLA ---
+        if (screenLock != null && screenLock.isHeld()) {
+            screenLock.release(); // Dejar que se duerma
+        }
+        try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_STOP")); } catch(Exception e){}
+        // ------------------------------
+
         if (fileOutputStream != null) {
             try { fileOutputStream.close(); } catch (IOException e) {}
             fileOutputStream = null;
@@ -516,6 +537,7 @@ public class SentinelService extends Service {
         if (httpServer != null) httpServer.stop();
         if (processingThread != null) processingThread.quit();
         closeRecordingFile();
+        if (screenLock != null && screenLock.isHeld()) screenLock.release();
     }
 
     public static void updateSettings(int sens, int time, boolean active, int rot) {
