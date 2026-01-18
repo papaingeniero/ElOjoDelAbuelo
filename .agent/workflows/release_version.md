@@ -22,6 +22,8 @@ Este workflow implementa las salvaguardas definidas en `legacy_dev_rules.md`.
 2.  **Bitácora (Fuente de Verdad)**:
     *   Edita `BITACORA.md` (append).
     *   Añade la crónica completa de los cambios de esta versión.
+    *   **Formato**: `## 🚀 Phase X: Título | Fecha: DD de Mes de YYYY`.
+    *   **IMPORTANTE**: Guarda este mismo texto también en un archivo temporal `bitacora_temp.md` para usarlo en el tag.
     *   Este texto SERÁ el cuerpo del commit, así que esfuérzate.
 2.  **Versionado**:
     *   Edita `app/build.gradle`: Incrementa `versionName`.
@@ -37,6 +39,7 @@ Este workflow implementa las salvaguardas definidas en `legacy_dev_rules.md`.
 3.  **Tag (Enriquecido)**:
     *   Prepara el mensaje del tag combinando la Bitácora y el Changelog.
     *   Comando estructurado: `git tag -a vX.Y.Z --cleanup=verbatim -m "Release vX.Y.Z" -m "$(cat bitacora_temp.md)" -m "$(cat CHANGELOG.md)"`
+    *   Elimina el temporal: `rm bitacora_temp.md`
     *   Asegúrate de que la info sea rica y legible.
     *   Push: `git push origin vX.Y.Z`
 4.  **Push Main**:

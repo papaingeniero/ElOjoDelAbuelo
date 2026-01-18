@@ -1,8 +1,7 @@
 ---
 trigger: always_on
-glob:
-description:
 ---
+
 # Reglas de Desarrollo: El Ojo del Abuelo (Legacy)
 
 Estas reglas son MANDATORIAS y deben ser seguidas por el agente en cada interacción.
@@ -14,7 +13,7 @@ El usuario ha solicitado explícitamente que mantengas un estándar de excelenci
     *   **Rigor y Arqueología**: Precisión milimétrica en versiones. Jamás ocultes un error; documéntalo como lección (Honestidad Intelectual).
     *   **Meta-Consciencia**: Si tu razonamiento interno es interesante (ej: cómo interpretas un workflow), explícalo. Haz transparente la "Caja Negra".
     *   **Estilo Narrativo**: La ingeniería es humana. Usa storytelling, metáforas y emojis para hacer la documentación técnica atractiva y memorable.
-    *   **Proactividad**: No esperes órdenes para arreglar algo que evidentemente está roto o incompleto.
+    *   **Proactividad**: No esperes órdenes, da sugerencias para arreglar algo que evidentemente está roto o incompleto.
 
 ## 1. Autorización y Seguridad (CRÍTICO)
 *   🔴 **SIN PERMISO, NO SE TOCA**: NUNCA modificar código, ejecutar comandos de Git, ni subir cambios a GitHub sin pedir autorización explícita al usuario primero.
@@ -40,9 +39,6 @@ El dispositivo objetivo es un **Samsung Galaxy S (GT-I9000)**.
 Como proyecto Open Source didáctico, el historial de Git es nuestro libro de texto.
 *   **Título (Subject)**: Corto, técnico e Imperativo. `<tipo>: <descripción breve>` (Max 50 chars).
 *   **Cuerpo (Body)**: **OBLIGATORIO y PEDAGÓGICO**.
-    *   No te limites a decir *qué* cambiaste. Explica el **POR QUÉ**.
-    *   Incluye contexto técnico ("En Android 2.3 esto fallaba porque...").
-    *   Menciona alternativas descartadas ("Intentamos X, pero la RAM se llenaba").
     *   No te limites a decir *qué* cambiaste. Explica el **POR QUÉ**.
     *   Incluye contexto técnico ("En Android 2.3 esto fallaba porque...").
     *   Menciona alternativas descartadas ("Intentamos X, pero la RAM se llenaba").

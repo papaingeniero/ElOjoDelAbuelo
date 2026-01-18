@@ -556,3 +556,13 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 **El Problema**: La Regla 0 inicial era demasiado "corporativa" y no capturaba la esencia *Meta-Consciente* y *Narrativa* que el usuario valora (romper la cuarta pared, storytelling).
 **La Solución**: Refinado `legacy_dev_rules.md` para incluir explícitamente "Meta-Consciencia" y "Arqueología de Fallos".
 **Lección**: Un prompt de sistema no solo debe definir *qué* hacer, sino el *tono y filosofía* con el que hacerlo.
+
+### [Meta-Ingeniería] Higiene de Procesos y Documentación
+**Versión**: v3.9.1-dev.7 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: Una auto-auditoría reveló "Process Smells": duplicación de texto en `legacy_dev_rules.md` (copy-paste error) y una dependencia oculta ("Magic File") en `release_version.md` que hacía referencia a un archivo temporal `bitacora_temp.md` sin instruir su creación.
+**La Solución**:
+1.  Eliminada la redundancia en las reglas.
+2.  Explicitado el paso de creación y borrado de `bitacora_temp.md` en el workflow de release.
+3.  Estandarizado el formato de fecha en todos los workflows.
+**Lección**: La "Deuda Técnica" no solo afecta al código Java; los procesos (makefiles, workflows, scripts) también se pudren si no se auditan periódicamente.
