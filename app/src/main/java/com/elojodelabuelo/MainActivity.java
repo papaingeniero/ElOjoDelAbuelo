@@ -49,6 +49,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
+            // --- NUEVO: PASE VIP (Saltar bloqueo de pantalla) ---
+            // FLAG_DISMISS_KEYGUARD: Quita el candado si no hay contraseña.
+            // FLAG_SHOW_WHEN_LOCKED: Muestra la app aunque el móvil esté bloqueado.
+            // FLAG_TURN_SCREEN_ON: Asegura que se enciende (refuerzo al WakeLock del servicio).
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+            // ----------------------------------------------------
+
             setContentView(R.layout.activity_main);
             
             // 1. Guardar Timeout Original
