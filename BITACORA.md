@@ -573,3 +573,12 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 **El Problema**: Detectada una redundancia visual menor ("Tartamudeo de Texto") en la regla 4 de `legacy_dev_rules.md`.
 **La Solución**: Eliminada la línea duplicada.
 **Lección**: La excelencia está en los detalles. Un código sin warnings es bueno, pero una documentación sin erratas es profesional.
+
+### [Meta-Ingeniería] Adopción del Estándar de Idioma Híbrido
+**Versión**: v3.9.1-dev.9 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: Existía una fricción cognitiva en el Agente. Se le exigía pensar como "Ingeniero Senior" (contexto anglosajón por defecto) pero escribir commits en español. Esto causó varios deslices de idioma inconsistentes en el historial.
+**La Solución**: Oficializado el modelo **Híbrido Spanglish Técnico** en las reglas:
+*   **Git/Código** -> Inglés (Estándar global).
+*   **Narrativa/Docs** -> Español (Para la audiencia).
+**Lección**: Alinear las reglas con la naturaleza de la herramienta (LLM entrenado en código inglés) reduce errores y mejora la fluidez.
