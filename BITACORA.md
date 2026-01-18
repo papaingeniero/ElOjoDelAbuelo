@@ -582,3 +582,10 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 *   **Git/Código** -> Inglés (Estándar global).
 *   **Narrativa/Docs** -> Español (Para la audiencia).
 **Lección**: Alinear las reglas con la naturaleza de la herramienta (LLM entrenado en código inglés) reduce errores y mejora la fluidez.
+
+### [Meta-Ingeniería] Prioridad Educativa sobre Estándar Industrial
+**Versión**: v3.9.1-dev.10 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: El cambio a "Commits en Inglés" (`v3.9.1-dev.9`) alineaba el proyecto con la industria, pero entraba en conflicto con el **Objetivo #1**: La Didáctica para audiencia hispana.
+**La Solución**: Revertida la regla de idioma. Volvemos al **Español Total**.
+**Lección**: En ingeniería de producto, el **Usuario Final** (en este caso, el estudiante que mira el repo) siempre manda sobre las convenciones genéricas. Si el inglés es una barrera para aprender, el inglés se va.

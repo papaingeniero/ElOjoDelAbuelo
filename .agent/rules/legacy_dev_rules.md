@@ -17,9 +17,7 @@ El usuario ha solicitado explícitamente que mantengas un estándar de excelenci
 
 ## 1. Autorización y Seguridad (CRÍTICO)
 *   🔴 **SIN PERMISO, NO SE TOCA**: NUNCA modificar código, ejecutar comandos de Git, ni subir cambios a GitHub sin pedir autorización explícita al usuario primero.
-*   🇪🇸 **Idioma Híbrido**:
-    *   **Código y Commits**: Inglés Técnico (Estándar de Industria). Ejemplo: `feat: Add zoom`.
-    *   **Documentación (Bitácora, Changelog)**: **ESPAÑOL** (Narrativa pedagógica para la audiencia).
+*   🇪🇸 **Idioma**: Todo el proyecto (Commits, Docs, Código) debe estar en **ESPAÑOL**.
 *   👀 **Lectura Permitida**: Eres libre de leer archivos, listar directorios y consultar el estado de Git proactivamente.
 
 ## 2. Restricciones Físicas (Hardware Legacy)
