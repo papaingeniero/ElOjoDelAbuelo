@@ -34,35 +34,33 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             startService(new Intent(this, SentinelService.class));
             
             // 4. Botones
-            setupButtons();
+            setupExitButton();
             
         } catch (Exception e) {
             Log.e(TAG, "CRITICAL: Error in onCreate", e);
         }
     }
 
-    private void setupButtons() {
-        Button btnRestart = (Button) findViewById(R.id.btn_activate);
-        Button btnTest = (Button) findViewById(R.id.btn_test_zoom);
-        
-        if (btnRestart != null) {
-            btnRestart.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    startService(new Intent(MainActivity.this, SentinelService.class));
-                    Toast.makeText(MainActivity.this, "Servicio Reiniciado", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-        
-        // Botón auxiliar por si queremos forzar redibujado
-        if (btnTest != null) {
-            btnTest.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                     SurfaceView surface = (SurfaceView) findViewById(R.id.cameraPreview);
-                     if(surface != null) surface.requestLayout();
-                     Toast.makeText(MainActivity.this, "Refrescando...", Toast.LENGTH_SHORT).show();
-                }
-            });
+    // Método de configuración del botón único
+    private void setupExitButton() {
+        try {
+            Button btnKill = (Button) findViewById(R.id.btn_kill_app);
+            if (btnKill != null) {
+                btnKill.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        // ACCIÓN: Matar servicio y cerrar app
+                        try {
+                            stopService(new Intent(MainActivity.this, SentinelService.class));
+                            Toast.makeText(MainActivity.this, "Sistema Apagado. Hasta luego.", Toast.LENGTH_LONG).show();
+                            finish();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error al apagar", e);
+                        }
+                    }
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error en setupExitButton", e);
         }
     }
 

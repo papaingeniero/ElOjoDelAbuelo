@@ -389,3 +389,22 @@ El usuario confirmó que la arquitectura de Zoom/Pan funciona perfectamente. Sin
 
 ### ✅ Estado Final
 El sistema es estable, funcional y ergonómico.
+
+---
+
+## 🚀 Phase 31: Limpieza UI y Kill Switch
+**Versión**: v3.7.0
+
+### 📜 1. La Historia (El Cierre)
+Una vez validado el Zoom y la rotación, la presencia de botones de depuración ("TEST ZOOM", "REINICIAR") en la pantalla principal se volvió obsoleta y peligrosa (ruido visual). El sistema es autónomo y debería "simplemente funcionar".
+Sin embargo, necesitábamos una forma segura de detener el servicio y cerrar la aplicación sin tener que ir a Ajustes -> Aplicaciones -> Forzar Detención.
+
+### 🛠️ 2. La Solución (Ingeniería)
+*   **UI Minimalista**: Eliminamos todos los botones de test. Dejamos un único botón semitransparente: **"APAGAR SISTEMA"**.
+*   **Lógica de Kill Switch**:
+    *   Al pulsar, ejecutamos explicitamente `stopService()` para asegurar que el `SentinelService` libera la cámara y los recursos.
+    *   Inmediatamente llamamos a `finish()` para cerrar la Activity y liberar la memoria gráfica.
+*   **Resultado**: Una interfaz profesional con una única salida de emergencia controlada.
+
+### ✅ Estado Final
+El "Ojo del Abuelo" ha alcanzado su madurez operativa. Visualización limpia, control gestual y apagado seguro.
