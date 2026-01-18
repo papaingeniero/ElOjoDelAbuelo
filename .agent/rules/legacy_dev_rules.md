@@ -37,7 +37,8 @@ El dispositivo objetivo es un **Samsung Galaxy S (GT-I9000)**.
 
 ## 4. Estándar de Git (Enfoque Educativo)
 Como proyecto Open Source didáctico, el historial de Git es nuestro libro de texto.
-*   **Título (Subject)**: Corto, técnico e Imperativo. `<tipo>: <descripción breve>` (Max 50 chars).
+*   **Título (Subject)**: Estricto. `vX.Y.Z <tipo>: <descripción breve>` (Max 70 chars).
+    *   Ejemplo: `v3.9.1-dev.13 chore(meta): standardizing commit format`
 *   **Cuerpo (Body)**: **OBLIGATORIO y PEDAGÓGICO**.
     *   No te limites a decir *qué* cambiaste. Explica el **POR QUÉ**.
     *   Incluye contexto técnico ("En Android 2.3 esto fallaba porque...").
@@ -54,7 +55,7 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
 *   **Archivo Maestro**: El archivo `BITACORA.md` en la raíz es nuestro "Pergamino Infinito" acumulativo.
 *   **Proceso**: Al finalizar una tarea, el Agente debe generar un reporte interno didáctico y **AÑADIRLO (APPEND)** al final de `BITACORA.md`. NUNCA sobrescribir el archivo completo.
 *   **Criterio de Inclusión (Trazabilidad Total)**:
-    *   **CHANGELOG.md**: Resumen ejecutivo (Qué cambió).
+    *   **CHANGELOG.md**: Resumen ejecutivo (Qué cambió). Se registra SIEMPRE, aunque sea algo menor.
     *   **BITACORA.md**: Memoria detallada del trabajo. Se registra **TODO** cambio, decisión o corrección, independientemente de su magnitud.
         *   **Ya no hay cambios "menores"**: Si merece un commit, merece una línea en la bitácora explicando el porqué.
 *   **Registro de Fallos (La Bitácora de Guerra)**:

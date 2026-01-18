@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.1-dev.13] - 2026-01-18
+### Compliance & Engineering
+- **Rules Upgrade**: Enforced version prefix in Git Commit Subject (Rule 4). All commits must now start with `vX.Y.Z`.
+
 ## [v3.9.1-dev.12] - 2026-01-18
 ### Compliance & Engineering
 - **Rules Upgrade**: Modified `legacy_dev_rules.md` to institute the **Quaternary Closing Protocol** (Version -> Bitacora -> Changelog -> Commit) and **Universal Logging** (Rule 5), removing subjectivity from documentation criteria.

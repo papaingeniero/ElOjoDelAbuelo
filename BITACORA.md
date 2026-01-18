@@ -611,5 +611,10 @@ Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto ini
 **La Solución**: Modificación del Kernel (`legacy_dev_rules.md`) para codificar dos nuevas leyes inmutables:
 1.  **Bitácora Universal (Regla 5)**: Eliminado el filtro de "relevancia". Si se trabaja, se loguea.
 2.  **Protocolo Cuaternario (Regla 7)**: Se obliga a cerrar cada tarea con la secuencia estricta: `id -> log -> changelog -> commit`.
-**Lección**: La falibilidad humana (o artificial) no se corrige con fuerza de voluntad, sino con diseño de sistemas (Checklists Forzados).
+### [Meta-Ingeniería] Estandarización de Identidad en Commits
+**Versión**: v3.9.1-dev.13 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: La trazabilidad entre el log de Git y el binario era implícita. Algunos commits tenían versión, otros no.
+**La Solución**: Modificada **Regla 4 (Git)** para imponer el prefijo de versión obligatorio en el `Subject` del commit (`vX.Y.Z type: description`).
+**Lección**: La redundancia explícita (versión en archivo + versión en mensaje) reduce la carga cognitiva al depurar el historial.
 
