@@ -555,13 +555,24 @@ public class SentinelService extends Service {
         defaultZoom = zoom;
         defaultPanX = x;
         defaultPanY = y;
+
         if (instance != null) {
+            // 1. Guardar Preferencias (Como antes)
             SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putFloat("defaultZoom", zoom);
             editor.putInt("defaultPanX", x);
             editor.putInt("defaultPanY", y);
             editor.apply();
+            
+            // 2. NUEVO: Enviar señal de radio a la MainActivity
+            try {
+                Intent intent = new Intent("com.elojodelabuelo.ACTION_ZOOM_UPDATED");
+                instance.sendBroadcast(intent);
+                Log.d(TAG, "Broadcast enviado: ZOOM UPDATED");
+            } catch (Exception e) {
+                Log.e(TAG, "Error enviando broadcast zoom", e);
+            }
         }
     }
 

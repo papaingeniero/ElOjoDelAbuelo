@@ -425,3 +425,36 @@ El "Kill Switch" funcionaba, pero visualmente era un "pegote". Una franja negra 
 
 ### ✅ Estado Final
 Interfaz limpia, funcional y estéticamente agradable.
+
+---
+
+## 🚀 Phase 33: Hot-Swap Broadcasting (Zoom en Caliente)
+**Versión**: v3.8.0
+
+### 📜 1. La Historia (El Retraso)
+Cada vez que ajustábamos el Zoom desde la web, teníamos que reiniciar el Servicio (y la UI parpadeaba o se cerraba) para aplicar los cambios. Era tosco. El usuario quería sentir que tenía un control remoto en tiempo real: tocar un botón en la web y ver la reacción instantánea en la pantalla del móvil.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos una arquitectura de **Radio Difusión (Broadcasting)** interna:
+
+1.  **Emisor (`SentinelService`)**:
+    *   Al recibir nuevos ajustes vía Web (`updateViewSettings`), el servicio no solo guarda en disco (`SharedPreferences`), sino que emite un grito al aire:
+    *   `sendBroadcast(new Intent("com.elojodelabuelo.ACTION_ZOOM_UPDATED"));`
+2.  **Receptor (`MainActivity`)**:
+    *   La pantalla tiene una "antena" (`BroadcastReceiver`) que solo se enciende cuando la app está activa (`onResume`).
+    *   Al detectar la señal, relee las preferencias y recalcula la geometría del `SurfaceView` en milisegundos.
+3.  **Resultado**: Cambios de óptica instantáneos sin reiniciar la aplicación.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Intents Locales**: Para comunicación simple entre Servicio y UI en la misma app, un Broadcast es más sencillo y robusto que implementar `Binders` o `EventBus` externos, especialmente en Android antiguo.
+
+---
+
+## 🚀 Phase 34: Operación Rescate (Identity Swap)
+
+### 📜 1. La Crisis (UID Corruption)
+Tras múltiples instalaciones de prueba (Snapshots), el sistema de archivos de Android 2.3 se corrompió. Lanzaba el error `INSTALL_FAILED_UID_CHANGED`, creyendo que la app ya existía pero sin poder borrarla ni sobreescribirla. Ni `adb uninstall` ni `rm -rf` funcionaban. El dispositivo se había convertido en un ladrillo para nuestro paquete `com.elojodelabuelo`.
+
+### 🛠️ 2. La Solución (Ingeniería)
+En lugar de formatear el dispositivo (Reset de Fábrica), optamos por una solución lateral: **Cambio de Identidad**.
+Migramos permanentemente el `applicationId` a `com.elojodelabuelo.rescue`. Para el sistema operativo, es una aplicación nueva y limpia. Para nosotros, es el mismo viejo "Abuelo" con un pasaporte nuevo.
