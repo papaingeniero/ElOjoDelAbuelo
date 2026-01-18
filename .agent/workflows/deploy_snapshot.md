@@ -8,8 +8,9 @@ Usa este workflow para pruebas. TRATA CADA SNAPSHOT COMO UN EXPERIMENTO. Si fall
 
 ## 1. El Ciclo de Prueba
 1.  **Calcula la Versión Dev**:
-    *   Inicio de Feature: `vX.Y.0-dev`.
-    *   Corrección tras fallo: `vX.Y.(Z+1)-dev`. (¡Siempre incrementa!)
+    *   Inicio de Feature: `vX.Y.Z-dev.1` (Ej: `v3.9.0-dev.1`).
+    *   Corrección tras fallo: Mantén la base, incrementa el sufijo: `vX.Y.Z-dev.2`, `vX.Y.Z-dev.3`...
+    *   *Objetivo*: No "quemar" números de versión finales en pruebas internas. SemVer: `dev.x` < `Release`.
 2.  **Edita `app/build.gradle`**:
     *   Actualiza `versionName`.
 3.  **Compila y Despliega**:
@@ -23,9 +24,9 @@ Usa este workflow para pruebas. TRATA CADA SNAPSHOT COMO UN EXPERIMENTO. Si fall
     *   `git add .`
     *   `git commit -m "chore(debug): Snapshot vX.Y.Z-dev FAILED - [Descripción del Fallo]"`
     *   *Objetivo*: Que el fallo quede registrado en la historia de Git.
-3.  **CORRIGE E INCREMENTA**:
+3.  **CORRIGE E INCREMENTA SUFIJO**:
     *   Ahora aplica el fix en el código.
-    *   Sube la versión en `build.gradle` (vX.Y.Z+1-dev).
+    *   Sube el sufijo en `build.gradle` (vX.Y.Z-dev.N+1).
     *   Vuelve al punto 1 (Desplegar).
 
 ## 3. Éxito
