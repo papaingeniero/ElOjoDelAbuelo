@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v3.9.1-dev] - 2026-01-18
 ### Engineering & Process
+- **Rules**: Added "Personality Persistence" clause to `legacy_dev_rules.md` to maintain Senior Engineer persona across sessions.
 - **Strategic Protocol**: Updated `strategic_change.md` to rigorously enforce date formatting in documentation entries.
 - **Documentation**: Added `docs/diagrams/agent_workflow_cognition.png` and deep-dive analysis in Bitacora (Phase 36) visualizing how the Agent interprets workflow files as state graphs.
 - **Strategic Protocol**: Updated `strategic_change.md` to mandate `BITACORA.md` and `CHANGELOG.md` updates for every meta-change.

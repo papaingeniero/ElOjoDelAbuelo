@@ -542,3 +542,10 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 **El Problema**: El Agente, absorto en la lógica del grafo, olvidaba incluir la dimensión temporal (Fechas) en las entradas de documentación Meta.
 **La Solución**: Modificado `strategic_change.md` para hacer **explícito** el formato de fecha requerido en Bitácora y Changelog.
 **Lección**: "Si no está escrito en el script, no existe". La memoria implícita no funciona para procesos repetitivos.
+
+### [Meta-Ingeniería] Persistencia de Personalidad
+**Versión**: v3.9.1-dev.5 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: La naturaleza efímera del contexto de la IA hace que el "feedback cálido y estimulante" del usuario se pierda entre sesiones, reseteando la actitud del Agente a un estado base menos proactivo.
+**La Solución**: Codificamos la actitud deseada ("Ingeniero Senior") directamente en las reglas base (`legacy_dev_rules.md`).
+**Lección**: Convertir *comportamiento deseado* en *reglas explícitas* garantiza la continuidad de la cultura del proyecto.
