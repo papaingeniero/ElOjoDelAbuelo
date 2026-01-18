@@ -1421,10 +1421,10 @@ public class NanoHttpServer {
                 +
                 "</div>\n" +
                 "<div class='stats-bar'>\n" +
-                "     <span class='stat-status'>⏺️ VIGILANDO</span>\n" +
-                "     <span class='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
-                "     <span class='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
-                "     <span class='stat-storage'>💾 " + freeStorage + "</span>\n" +
+                "     <span id='stat-status' class='stat-status'>⏺️ VIGILANDO</span>\n" +
+                "     <span id='stat-bat' class='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
+                "     <span id='stat-temp' class='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
+                "     <span id='stat-storage' class='stat-storage'>💾 " + freeStorage + "</span>\n" +
                 "  </div>\n";
     }
 }

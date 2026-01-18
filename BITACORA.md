@@ -621,5 +621,11 @@ Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto ini
 
 **El Problema**: El checklist de seguridad (`task.md`) solo existe en sesiones de Planificación. Las intervenciones rápidas (Chat/Fast Mode) quedaban expuestas al olvido del versionado.
 **La Solución**: Añadida **Regla 9** a `legacy_dev_rules.md`. Obliga a invocar el **Protocolo de Cierre Cuaternario** también al final de intervenciones rápidas.
-**Lección**: Un sistema de seguridad que solo funciona "a veces" no es seguro. La cobertura debe ser universal, independientemente del modo de operación.
+### 🐛 Fix: Parálisis de Actualización AJAX
+**Versión**: v3.9.1-dev.15 | **Fecha**: 19 de Enero de 2026
+
+**El Problema**: La temperatura y batería en la cabecera web no se actualizaban automáticamente (requerían recarga manual).
+**Diagnóstico**: El script JS `startStatsUpdater` usaba `document.getElementById('stat-temp')`, pero el HTML generado por el servidor Java solo asignaba `class="stat-temp"`, sin ID. Esto causaba un `TypeError: null` silencioso cada 5 segundos.
+**La Solución**: Añadidos atributos `id` explícitos (`stat-bat`, `stat-temp`, etc.) en `NanoHttpServer.getCommonHeaderHtml`.
+**Lección**: Nunca asumas que el DOM tiene IDs solo porque el JS los busca. Verifica siempre la concordancia entre Generador (Java) y Consumidor (JS).
 

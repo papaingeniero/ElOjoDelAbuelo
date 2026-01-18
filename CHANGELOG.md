@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.1-dev.15] - 2026-01-19
+### Fixed
+- **Web Dashboard**: Fixed broken AJAX status updates (Temperature/Battery) by adding missing `id` attributes to header elements. The dashboard now updates in real-time every 5 seconds.
+
 ## [v3.9.1-dev.14] - 2026-01-18
 ### Compliance & Engineering
 - **Rules Upgrade**: Added **Rule 9 (Fast Mode Protocol)**. Mandates the execution of the Quaternary Closing Protocol even during fast/chat interventions to prevent versioning gaps when not using `task.md`.
