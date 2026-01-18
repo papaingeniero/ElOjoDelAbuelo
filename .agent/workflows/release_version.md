@@ -15,7 +15,11 @@ Este workflow implementa las salvaguardas definidas en `legacy_dev_rules.md`.
     *   Solo continúa si el output está vacío (clean state).
 
 ## 2. Preparación y Documentación
-1.  **Bitácora (Fuente de Verdad)**:
+1.  **Arqueología (Memoria Histórica)**:
+    *   Ejecuta `git log --oneline --decorate --graph -n 20` (o busca `grep="FAILED"`).
+    *   Identifica snapshots fallidos (`chore(debug): ... FAILED`) desde la última versión.
+    *   **Obligatorio**: Si hubo fallos, documéntalos en la Bitácora (Sección "Cronología/Intentos").
+2.  **Bitácora (Fuente de Verdad)**:
     *   Edita `BITACORA.md` (append).
     *   Añade la crónica completa de los cambios de esta versión.
     *   Este texto SERÁ el cuerpo del commit, así que esfuérzate.
