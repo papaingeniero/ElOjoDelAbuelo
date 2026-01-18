@@ -566,3 +566,10 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 2.  Explicitado el paso de creación y borrado de `bitacora_temp.md` en el workflow de release.
 3.  Estandarizado el formato de fecha en todos los workflows.
 **Lección**: La "Deuda Técnica" no solo afecta al código Java; los procesos (makefiles, workflows, scripts) también se pudren si no se auditan periódicamente.
+
+### [Meta-Ingeniería] Pulido Final de Documentación
+**Versión**: v3.9.1-dev.8 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: Detectada una redundancia visual menor ("Tartamudeo de Texto") en la regla 4 de `legacy_dev_rules.md`.
+**La Solución**: Eliminada la línea duplicada.
+**Lección**: La excelencia está en los detalles. Un código sin warnings es bueno, pero una documentación sin erratas es profesional.

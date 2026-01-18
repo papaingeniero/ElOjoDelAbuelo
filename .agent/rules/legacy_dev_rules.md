@@ -45,7 +45,6 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
     *   El objetivo es que un estudiante lea el commit y aprenda una lección de ingeniería.
 *   **Sincronización Bitácora-Commit**: Si el commit incluye una nueva entrada en `BITACORA.md`, el cuerpo del mensaje del commit **DEBE INCLUIR COPIA LITERAL** del texto añadido a la Bitácora.
     *   No resumas. Copia y pega el contenido Markdown completo en el cuerpo del commit.
-    *   No resumas. Copia y pega el contenido Markdown completo en el cuerpo del commit.
     *   Aprovecha que Git permite mensajes largos para preservar la narrativa técnica íntegra.
 *   **Sync Policy (Sincronización Continua)**:
     *   Todo Commit a la rama `main` debe ir seguido INMEDIATAMENTE de un `git push origin main`.
