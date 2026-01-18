@@ -604,3 +604,12 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto inicial para construir la UX (Miniaturas animadas), pero una vez cargado, el coste de mantenimiento es despreciable (apenas ~100 bytes/segundo). El calentamiento en reposo es termodinámicamente imposible por causa del tráfico de red.
 **Lección**: A veces la intuición ("esto debe estar consumiendo mucho") falla ante la evidencia empírica. Siempre mide antes de optimizar.
 
+### [Meta-Ingeniería] Institucionalización de la Trazabilidad
+**Versión**: v3.9.1-dev.12 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: La trazabilidad (commit/versión) dependía de la memoria del Agente, lo que provocaba olvidos en cambios "menores" o documentales.
+**La Solución**: Modificación del Kernel (`legacy_dev_rules.md`) para codificar dos nuevas leyes inmutables:
+1.  **Bitácora Universal (Regla 5)**: Eliminado el filtro de "relevancia". Si se trabaja, se loguea.
+2.  **Protocolo Cuaternario (Regla 7)**: Se obliga a cerrar cada tarea con la secuencia estricta: `id -> log -> changelog -> commit`.
+**Lección**: La falibilidad humana (o artificial) no se corrige con fuerza de voluntad, sino con diseño de sistemas (Checklists Forzados).
+

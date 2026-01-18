@@ -53,10 +53,10 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
 ## 5. Documentación Viva (BITACORA.md)
 *   **Archivo Maestro**: El archivo `BITACORA.md` en la raíz es nuestro "Pergamino Infinito" acumulativo.
 *   **Proceso**: Al finalizar una tarea, el Agente debe generar un reporte interno didáctico y **AÑADIRLO (APPEND)** al final de `BITACORA.md`. NUNCA sobrescribir el archivo completo.
-*   **Criterio de Inclusión (La Prueba del Café ☕)**:
-    *   **CHANGELOG.md (Universal)**: Se registra **TODO** (Phases, Fixes, Typos, Versiones). Es el notario del proyecto.
-    *   **BITACORA.md (Selecta)**: Se añade **SOLO** si es relevante técnicamente (Retos, Arquitectura, Lecciones).
-        *   **NO incluir en Bitácora**: Cambios menores, correcciones de typos, subidas de versión rutinarias.
+*   **Criterio de Inclusión (Trazabilidad Total)**:
+    *   **CHANGELOG.md**: Resumen ejecutivo (Qué cambió).
+    *   **BITACORA.md**: Memoria detallada del trabajo. Se registra **TODO** cambio, decisión o corrección, independientemente de su magnitud.
+        *   **Ya no hay cambios "menores"**: Si merece un commit, merece una línea en la bitácora explicando el porqué.
 *   **Registro de Fallos (La Bitácora de Guerra)**:
     *   Si una Phase (o sub-phase) FALLA en su verificación, **ES OBLIGATORIO** documentar el intento fallido en `BITACORA.md` inmediatamente, antes de planificar la siguiente solución.
     *   Formato: `### ❌ Intento Fallido (vX.X.X): [Descripción Breve]`. Explicar qué se probó y por qué no funcionó.
@@ -77,9 +77,12 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
 *   **Excepción**: El único momento donde `git status` puede estar "sucio" es justo después de editar los archivos para la *nueva* versión (build.gradle, changelog, código), momento en el cual procedemos inmediatamente al Commit de Release.
 
 ## 7. Estructura de Tareas (Safety Check)
-*   Cuando generes una lista de tareas en `task.md`, la última tarea de la fase de **Ejecución** SIEMPRE debe ser un paso explícito de Git:
-    *   `[ ] Commit & Tag vX.X.X (Snapshot)`
-*   Esto actúa como barrera de seguridad antes de pasar a la fase de **Verificación** o a la siguiente iteración.
+*   **Protocolo de Cierre Cuaternario**: Toda lista de tareas en `task.md` **DEBE** finalizar obligatoriamente con estos 4 pasos en este ORDEN EXACTO durante la fase de Ejecución:
+    1.  `[ ] Incrementar versión en build.gradle` (Identidad primero: vX.Y.Z-dev.N+1)
+    2.  `[ ] Actualizar BITACORA.md` (Registro narrativo usando la nueva versión)
+    3.  `[ ] Actualizar CHANGELOG.md` (Registro técnico usando la nueva versión)
+    4.  `[ ] Commit & Tag vX.Y.Z-dev.N+1`
+*   **Regla de Oro**: Si el código o docs cambian, la versión cambia. Sin excepción.
 
 ## 8. Protocolo de Ruptura (Circuit Breaker)
 Qué hacer cuando una Verificación FALLA:
