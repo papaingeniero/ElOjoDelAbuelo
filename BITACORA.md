@@ -493,7 +493,7 @@ Hemos detectado que los cambios en workflows carecían de trazabilidad documenta
 **Objetivo**: Que el estudiante vea la evolución del proceso, no solo del código.
 
 ### 🚀 Phase 36: Agent Cognition (La Máquina de Razonar)
-**Versión**: v3.9.1-dev.3
+**Versión**: v3.9.1-dev.3 | **Fecha**: 18 de Enero de 2026
 
 ### 📜 1. La Historia (El Misterio)
 A menudo nos preguntamos: *¿Cómo "piensa" realmente el Agente?*

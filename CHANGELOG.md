@@ -5,6 +5,7 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.1-dev] - 2026-01-18
 ### Engineering & Process
 - **Documentation**: Added `docs/diagrams/agent_workflow_cognition.png` and deep-dive analysis in Bitacora (Phase 36) visualizing how the Agent interprets workflow files as state graphs.
 - **Strategic Protocol**: Updated `strategic_change.md` to mandate `BITACORA.md` and `CHANGELOG.md` updates for every meta-change.
