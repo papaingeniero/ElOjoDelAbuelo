@@ -30,8 +30,11 @@ Este workflow implementa las salvaguardas definidas en `legacy_dev_rules.md`.
     *   *Subject*: `tipo: Descripción breve vX.Y.Z`
     *   *Body*: **COPIA LITERAL** del texto añadido a `BITACORA.md`.
     *   Ejecuta el commit.
-3.  **Tag**:
-    *   Crea y sube el tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`
+3.  **Tag (Enriquecido)**:
+    *   Prepara el mensaje del tag combinando la Bitácora y el Changelog.
+    *   Comando estructurado: `git tag -a vX.Y.Z --cleanup=verbatim -m "Release vX.Y.Z" -m "$(cat bitacora_temp.md)" -m "$(cat CHANGELOG.md)"`
+    *   Asegúrate de que la info sea rica y legible.
+    *   Push: `git push origin vX.Y.Z`
 4.  **Push Main**:
     *   `git push origin main`
 
