@@ -589,3 +589,18 @@ Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Ob
 **El Problema**: El cambio a "Commits en Inglés" (`v3.9.1-dev.9`) alineaba el proyecto con la industria, pero entraba en conflicto con el **Objetivo #1**: La Didáctica para audiencia hispana.
 **La Solución**: Revertida la regla de idioma. Volvemos al **Español Total**.
 **Lección**: En ingeniería de producto, el **Usuario Final** (en este caso, el estudiante que mira el repo) siempre manda sobre las convenciones genéricas. Si el inglés es una barrera para aprender, el inglés se va.
+
+### 🔬 [Auditoría] Validación de Consumo Web (Burst Profile)
+**Fecha**: 18 de Enero de 2026
+
+**El Problema**: Sospecha de que el cliente web, al tener la pestaña abierta, podría estar generando un tráfico oculto excesivo ("Parásito") que caliente el dispositivo incluso sin interacción.
+**La Auditoría**: Se instrumentó una sesión de Chrome midiendo el tráfico exacto en dos ventanas de tiempo:
+1.  **Fase de Impacto (0-60s)**: Carga de recursos y miniaturas MJPEG.
+2.  **Fase de Meseta (60-120s)**: Reposo absoluto, solo manteniendo el heartbeat.
+**Los Datos**:
+*   *Minuto 1 (Carga)*: **2.59 MB**. (Confirmando la "Carga Masiva").
+*   *Minuto 2 (Reposo)*: **6.7 KB**. (Confirmando el "Silencio Digital").
+**La Conclusión**:
+Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto inicial para construir la UX (Miniaturas animadas), pero una vez cargado, el coste de mantenimiento es despreciable (apenas ~100 bytes/segundo). El calentamiento en reposo es termodinámicamente imposible por causa del tráfico de red.
+**Lección**: A veces la intuición ("esto debe estar consumiendo mucho") falla ante la evidencia empírica. Siempre mide antes de optimizar.
+
