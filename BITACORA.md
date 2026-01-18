@@ -616,5 +616,10 @@ Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto ini
 
 **El Problema**: La trazabilidad entre el log de Git y el binario era implícita. Algunos commits tenían versión, otros no.
 **La Solución**: Modificada **Regla 4 (Git)** para imponer el prefijo de versión obligatorio en el `Subject` del commit (`vX.Y.Z type: description`).
-**Lección**: La redundancia explícita (versión en archivo + versión en mensaje) reduce la carga cognitiva al depurar el historial.
+### [Meta-Ingeniería] Blindaje del Modo Rápido (Regla 9)
+**Versión**: v3.9.1-dev.14 | **Fecha**: 18 de Enero de 2026
+
+**El Problema**: El checklist de seguridad (`task.md`) solo existe en sesiones de Planificación. Las intervenciones rápidas (Chat/Fast Mode) quedaban expuestas al olvido del versionado.
+**La Solución**: Añadida **Regla 9** a `legacy_dev_rules.md`. Obliga a invocar el **Protocolo de Cierre Cuaternario** también al final de intervenciones rápidas.
+**Lección**: Un sistema de seguridad que solo funciona "a veces" no es seguro. La cobertura debe ser universal, independientemente del modo de operación.
 

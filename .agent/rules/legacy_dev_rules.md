@@ -37,8 +37,9 @@ El dispositivo objetivo es un **Samsung Galaxy S (GT-I9000)**.
 
 ## 4. Estándar de Git (Enfoque Educativo)
 Como proyecto Open Source didáctico, el historial de Git es nuestro libro de texto.
+*   **Idioma**: Todos los Commits incluidos los títulos deben estar en **ESPAÑOL**.
 *   **Título (Subject)**: Estricto. `vX.Y.Z <tipo>: <descripción breve>` (Max 70 chars).
-    *   Ejemplo: `v3.9.1-dev.13 chore(meta): standardizing commit format`
+    *   Ejemplo: `v3.9.1-dev.13 chore(meta): Forzar prefijo de versión en el título de los commit`
 *   **Cuerpo (Body)**: **OBLIGATORIO y PEDAGÓGICO**.
     *   No te limites a decir *qué* cambiaste. Explica el **POR QUÉ**.
     *   Incluye contexto técnico ("En Android 2.3 esto fallaba porque...").
@@ -92,6 +93,6 @@ Qué hacer cuando una Verificación FALLA:
 3.  💾 **SAVE (Commit de Estado Roto)**:
     *   **NUNCA borrar código** (`git restore`) si hay trabajo sustancial.
     *   Hacer un commit con el estado actual roto para no perder el trabajo.
-    *   Prefijo del commit: `chore(debug): Snapshot intento fallido...`
-    *   (Opcional) Poner un Tag si es relevante: `vX.X.X-BROKEN`.
-4.  🧠 **RETHINK**: Volver obligatoriamente a la fase de **Planificación** para la siguiente iteración.
+## 9. Modo Rápido (Blindaje de Protocolo)
+*   Si operas en modo chat/fast (sin `task.md`) y realizas CUALQUIER modificación en el repositorio (código o docs), es **OBLIGATORIO** finalizar tu intervención ejecutando (o proponiendo ejecutar) el **Protocolo de Cierre Cuaternario** (Regla 7).
+*   *Nunca dejes un cambio "suelto" sin versionar, incluso si fue una intervención rápida.*
