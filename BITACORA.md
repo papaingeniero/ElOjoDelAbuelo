@@ -491,3 +491,47 @@ Para llegar aquí, tuvimos que iterar científicamente:
 Hemos detectado que los cambios en workflows carecían de trazabilidad documental pública.
 **Cambio**: Actualizado `strategic_change.md` para exigir **obligatoriamente** entradas en `BITACORA.md` y `CHANGELOG.md` para cada cambio meta.
 **Objetivo**: Que el estudiante vea la evolución del proceso, no solo del código.
+
+### 🚀 Phase 36: Agent Cognition (La Máquina de Razonar)
+**Versión**: v3.9.1-dev.3
+
+### 📜 1. La Historia (El Misterio)
+A menudo nos preguntamos: *¿Cómo "piensa" realmente el Agente?*
+Cuando escribimos un workflow en Markdown (`deploy_snapshot.md`), para nosotros es texto. Pero para la IA, esas líneas se convierten en instrucciones de ejecución rígidas. El usuario lanzó un reto: *"Dibújame cómo conviertes mis palabras en tu algoritmo"*.
+
+### 🛠️ 2. La Solución (Ingeniería Inversa)
+El Agente realizó un ejercicio de introspección y generó una representación visual de su proceso de parsing.
+Descubrimos que el Agente no "lee" el archivo linealmente; lo compila en un **Grafo de Estados** con bucles de retroalimentación de errores.
+
+#### A. El Código Fuente (Input Humano)
+Este es el protocolo en lenguaje natural que definimos para los snapshots:
+
+```markdown
+# Workflow: Desplegar Snapshot (Iterativo - Protocolo Científico)
+
+## 1. El Ciclo de Prueba
+1.  **Calcula la Versión Dev**: vX.Y.Z-dev.N
+2.  **Edita `app/build.gradle`**
+3.  **Compila y Despliega** (`adb install`)
+
+## 2. Gestión de Fallos
+1.  **STOP**: No corrijas el código todavía.
+2.  **COMMIT DEL ERROR**: `git commit -m "chore(debug) FAILED"`
+3.  **CORRIGE E INCREMENTA SUFIJO**
+
+## 3. Éxito
+1.  Procede al Commit final.
+```
+
+#### B. La Lógica Compilada (Output Cognitivo)
+Y así es como el Agente estructura internamente esos pasos para ejecutarlos. Observa cómo el texto lineal se transforma en un diagrama de flujo con bucles de decisión (`try-catch` lógicos):
+
+![Diagrama de Flujo Cognitivo](docs/diagrams/agent_workflow_cognition.png)
+
+*Las etiquetas amarillas `[1.1]`, `[2.1]` corresponden a las secciones del documento original.*
+
+### 🎓 3. Lecciones Aprendidas
+*   **Programación en Lenguaje Natural**: Al escribir workflows para IAs, no estamos escribiendo documentación; estamos programando. La ambigüedad en el texto ("hazlo bonito") provoca errores de compilación (`improper format`). La precisión ("incrementa N+1") genera ejecución perfecta.
+*   **Try-Catch Humano**: El paso `[2.1] STOP` actúa como una excepción controlada. Sin esa instrucción explícita, la tendencia natural de la LLM sería arreglar el error inmediatamente, perdiendo la historia (el commit del fallo).
+
+---
