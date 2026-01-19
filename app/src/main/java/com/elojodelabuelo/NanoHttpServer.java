@@ -724,6 +724,7 @@ private String generateDashboardHtml() {
                 "               <input type='number' id='hw-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>" +
                 "           </div>" +
                 "         </div>" +
+                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom real de la cámara. Afecta a la grabación y al dispositivo.</div>" +
                 "      </div>" +
 
                 // 3. GENERAL SETTINGS
@@ -731,6 +732,7 @@ private String generateDashboardHtml() {
                 "         <label>Detector Activado:</label>\n" +
                 "         <input type='checkbox' id='set-active' style='transform: scale(1.5);'>\n" +
                 "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Activa la vigilancia y grabación por movimiento.</div>\n" +
                 "      <div style='margin-bottom:20px;'>\n" +
                 "         <label>Sensibilidad: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n"
                 +
@@ -741,6 +743,7 @@ private String generateDashboardHtml() {
                 "            <span style='font-size:12px;'>Max</span>\n" +
                 "         </div>\n" +
                 "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-15px; margin-bottom:15px;'>* Umbral de movimiento para iniciar grabación.</div>\n" +
                 "      <div class='settings-row'>\n" +
                 "         <label>Tiempo extra de Grabación:</label>\n" +
                 "         <input type='number' id='set-time' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='5' max='60'>\n" +
@@ -750,6 +753,7 @@ private String generateDashboardHtml() {
                 "         <label>Min. Espacio (MB):</label>\n" +
                 "         <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='100' max='5000'>\n" +
                 "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Borra videos antiguos si queda menos espacio (MB).</div>\n" +
                 "      <div class='settings-row'>\n" +
                 "         <label>Rotación:</label>\n" +
                 "         <div>\n" +
@@ -757,6 +761,7 @@ private String generateDashboardHtml() {
                 "            <input type='radio' name='rot' value='180' id='rot-180'> 180°\n" +
                 "         </div>\n" +
                 "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Rota la cámara física si está montada al revés.</div>\n" +
                 "\n" +
                 "      <h4 style='border-bottom:1px solid #444; margin-top:20px; padding-bottom:5px; color:#c62828; margin-bottom:10px;'>Zona de Peligro</h4>\n"
                 +
