@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,8 +24,8 @@ import java.util.Locale;
 
 /**
  * A robust embedded Web Server/NVR.
- * Serves a modern mobile dashboard, handles MJPEG streaming, and provides video playback.
- * FULL VERSION: Includes Advanced Player, Parasite Logic, Temp Trends & Dual Zoom Settings.
+ * Serves a modern mobile dashboard, handles MJPEG streaming, and provides video
+ * playback.
  */
 public class NanoHttpServer {
 
@@ -36,11 +37,14 @@ public class NanoHttpServer {
     private static final int PORT = 8080;
     private static final String BOUNDARY = "ElOjoDelAbueloBoundary";
     private static final File STORAGE_DIR = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
+
     private static String lastError = "None";
 
     public static void setLastError(String error) {
         lastError = error;
     }
+
+    // Phase 8: Real FPS Diagnostics - REMOVED
 
     public NanoHttpServer(Context context) {
         this.context = context;
@@ -128,6 +132,7 @@ public class NanoHttpServer {
                 is = socket.getInputStream();
                 os = socket.getOutputStream();
 
+                // 1. Read Request
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 String line = reader.readLine();
                 if (line == null)
@@ -137,17 +142,19 @@ public class NanoHttpServer {
                 String method = st.hasMoreTokens() ? st.nextToken() : "GET";
                 String uri = st.hasMoreTokens() ? st.nextToken() : "/";
 
+                // 2. Route Request
                 if (uri.equals("/stream")) {
-                    serveLiveStream(os);
+                    serveLiveStream(os); // Blocks thread while streaming
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
-                    serveVideoFile(os, uri.substring(1));
+                    serveVideoFile(os, uri.substring(1)); // Remove leading slash
                 } else if (uri.startsWith("/thumbnails/")) {
-                    serveThumbnail(os, uri.substring(12));
+                    serveThumbnail(os, uri.substring(12)); // Remove "/thumbnails/"
                 } else if (uri.equals("/stats")) {
                     serveStats(os);
                 } else if (uri.equals("/api/settings")) {
                     serveSettings(os);
                 } else if (uri.equals("/api/delete_all_videos") && method.equals("POST")) {
+                    // Phase 19: Delete All Handling
                     File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
                     if (dir.exists() && dir.isDirectory()) {
                         File[] files = dir.listFiles();
@@ -171,7 +178,14 @@ public class NanoHttpServer {
                 } else if (uri.startsWith("/wait_status")) {
                     serveWaitStatus(os, uri);
                 } else if (uri.equals("/api/debug")) {
-                    String response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nDEBUG OK";
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("--- DEBUG ONLINE (v3.2.1-debug20d - NUCLEAR FIX 3) ---\n"); // Header with Version
+                    if (SentinelService.debugLogs != null) {
+                        for (String s : SentinelService.debugLogs) {
+                            sb.append(s).append("\n");
+                        }
+                    }
+                    String response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n" + sb.toString();
                     os.write(response.getBytes());
                 } else {
                     serveDashboard(os);
@@ -197,11 +211,13 @@ public class NanoHttpServer {
             os.flush();
             liveStreamClients.add(os);
 
+            // Keep thread alive to prevent socket closure
             try {
                 while (liveStreamClients.contains(os)) {
                     Thread.sleep(1000);
                 }
             } catch (InterruptedException e) {
+                // End
             }
         }
 
@@ -212,6 +228,7 @@ public class NanoHttpServer {
                 return;
             }
 
+            // Simple MJPEG serving (as a download/stream)
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write(("Content-Type: application/octet-stream\r\n").getBytes());
             os.write(("Content-Length: " + file.length() + "\r\n").getBytes());
@@ -252,9 +269,10 @@ public class NanoHttpServer {
         private void serveStats(OutputStream os) throws IOException {
             int batLevel = SystemStats.getBatteryLevel(context);
             boolean charging = SystemStats.isCharging(context);
-            String freeStorage = SystemStats.getFreeStorageSpace();
+            String freeStorage = SystemStats.getFreeStorageSpace(); // e.g. "1.2 GB"
             int temp = ThermalGuardian.getBatteryTemperature(context);
 
+            // Manual JSON construction to avoid external libs
             String json = String.format(
                     "{\"bat\":%d, \"charging\":%b, \"temp\":%d, \"storage\":\"%s\", \"recording\":%b}",
                     batLevel, charging, temp, freeStorage, SentinelService.isRecordingPublic);
@@ -268,8 +286,13 @@ public class NanoHttpServer {
             os.flush();
         }
 
-        // --- UPDATED: Reads both Hardware and Web Settings from Prefs ---
+        /**
+         * GET /api/settings
+         * Returns the current application configuration.
+         * Response: JSON {"sens": 90, "time": 10, "active": true, "rot": 0}
+         */
         private void serveSettings(OutputStream os) throws IOException {
+            // Retrieve current settings
             int sens = SentinelService.motionSensitivity;
             int time = SentinelService.recordingTimeout;
             boolean active = SentinelService.isDetectorActive;
@@ -279,9 +302,9 @@ public class NanoHttpServer {
             int defPanY = SentinelService.defaultPanY;
             
             SharedPreferences prefs = context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE);
-            int minFreeSpace = prefs.getInt("pref_min_free_space_mb", 500);
+            int minFreeSpace = prefs.getInt("pref_min_free_space_mb", 500); 
             
-            // Web Vars (Stored in Prefs)
+            // WEB VIEW SETTINGS (Stored in Device Prefs)
             float webZoom = prefs.getFloat("webZoom", 1.0f);
             int webPanX = prefs.getInt("webPanX", 0);
             int webPanY = prefs.getInt("webPanY", 0);
@@ -296,14 +319,20 @@ public class NanoHttpServer {
             os.write(json.getBytes());
         }
 
-        // --- UPDATED: Saves both Hardware and Web Settings to Prefs ---
+
+        /**
+         * POST /api/save_settings
+         * Updates the application configuration on the fly.
+         * Params: ?sens=INT&time=INT&active=BOOL&rot=INT
+         *
+         * @param uri The full request URI containing query parameters.
+         */
         private void serveSaveSettings(OutputStream os, String uri) throws IOException {
-            int sens = 90, time = 10, rot = 0, defPanX = 0, defPanY = 0, minSpace = 500;
-            boolean active = true;
-            float defZoom = 1.0f;
+            int sens = 90; int time = 10; boolean active = true; int rot = 0;
+            float defZoom = 1.0f; int defPanX = 0; int defPanY = 0;
+            int minSpace = 500;
             // Web Vars
-            float webZoom = 1.0f;
-            int webPanX = 0, webPanY = 0;
+            float webZoom = 1.0f; int webPanX = 0; int webPanY = 0;
 
             try {
                 if (uri.contains("?")) {
@@ -312,8 +341,7 @@ public class NanoHttpServer {
                     for (String pair : pairs) {
                         String[] kv = pair.split("=");
                         if (kv.length == 2) {
-                            String key = kv[0];
-                            String val = kv[1];
+                            String key = kv[0]; String val = kv[1];
                             if (key.equals("sens")) sens = Integer.parseInt(val);
                             else if (key.equals("time")) time = Integer.parseInt(val);
                             else if (key.equals("active")) active = Boolean.parseBoolean(val);
@@ -322,7 +350,7 @@ public class NanoHttpServer {
                             else if (key.equals("defPanX")) defPanX = Integer.parseInt(val);
                             else if (key.equals("defPanY")) defPanY = Integer.parseInt(val);
                             else if (key.equals("min_free_space")) minSpace = Integer.parseInt(val);
-                            // Web Params
+                            // New Web Vars
                             else if (key.equals("webZoom")) webZoom = Float.parseFloat(val);
                             else if (key.equals("webPanX")) webPanX = Integer.parseInt(val);
                             else if (key.equals("webPanY")) webPanY = Integer.parseInt(val);
@@ -330,19 +358,17 @@ public class NanoHttpServer {
                     }
                 }
                 
-                // Save Web & Space settings directly to Prefs
+                // Save Web Settings to Phone Prefs
                 context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE).edit()
-                        .putInt("pref_min_free_space_mb", minSpace)
-                        .putFloat("webZoom", webZoom)
-                        .putInt("webPanX", webPanX)
-                        .putInt("webPanY", webPanY)
-                        .commit();
-                
+                    .putInt("pref_min_free_space_mb", minSpace)
+                    .putFloat("webZoom", webZoom)
+                    .putInt("webPanX", webPanX)
+                    .putInt("webPanY", webPanY)
+                    .commit();
+                    
                 SentinelService.updateSettings(sens, time, active, rot);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { e.printStackTrace(); }
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: text/plain\r\n".getBytes());
@@ -350,17 +376,20 @@ public class NanoHttpServer {
             os.write("OK".getBytes());
         }
 
+
         private void serveWaitStatus(OutputStream os, String uri) throws IOException {
+            // Parse query params manually (uri contains ?current_state=true/false)
             boolean clientState = false;
             if (uri.contains("current_state=true"))
                 clientState = true;
 
             long start = System.currentTimeMillis();
             synchronized (SentinelService.statusLock) {
+                // Wait until state is different from clientState or timeout
                 while (SentinelService.isRecordingPublic == clientState) {
                     long now = System.currentTimeMillis();
                     if (now - start > 30000)
-                        break;
+                        break; // 30s heartbeat
                     try {
                         SentinelService.statusLock.wait(30000);
                     } catch (InterruptedException e) {
@@ -424,7 +453,7 @@ public class NanoHttpServer {
 
     }
 
-    private String generateDashboardHtml() {
+private String generateDashboardHtml() {
         StringBuilder listHtml = new StringBuilder();
         if (STORAGE_DIR.exists()) {
             File[] files = STORAGE_DIR.listFiles();
@@ -432,7 +461,7 @@ public class NanoHttpServer {
                 Arrays.sort(files, new Comparator<File>() {
                     @Override
                     public int compare(File f1, File f2) {
-                        return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
+                        return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified()); // Newest first
                     }
                 });
 
@@ -467,6 +496,7 @@ public class NanoHttpServer {
                             listHtml.append("<div class='icon'>📼</div>");
                         }
 
+                        // Phase 21: Metadata (Size & Duration)
                         String sizeStr;
                         if (f.length() > 1024 * 1024) {
                             sizeStr = String.format(Locale.US, "%.1f MB", f.length() / (1024.0 * 1024.0));
@@ -539,7 +569,6 @@ public class NanoHttpServer {
 
         String commonHeader = getCommonHeaderHtml(versionName, batIcon, batLevel, tempIcon, temp, freeStorage);
 
-        // --- HERE WE INJECT THE NEW SETTINGS MODAL AND UPDATED JS ---
         return "<!DOCTYPE html>\n" +
                 "<html><head>\n" +
                 "<meta charset='UTF-8'>\n" +
@@ -667,6 +696,7 @@ public class NanoHttpServer {
                 "           <input type='number' id='web-pan-x' placeholder='Pan X' style='width:50px; background:#333; color:white; border:none; padding:5px;' oninput='updateWebTransformFromInputs()'> " +
                 "           <input type='number' id='web-pan-y' placeholder='Pan Y' style='width:50px; background:#333; color:white; border:none; padding:5px;' oninput='updateWebTransformFromInputs()'>" +
                 "         </div>" +
+                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* CSS Transform: scale + translate. Se guarda en el móvil.</div>" +
                 "      </div>" +
 
                 // 2. HARDWARE SETTINGS
@@ -723,13 +753,14 @@ public class NanoHttpServer {
                 "  </div>\n" +
                 "</div>\n" +
                 "\n" +
-                // --- FULL JAVASCRIPT LOGIC ---
+                // --- FULL JAVASCRIPT LOGIC (RESTORED FROM YOUR BACKUP) ---
                 "<script>\n" +
                 "var frames = [];\n" +
                 "var currentFrameIdx = 0;\n" +
                 "var isPlaying = false;\n" +
                 "var fps = 10;\n" +
                 "var currentObjectUrl = null;\n" +
+                "var gWebZoom = 1.0; var gWebPanX = 0; var gWebPanY = 0;\n" +
                 "\n" +
                 // --- ZOOM / TRANSFORM LOGIC (INJECTED) ---
                 "function updateWebTransform(z, x, y) {\n" +
@@ -737,12 +768,13 @@ public class NanoHttpServer {
                 "  var t = 'translate(' + x + 'px, ' + y + 'px) scale(' + z + ')';\n" +
                 "  // Apply to stream and thumbnails\n" +
                 "  var imgs = document.querySelectorAll('img.thumb, #live-stream-img');\n" +
-                "  imgs.forEach(i => i.style.transform = t);\n" +
+                "  imgs.forEach(i => i.style.transform = t);\n" + 
                 "}\n" +
                 "function updateWebTransformFromInputs() {\n" +
                 "  var z = document.getElementById('web-zoom').value;\n" +
                 "  var x = document.getElementById('web-pan-x').value || 0;\n" +
                 "  var y = document.getElementById('web-pan-y').value || 0;\n" +
+                "  gWebZoom = parseFloat(z); gWebPanX = parseInt(x); gWebPanY = parseInt(y);\n" +
                 "  updateWebTransform(z, x, y);\n" +
                 "}\n" +
 
@@ -860,7 +892,7 @@ public class NanoHttpServer {
                 "var lastTap = 0;\n" +
                 "var isMultiTouch = false;\n" +
                 "\n" +
-                "function resetZoom() { mat.x = 0; mat.y = 0; mat.s = 1; updateTransform(); }\n" +
+                "function resetZoom() { mat.x = gWebPanX; mat.y = gWebPanY; mat.s = gWebZoom; updateTransform(); }\n" +
                 "function updateTransform() {\n" +
                 "   var t = 'translate(' + mat.x + 'px, ' + mat.y + 'px) scale(' + mat.s + ')';\n" +
                 "   playerImg.style.transform = t;\n" +
@@ -925,19 +957,19 @@ public class NanoHttpServer {
                 "\n" +
                 "function startStatsUpdater() {\n" +
                 "  var lastTemp = null;\n" +
+                "  var lastTrend = '';\n" +
                 "  setInterval(function() {\n" +
                 "    fetch('/stats').then(r => r.json()).then(data => {\n" +
                 "      var batIcon = data.charging ? '⚡' : (data.bat > 20 ? '🔋' : '🪫');\n" +
                 "      document.getElementById('stat-bat').innerText = batIcon + ' ' + data.bat + '%';\n" +
-                "      var currentTrendHtml = '';\n" +
                 "      if (lastTemp === null) lastTemp = data.temp;\n" +
-                "      if (data.temp > lastTemp) currentTrendHtml = ' <span style=\"color:#ff4444; font-size:0.8em;\">▲</span>';\n"
+                "      if (data.temp > lastTemp) lastTrend = ' <span style=\"color:#ff4444; font-size:0.8em;\">▲</span>';\n"
                 +
-                "      else if (data.temp < lastTemp) currentTrendHtml = ' <span style=\"color:#66ff66; font-size:0.8em;\">▼</span>';\n"
+                "      else if (data.temp < lastTemp) lastTrend = ' <span style=\"color:#66ff66; font-size:0.8em;\">▼</span>';\n"
                 +
                 "      lastTemp = data.temp;\n" +
                 "      var tempIcon = data.temp > 40 ? '🔥' : '🌡️';\n" +
-                "      document.getElementById('stat-temp').innerHTML = tempIcon + ' ' + data.temp + '°C' + currentTrendHtml;\n"
+                "      document.getElementById('stat-temp').innerHTML = tempIcon + ' ' + data.temp + '°C' + lastTrend;\n"
                 +
                 "      document.getElementById('stat-storage').innerText = '💾 ' + data.storage;\n" +
                 "      document.getElementById('stat-status').innerText = data.recording ? '🔴 GRABANDO' : '⏺️ VIGILANDO';\n"
@@ -992,6 +1024,9 @@ public class NanoHttpServer {
                 +
                 "     // Web Settings\n" +
                 "     if(data.webZoom) {\n" +
+                "        gWebZoom = data.webZoom;\n" +
+                "        gWebPanX = data.webPanX || 0;\n" +
+                "        gWebPanY = data.webPanY || 0;\n" +
                 "        document.getElementById('web-zoom').value = data.webZoom;\n" +
                 "        document.getElementById('web-pan-x').value = data.webPanX || 0;\n" +
                 "        document.getElementById('web-pan-y').value = data.webPanY || 0;\n" +
@@ -1162,6 +1197,8 @@ public class NanoHttpServer {
                 "</body></html>";
     }
 
+    
+    // Phase 23: DRY Header Generation
     private String getCommonHeaderHtml(String versionName, String batIcon, int batLevel, String tempIcon, int temp,
             String freeStorage) {
         return "<div class='header' style='position:relative;'>\n" +
@@ -1175,6 +1212,10 @@ public class NanoHttpServer {
                 "     <span id='stat-bat' class='stat-bat'>" + batIcon + " " + batLevel + "%</span>\n" +
                 "     <span id='stat-temp' class='stat-temp'>" + tempIcon + " " + temp + "°C</span>\n" +
                 "     <span id='stat-storage' class='stat-storage'>💾 " + freeStorage + "</span>\n" +
-                " </div>\n";
+                "  </div>\n";
     }
 }
+
+
+
+
