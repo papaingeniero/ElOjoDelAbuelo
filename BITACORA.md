@@ -848,3 +848,15 @@ Hemos abandonado el sistema de coordenadas absolutas (píxeles) en favor de **co
 *   Si le decimos a la miniatura: *"Muévete un 50% a la derecha"*, ¡también se mueve la mitad de su propio ancho!
 *   **Resultado**: El código se simplifica drásticamente. Eliminamos las divisiones por `window.innerWidth`. La geometría es idéntica en cualquier pantalla, grande o pequeña. Una solución elegante y _responsive_ por naturaleza.
 
+### 🚀 Phase 25: Homogeneización Interactiva - Touch Px a % (v3.9.3-dev.7) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Habíamos arreglado los controles deslizantes (Sliders) para usar porcentajes (%), resolviendo la discrepancia entre miniaturas y player grande.
+Sin embargo, el **Control Táctil (Pinch & Drag)** del reproductor interactivo seguía hablando en el dialecto antiguo de los **píxeles (px)**.
+Esto significaba que, al tocar la pantalla, volvíamos al comportamiento dependiente de la resolución, rompiendo la promesa de "Diseño Responsive Universal".
+
+**La Solución (Ingeniería) 🛠️**
+Hemos actualizado la función `updateTransform()` (la que gobierna el motor táctil) para que también utilice unidades relativas:
+`translate(mat.x %, mat.y %)`
+*   Ahora todo el ecosistema habla el mismo idioma (%).
+*   **Nota Técnica**: Al cambiar de px a %, la sensibilidad del arrastre aumenta drásticamente (1 unidad de toque = 1% de desplazamiento). Esto requerirá calibración en el futuro, pero la coherencia estructural es prioritaria hoy.

@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [v3.9.3-dev.7] - 2026-01-19
+### Changed
+- **Interactive Player**: El motor táctil (`updateTransform`) ahora aplica desplazamientos en porcentaje (`%`) en lugar de píxeles (`px`). Alinea el comportamiento del gesto táctil con el de los controles deslizantes web.
+
 ## [v3.9.3-dev.6] - 2026-01-19
 ### Changed
 - **Web Engine**: Migración completa de unidades absolutas (`px`) a relativas (`%`) para el control de Pan/Zoom.

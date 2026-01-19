@@ -969,7 +969,7 @@ public class NanoHttpServer {
                 "\n" +
                 "function resetZoom() { mat.x = gWebPanX; mat.y = gWebPanY; mat.s = gWebZoom; updateTransform(); }\n" +
                 "function updateTransform() {\n" +
-                "   var t = 'translate(' + mat.x + 'px, ' + mat.y + 'px) scale(' + mat.s + ')';\n" +
+                "   var t = 'translate(' + mat.x + '%, ' + mat.y + '%) scale(' + mat.s + ')';\n" +
                 "   playerImg.style.transform = t;\n" +
                 "   playerImg.style.webkitTransform = t;\n" +
                 "   var hud = document.getElementById('hud-stats');\n" +
