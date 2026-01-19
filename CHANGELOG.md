@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.2-dev.11] - 2026-01-19
+### Changed
+- **UI**: Mejorada la descripción del "Tiempo extra de grabación" con tooltip explicativo.
+
 ## [v3.9.2-dev.10] - 2026-01-19
 ### Changed
 - **UI**: Alineación numérica a la derecha en TODOS los inputs (Time, Storage, Pan).

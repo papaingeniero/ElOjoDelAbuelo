@@ -742,9 +742,10 @@ private String generateDashboardHtml() {
                 "         </div>\n" +
                 "      </div>\n" +
                 "      <div class='settings-row'>\n" +
-                "         <label>Tiempo Grabación:</label>\n" +
+                "         <label>Tiempo extra de Grabación:</label>\n" +
                 "         <input type='number' id='set-time' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='5' max='60'>\n" +
                 "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Segundos a grabar tras cesar el movimiento.</div>\n" +
                 "      <div class='settings-row'>\n" +
                 "         <label>Min. Espacio (MB):</label>\n" +
                 "         <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='100' max='5000'>\n" +
