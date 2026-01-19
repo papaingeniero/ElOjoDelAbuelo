@@ -9,9 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [v3.9.3] - 2026-01-20
+### Added
+- **Web Engine**: Sistema de posicionamiento relativo (Responsive Pan/Zoom).
+- **UX**: Coherencia visual total entre Monitor (Grande), Miniaturas (Pequeñas) y Preview Animado.
+
 ## [v3.9.3-dev.7] - 2026-01-19
 ### Changed
-- **Bugfix (JS)**: Corregida una línea errante en el motor táctil que seguía usando `px` en lugar de `%`. Esto provocaba que el sistema ignorase la nueva lógica responsive al tocar la pantalla. Alineación de unidades completada.
+- **Bugfix (JS)**: Corregida una línea errante que seguía usando `px` en lugar de `%`. Esto provocaba que el sistema ignorase la nueva lógica responsive al aplicar el pan por defecto a las miniaturas y a la vista del video en grande.
 
 ## [v3.9.3-dev.6] - 2026-01-19
 ### Changed
