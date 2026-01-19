@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.2-dev.4] - 2026-01-19
+### Added
+- **UI**: Iconos de tendencia de temperatura persistentes ("Sticky Trends").
+- **FIX**: Desacople total del Zoom del Video Player (ahora usa `webZoom` settings).
+- **JS**: Variables globales para gestión robusta de transformaciones CSS.
+
 ## [v3.9.2-dev.1] - 2026-01-19
 ### Added
 - **Dual View Preferences**: Separated Zoom/Pan settings for Web Dashboard vs Android Display.
@@ -62,13 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Smart Screen**: Screen wakes up with max brightness on motion detection (`ACTION_REC_START`).
     - **Power Saving**: Screen sleeps automatically 1s after recording stops.
     - **VIP Pass**: App dismisses Keyguard ("Slide to Unlock") and shows over Lockscreen using `FLAG_DISMISS_KEYGUARD`.
-- **v3.9.2-dev.4**:
-    - **UI**: Iconos de tendencia de temperatura persistentes ("Sticky Trends").
-    - **FIX**: Desacople total del Zoom del Video Player (ahora usa `webZoom` settings).
-    - **JS**: Variables globales para gestión robusta de transformaciones CSS.
-- **v3.9.2-dev.1**:
-    - **Feat**: Separación de Zoom/Pan (Web vs Hardware).
-    - **UI**: Nuevo Modal de Ajustes con secciones diferenciadas (Azul/Naranja).
+
 
 ## [v3.8.0] - 2026-01-18
 ### Added
