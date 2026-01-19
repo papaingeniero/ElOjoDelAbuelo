@@ -1,12 +1,17 @@
 
-### 🚀 v3.9.2: Release Oficial "El Abuelo Oculista"
+### 🧮 v3.9.3-dev.3: El Algoritmo de "Ratio Dinámico"
 
-Llegamos a puerto. Tras una intensa sesión de 13 iteraciones (`dev.1` -> `dev.13`), publicamos la versión **v3.9.2**.
-Esta versión representa un salto cualitativo en la usabilidad del sistema:
+El usuario reportó que, pese a la corrección geométrica, el desplazamiento seguía viéndose mal en Chrome (Escritorio).
+**La Causa**:
+Usábamos un factor fijo (`0.25`) asumiendo que el User veía el video en una pantalla de ~320px.
+En escritorio (1000px+), el usuario hace un Pan de 100px (10% de pantalla), pero la miniatura recibía 25px (30% de su ancho). Resultado: la miniatura "corría" más rápido que el video.
 
-1.  **Dual View Engine**: Desacople total entre lo que ve el navegador (Web Zoom/Pan) y lo que ve el Hardware.
-2.  **UI Pro**: Un panel de ajustes rediseñado, con controles alineados, espaciados y explicados.
-3.  **Pedagogía Integrada**: Tooltips que explican cada función técnica en lenguaje humano.
-
-**Estado del Código**: Limpio, alineado a la derecha, y con gaps físicos de 20px.
-**Estado del Repositorio**: Changelog detallado intacto (por inmutabilidad histórica).
+**La Solución (Dynamic Ratio)**:
+Ahora calculamos el factor de escala en tiempo real en Javascript:
+```javascript
+var mainWidth = liveStream.offsetWidth || document.body.clientWidth;
+var ratio = 80.0 / mainWidth;
+var tx = x * ratio;
+```
+Si la pantalla es gigante, el ratio baja (ej: 0.08). Si es pequeña, sube (ej: 0.25).
+La física se auto-ajusta al dispositivo del observador.

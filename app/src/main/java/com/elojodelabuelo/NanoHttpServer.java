@@ -598,10 +598,10 @@ private String generateDashboardHtml() {
                 ".video-item.watched { opacity: 0.5; filter: grayscale(100%); }\n" +
                 ".video-item:active { transform: scale(0.98); background: #3d3d3d; }\n" +
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
-                ".thumb-container { position: relative; width: 80px; height: 60px; margin-right: 15px; border-radius: 8px; overflow: hidden; background: #444; }\n"
+                ".thumb-container { position: relative; width: 80px; height: 60px; margin-right: 15px; border-radius: 8px; overflow: hidden; background: #000; }\n"
                 +
-                ".thumb { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; }\n" +
-                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; }\n" +
+                ".thumb { width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; transform-origin: 0 0; }\n" +
+                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; }\n" +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +
                 "/* Modal Player */\n" +
                 "#player-modal, #live-view-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; flex-direction: column; }\n"
@@ -787,10 +787,19 @@ private String generateDashboardHtml() {
                 // --- ZOOM / TRANSFORM LOGIC (INJECTED) ---
                 "function updateWebTransform(z, x, y) {\n" +
                 "  document.getElementById('web-zoom-val').textContent = z + 'x';\n" +
-                "  var t = 'translate(' + x + 'px, ' + y + 'px) scale(' + z + ')';\n" +
-                "  // Apply to stream and thumbnails\n" +
-                "  var imgs = document.querySelectorAll('img.thumb, #live-stream-img');\n" +
-                "  imgs.forEach(i => i.style.transform = t);\n" + 
+                "  // 1. Live Stream (1:1)\n" +
+                "  var tMain = 'translate(' + x + 'px, ' + y + 'px) scale(' + z + ')';\n" +
+                "  var live = document.getElementById('live-stream-img');\n" +
+                "  if(live) live.style.transform = tMain;\n" +
+                "  // 2. Thumbnails (Dynamic Ratio)\n" +
+                "  // Calculate ratio based on visible width to generic width (fallback to body if no player)\n" +
+                "  var mainWidth = live ? live.offsetWidth : document.body.clientWidth;\n" +
+                "  if(!mainWidth || mainWidth < 1) mainWidth = 320;\n" +
+                "  var ratio = 80.0 / mainWidth;\n" +
+                "  var tx = x * ratio; var ty = y * ratio;\n" +
+                "  var tThumb = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + z + ')';\n" +
+                "  var thumbs = document.querySelectorAll('img.thumb, canvas.mini-canvas');\n" +
+                "  thumbs.forEach(t => t.style.transform = tThumb);\n" +
                 "}\n" +
                 "function updateWebTransformFromInputs() {\n" +
                 "  var z = document.getElementById('web-zoom').value;\n" +

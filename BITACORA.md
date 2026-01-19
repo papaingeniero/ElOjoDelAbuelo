@@ -754,3 +754,51 @@ Esta versión representa un salto cualitativo en la usabilidad del sistema:
 
 **Estado del Código**: Limpio, alineado a la derecha, y con gaps físicos de 20px.
 **Estado del Repositorio**: Changelog detallado intacto (por inmutabilidad histórica).
+
+### 🔭 v3.9.3-dev.1: Zoom Recursivo en Miniaturas
+
+Iniciamos la serie `v3.9.3` con una mejora sutil pero potente: la coherencia espacial en las miniaturas.
+Hasta ahora, las miniaturas eran estáticas o se movían caóticamente si se aplicaba Pan (porque recibían desplazamientos de píxeles pensados para una pantalla grande).
+
+**La Solución Proporcional**:
+Hemos implementado una matemática de escalado en `NanoHttpServer.java`:
+```javascript
+var tx = x * 0.25; // 80px / 320px
+var ty = y * 0.25;
+element.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+```
+Esto crea un efecto de "Zoom Fractal": las miniaturas muestran exactamente el mismo encuadre relativo que el vídeo principal.
+
+### 📐 v3.9.3-dev.2: Simetría Geométrica en Miniaturas
+
+El usuario detectó que el zoom en miniaturas desplazaba la imagen incorrectamente ("hacia arriba a la izquierda").
+**El Diagnóstico**:
+Mientras el video player escalaba desde la esquina superior izquierda (`transform-origin: 0 0`) y usaba `contain`, las miniaturas escalaban desde el centro (`transform-origin: 50% 50%`) y usaban `cover`.
+Esto provocaba que las coordenadas de traducción no coincidieran.
+
+**La Solución**:
+Hemos igualado la física de ambos elementos:
+`css
+.thumb, .mini-canvas {
+    object-fit: contain;     /* Coherencia de encuadre */
+    transform-origin: 0 0;   /* Coherencia de coordenadas */
+}
+`
+Ahora la matemática del zoom es universal.
+
+### 🧮 v3.9.3-dev.3: El Algoritmo de "Ratio Dinámico"
+
+El usuario reportó que, pese a la corrección geométrica, el desplazamiento seguía viéndose mal en Chrome (Escritorio).
+**La Causa**:
+Usábamos un factor fijo (`0.25`) asumiendo que el User veía el video en una pantalla de ~320px.
+En escritorio (1000px+), el usuario hace un Pan de 100px (10% de pantalla), pero la miniatura recibía 25px (30% de su ancho). Resultado: la miniatura "corría" más rápido que el video.
+
+**La Solución (Dynamic Ratio)**:
+Ahora calculamos el factor de escala en tiempo real en Javascript:
+```javascript
+var mainWidth = liveStream.offsetWidth || document.body.clientWidth;
+var ratio = 80.0 / mainWidth;
+var tx = x * ratio;
+```
+Si la pantalla es gigante, el ratio baja (ej: 0.08). Si es pequeña, sube (ej: 0.25).
+La física se auto-ajusta al dispositivo del observador.
