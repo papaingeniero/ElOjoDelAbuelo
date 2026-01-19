@@ -704,7 +704,7 @@ private String generateDashboardHtml() {
                 "               <input type='number' id='web-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;' oninput='updateWebTransformFromInputs()'>" +
                 "           </div>" +
                 "         </div>" +
-                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* CSS Transform: scale + translate. Se guarda en el móvil.</div>" +
+                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom y Desplazamiento (Pan) del video mostrado en el navegador.</div>" +
                 "      </div>" +
 
                 // 2. HARDWARE SETTINGS
@@ -724,7 +724,7 @@ private String generateDashboardHtml() {
                 "               <input type='number' id='hw-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>" +
                 "           </div>" +
                 "         </div>" +
-                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom real de la cámara. Afecta a la grabación y al dispositivo.</div>" +
+                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom y Desplazamiento (Pan) del video mostrado en la pantalla del móvil de la cámara.</div>" +
                 "      </div>" +
 
                 // 3. GENERAL SETTINGS
@@ -761,7 +761,7 @@ private String generateDashboardHtml() {
                 "            <input type='radio' name='rot' value='180' id='rot-180'> 180°\n" +
                 "         </div>\n" +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Rota la cámara física si está montada al revés.</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Rota la imagen si aparece al revés (suelo en el techo).</div>\n" +
                 "\n" +
                 "      <h4 style='border-bottom:1px solid #444; margin-top:20px; padding-bottom:5px; color:#c62828; margin-bottom:10px;'>Zona de Peligro</h4>\n"
                 +

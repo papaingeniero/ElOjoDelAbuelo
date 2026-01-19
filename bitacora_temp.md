@@ -1,12 +1,9 @@
 
-### ℹ️ v3.9.2-dev.12: Democratización del Conocimiento (Tooltips Globales)
+### ✏️ v3.9.2-dev.13: Precisión Lingüística en Tooltips
 
-Para cerrar el ciclo de refinamiento de UX en el modal de ajustes, hemos aplicado la regla de la "Explicabilidad Total".
-Cada control, por trivial que parezca para el ingeniero, ahora tiene una nota al pie para el usuario final:
-*   **Detector Activado**: Que hace (vigila/graba).
-*   **Sensibilidad**: Qué significa Min/Max (umbral).
-*   **Min. Espacio**: Como funciona la auto-limpieza (trigger de borrado).
-*   **Rotación**: Cuándo usarla (montaje físico).
-*   **Zoom Físico**: Advertencia de que afecta a todo el sistema.
+El usuario ha refinado el "copywriting" de los tooltips para eliminar ambigüedades técnicas y usar un lenguaje más natural:
+*   **Web**: "CSS Transform" -> "Zoom y Desplazamiento (Pan) del video mostrado en el navegador".
+*   **Hardware**: "Zoom real" -> "Zoom y Desplazamiento... en la pantalla del móvil".
+*   **Rotación**: "Cámara física" -> "Rota la imagen si aparece al revés".
 
-La interfaz ahora educa al usuario mientras la usa.
+La precisión en el lenguaje es tan crítica como la precisión en el código.
