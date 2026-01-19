@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+
+## [v3.9.3-dev.5] - 2026-01-19
+### Fixed
+- **CSS**: Sincronización de geometría (`object-fit: contain` + `transform-origin`) para elementos `.mini-canvas`. Asegura que las miniaturas animadas respondan al Zoom/Pan exactamente igual que las estáticas.
+
 ## [v3.9.3-dev.4] - 2026-01-19
 ### Fixed
 - **Web UI**: Cálculo matemático de miniaturas sincronizado con el ancho del viewport. Soluciona el problema de desaparición de miniaturas al desplazar el video main.

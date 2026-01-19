@@ -621,7 +621,7 @@ public class NanoHttpServer {
                 +
                 ".thumb { width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; transform-origin: 0 0; }\n"
                 +
-                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; }\n"
+                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: contain; }\n"
                 +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +
                 "/* Modal Player */\n" +

@@ -819,3 +819,19 @@ Implementamos **Matemática Proporcional** en la función `updateWebTransform`.
 **Lecciones Aprendidas 🎓**
 *   **Contexto de Escala**: Nunca compartir coordenadas absolutas (píxeles) entre elementos de diferente tamaño sin un factor de normalización.
 *   **Defensive Coding**: Siempre asumir que `window.innerWidth` puede ser muy pequeño o nulo, estableciendo mínimos de seguridad (320px).
+### 🚀 Phase 23: Coherencia Visual Miniatura `canvas` (v3.9.3-dev.5) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+El player principal tenía un comportamiento `object-fit: contain`. Las miniaturas estáticas (`img`) también. Pero... ¡el `canvas` de la previsualización en vivo (el famoso /preview_) se había quedado desnudo!
+Sin `transform-origin: 0 0` ni `object-fit: contain`, el canvas reaccionaba al escalado (Zoom) creciendo desde su centro en lugar de desde la esquina superior izquierda, y estirando la imagen de forma diferente a sus hermanos estáticos.
+Esto provocaba que, al aplicar Zoom/Pan, el preview animado se desencajase visualmente del marco negro, rompiendo la ilusión de solidez.
+
+**La Solución (Ingeniería) 🛠️**
+Hemos alineado la física CSS del `.mini-canvas` con la del player principal:
+```css
+.mini-canvas {
+    transform-origin: 0 0;  /* Anclaje idéntico al Player */
+    object-fit: contain;    /* Geometría idéntica al Player */
+}
+```
+Ahora, matemáticas y píxeles bailan al unísono.
