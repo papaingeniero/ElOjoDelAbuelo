@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [v3.9.3-dev.4] - 2026-01-19
+### Fixed
+- **Web UI**: Cálculo matemático de miniaturas sincronizado con el ancho del viewport. Soluciona el problema de desaparición de miniaturas al desplazar el video main.
+
 ## [v3.9.3-dev.3] - 2026-01-19
 ### Fixed
 - **UI Logic**: Desplazamiento de Pan adaptable al ancho de pantalla (Dynamic Ratio). Soluciona el problema de "movimiento excesivo" en navegadores de escritorio.

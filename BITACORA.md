@@ -802,3 +802,20 @@ var tx = x * ratio;
 ```
 Si la pantalla es gigante, el ratio baja (ej: 0.08). Si es pequeña, sube (ej: 0.25).
 La física se auto-ajusta al dispositivo del observador.
+### 🚀 Phase 22: Geometría Proporcional en Miniaturas (v3.9.3-dev.4) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Las miniaturas en el dashboard web heredaban el desplazamiento (`translate X, Y`) pensado para la pantalla grande/modal. Si el usuario desplazaba el video 300 píxeles a la derecha en el modo pantalla completa para ver un detalle, las miniaturas de apenas 80 píxeles también se movían 300 píxeles, saliéndose completamente de su contenedor y dejando un hueco negro. Era como intentar aplicar las coordenadas de atraque de un transatlántico a un bote de remos.
+
+**La Solución (Ingeniería) 🛠️**
+Implementamos **Matemática Proporcional** en la función `updateWebTransform`.
+1.  **Cálculo del Ratio**: Determinamos qué fracción de la pantalla representa la miniatura.
+    `ratio = 80.0 / window.innerWidth`
+2.  **Escalado Diferencial**:
+    *   **Video Grande**: Recibe el desplazamiento crudo (`x`, `y`).
+    *   **Miniaturas**: Reciben el desplazamiento escalado (`x * ratio`, `y * ratio`).
+3.  **Compatibilidad Legacy**: Reemplazamos `forEach` por bucles `for(;;)` tradicionales para asegurar que el Javascript funcione incluso en navegadores antiguos de tablets o móviles viejos que se usen como consolas de monitoreo.
+
+**Lecciones Aprendidas 🎓**
+*   **Contexto de Escala**: Nunca compartir coordenadas absolutas (píxeles) entre elementos de diferente tamaño sin un factor de normalización.
+*   **Defensive Coding**: Siempre asumir que `window.innerWidth` puede ser muy pequeño o nulo, estableciendo mínimos de seguridad (320px).
