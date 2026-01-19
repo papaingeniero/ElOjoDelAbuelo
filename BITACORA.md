@@ -703,3 +703,13 @@ Al revisar el modal de ajustes, los inputs numéricos de `Pan X` y `Pan Y` resul
 3.  **Constraint de Ancho**: Se limitó el ancho de los inputs a `90px` para evitar que se expandieran desproporcionadamente en pantallas anchas, manteniendo la elegancia del modal.
 
 *Lección*: Una interfaz técnica no tiene por qué ser fea. Un simple icono mejora la usabilidad enormemente.
+
+### 🎨 v3.9.2-dev.10: Coherencia Numérica en UI
+
+Se ha extendido la directiva de alineación numérica (`text-align: right`) a **todos** los campos de entrada de la aplicación, no solo los de posicionamiento Pan.
+Ahora, la consistencia es total:
+*   Pan X / Y (Web & Hardware) -> Derecha
+*   Tiempo Grabación -> Derecha
+*   Mínimo Espacio -> Derecha
+
+Esto refuerza el modelo mental de "Operación Matemática / Ajuste Fino" frente a la introducción de texto convencional.

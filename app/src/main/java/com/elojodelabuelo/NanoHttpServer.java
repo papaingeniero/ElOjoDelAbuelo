@@ -696,11 +696,12 @@ private String generateDashboardHtml() {
                 "           <span style='font-size:12px; color:#aaa; min-width:60px;'>Posición:</span>" +
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
                 "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>" +
-                "               <input type='number' id='web-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;' oninput='updateWebTransformFromInputs()'>" +
+                "               <input type='number' id='web-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;' oninput='updateWebTransformFromInputs()'>" +
                 "           </div>" +
+                "           <div style='width:20px; flex-shrink:0;'></div>" + // FORCED SPACER
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
                 "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>" +
-                "               <input type='number' id='web-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;' oninput='updateWebTransformFromInputs()'>" +
+                "               <input type='number' id='web-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;' oninput='updateWebTransformFromInputs()'>" +
                 "           </div>" +
                 "         </div>" +
                 "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* CSS Transform: scale + translate. Se guarda en el móvil.</div>" +
@@ -715,11 +716,12 @@ private String generateDashboardHtml() {
                 "           <span style='font-size:12px; color:#aaa; min-width:60px;'>Posición:</span>" +
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
                 "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>" +
-                "               <input type='number' id='hw-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;'>" +
+                "               <input type='number' id='hw-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>" +
                 "           </div>" +
+                "           <div style='width:20px; flex-shrink:0;'></div>" + // FORCED SPACER
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
                 "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>" +
-                "               <input type='number' id='hw-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;'>" +
+                "               <input type='number' id='hw-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>" +
                 "           </div>" +
                 "         </div>" +
                 "      </div>" +
@@ -741,11 +743,11 @@ private String generateDashboardHtml() {
                 "      </div>\n" +
                 "      <div class='settings-row'>\n" +
                 "         <label>Tiempo Grabación:</label>\n" +
-                "         <input type='number' id='set-time' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555;' min='5' max='60'>\n" +
+                "         <input type='number' id='set-time' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='5' max='60'>\n" +
                 "      </div>\n" +
                 "      <div class='settings-row'>\n" +
                 "         <label>Min. Espacio (MB):</label>\n" +
-                "         <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555;' min='100' max='5000'>\n" +
+                "         <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='100' max='5000'>\n" +
                 "      </div>\n" +
                 "      <div class='settings-row'>\n" +
                 "         <label>Rotación:</label>\n" +
