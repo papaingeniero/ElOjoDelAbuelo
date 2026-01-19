@@ -838,25 +838,24 @@ Ahora, matemáticas y píxeles bailan al unísono.
 ### 🚀 Phase 24: Migración a Unidades Relativas - % vs px (v3.9.3-dev.6) | Fecha: 19 de Enero de 2026
 
 **El Problema (Storytelling) 📜**
-Estábamos inmersos en una pesadilla matemática. Para escalar el movimiento del video grande a la miniatura, calculábamos ratios basados en `window.innerWidth`, asumíamos anchos de dispositivo y escribíamos código frágil.
-Un Pan de 100 píxeles a la derecha en una pantalla de 4K es un suspiro; en un móvil de 320px es un terremoto que saca la imagen de cuadro.
+Nos enfrentábamos a un problema de **incoherencia espacial**. Cuando el usuario configuraba un Pan (desplazamiento) de "50" para centrar una puerta en el monitor, ese valor en píxeles (`50px`) era insignificante para la pantalla grande, pero "sacaba de cuadro" a la miniatura pequeña de 80px.
+Intentamos arreglarlo con ratios matemáticos complicados basados en `window.innerWidth`, pero fallaban porque no consideraban el "aire" (bandas negras) del contenedor.
 
 **La Solución (Ingeniería) 🛠️**
-Hemos abandonado el sistema de coordenadas absolutas (píxeles) en favor de **coordenadas relativas (%)**.
-`translate(X%, Y%)`
-*   Si le decimos al video grande: *"Muévete un 50% a la derecha"*, se mueve la mitad de su ancho.
-*   Si le decimos a la miniatura: *"Muévete un 50% a la derecha"*, ¡también se mueve la mitad de su propio ancho!
-*   **Resultado**: El código se simplifica drásticamente. Eliminamos las divisiones por `window.innerWidth`. La geometría es idéntica en cualquier pantalla, grande o pequeña. Una solución elegante y _responsive_ por naturaleza.
+La solución definitiva fue cambiar el paradigma de coordenadas:
+*   **Antes (Absoluto)**: `translate(50px, 0)`. Dependiente de la resolución.
+*   **Ahora (Relativo)**: `translate(10%, 0)`. Independiente de la resolución.
+    *   Le decimos al navegador: *"Mueve la imagen un 10% de su ancho"*.
+    *   En el Monitor (1000px), se mueve 100px.
+    *   En la Miniatura (80px), se mueve 8px.
+*   **Resultado**: Un solo valor de configuración (`Pan X: 10%`) produce un encuadre visualmente idéntico en todas las pantallas del sistema, sin importar su tamaño.
 
 ### 🚀 Phase 25: Homogeneización Interactiva - Touch Px a % (v3.9.3-dev.7) | Fecha: 19 de Enero de 2026
 
 **El Problema (Storytelling) 📜**
-Habíamos arreglado los controles deslizantes (Sliders) para usar porcentajes (%), resolviendo la discrepancia entre miniaturas y player grande.
-Sin embargo, el **Control Táctil (Pinch & Drag)** del reproductor interactivo seguía hablando en el dialecto antiguo de los **píxeles (px)**.
-Esto significaba que, al tocar la pantalla, volvíamos al comportamiento dependiente de la resolución, rompiendo la promesa de "Diseño Responsive Universal".
+Tras migrar los Slider de configuración de la web a Porcentajes (`%`), el sistema táctil (`pinch & drag`) del reproductor interactivo quedó desfasado. Al arrastrar con el dedo, seguía inyectando valores en píxeles (`px`), rompiendo la nueva lógica.
 
 **La Solución (Ingeniería) 🛠️**
-Hemos actualizado la función `updateTransform()` (la que gobierna el motor táctil) para que también utilice unidades relativas:
-`translate(mat.x %, mat.y %)`
-*   Ahora todo el ecosistema habla el mismo idioma (%).
-*   **Nota Técnica**: Al cambiar de px a %, la sensibilidad del arrastre aumenta drásticamente (1 unidad de toque = 1% de desplazamiento). Esto requerirá calibración en el futuro, pero la coherencia estructural es prioritaria hoy.
+Actualizamos el motor táctil (`updateTransform`) para que aplique también transformaciones porcentuales: `translate(x%, y%)`.
+Esto unifica el lenguaje de todo el sistema (Web Settings + Touch).
+*   **Efecto secundario conocido**: Al pasar de píxeles a porcentajes (donde 1 unidad = 1% del ancho), la sensibilidad del arrastre aumenta drásticamente. Un movimiento de dedo de 100px se interpreta como un "100% de desplazamiento", haciendo que la imagen se mueva muy rápido. Priorizamos la **Coherencia Geométrica** (fix visual) sobre la calibración de sensibilidad, que se ajustará en la siguiente fase.

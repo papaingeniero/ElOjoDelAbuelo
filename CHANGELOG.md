@@ -11,12 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v3.9.3-dev.7] - 2026-01-19
 ### Changed
-- **Interactive Player**: El motor táctil (`updateTransform`) ahora aplica desplazamientos en porcentaje (`%`) en lugar de píxeles (`px`). Alinea el comportamiento del gesto táctil con el de los controles deslizantes web.
+- **Touch Engine**: Migración del control táctil (`pinch & drag`) de coordenadas absolutas (`px`) a relativas (`%`).
+- **Behavior**: Alineación total del ecosistema (Sliders + Touch). **Nota**: La sensibilidad del arrastre aumenta significativamente al mapear 1px de movimiento a 1% de desplazamiento.
 
 ## [v3.9.3-dev.6] - 2026-01-19
 ### Changed
-- **Web Engine**: Migración completa de unidades absolutas (`px`) a relativas (`%`) para el control de Pan/Zoom.
-- **Refactor**: Eliminación de cálculos dependientes de `window.innerWidth`. Ahora la sincronización visual entre reproductor y miniaturas es nativa y matemáticamente exacta.
+- **Web Engine**: Cambio de paradigma en el posicionamiento de video (Pan). Se sustituyen los píxeles (`px`) por porcentajes (`%`) relativos al ancho de la imagen.
+- **Fix**: Soluciona la discrepancia visual entre el video monitor (grande) y las miniaturas (pequeñas), garantizando un encuadre idéntico independientemente del tamaño de pantalla.
 
 ## [v3.9.3-dev.5] - 2026-01-19
 ### Fixed
