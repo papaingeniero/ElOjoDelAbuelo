@@ -692,9 +692,16 @@ private String generateDashboardHtml() {
                 "         <h4 style='margin:0 0 10px 0; color:#4fc3f7;'>🌍 Vista Web (Navegador)</h4>" +
                 "         <label>Escala Web: <span id='web-zoom-val'>1.0x</span></label>" +
                 "         <input type='range' id='web-zoom' min='1' max='3' step='0.1' value='1' style='width:100%' oninput='updateWebTransformFromInputs()'>" +
-                "         <div class='zoom-controls'>" +
-                "           <input type='number' id='web-pan-x' placeholder='Pan X' style='width:50px; background:#333; color:white; border:none; padding:5px;' oninput='updateWebTransformFromInputs()'> " +
-                "           <input type='number' id='web-pan-y' placeholder='Pan Y' style='width:50px; background:#333; color:white; border:none; padding:5px;' oninput='updateWebTransformFromInputs()'>" +
+                "         <div style='display:flex; gap:10px; align-items:center; margin-top:5px;'>" +
+                "           <span style='font-size:12px; color:#aaa; min-width:60px;'>Posición:</span>" +
+                "           <div style='position:relative; flex:1; max-width:90px;'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>" +
+                "               <input type='number' id='web-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;' oninput='updateWebTransformFromInputs()'>" +
+                "           </div>" +
+                "           <div style='position:relative; flex:1; max-width:90px;'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>" +
+                "               <input type='number' id='web-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;' oninput='updateWebTransformFromInputs()'>" +
+                "           </div>" +
                 "         </div>" +
                 "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* CSS Transform: scale + translate. Se guarda en el móvil.</div>" +
                 "      </div>" +
@@ -704,9 +711,16 @@ private String generateDashboardHtml() {
                 "         <h4 style='margin:0 0 10px 0; color:#ffa726;'>📱 Vista Abuelo (Pantalla)</h4>" +
                 "         <label>Zoom Físico: <span id='hw-zoom-val'>1.0x</span></label>" +
                 "         <input type='range' id='hw-zoom' min='1' max='4' step='0.1' style='width:100%' oninput=\"document.getElementById('hw-zoom-val').textContent=this.value+'x'\">" +
-                "         <div class='zoom-controls'>" +
-                "           <input type='number' id='hw-pan-x' placeholder='Pan X' style='width:50px; background:#333; color:white; border:none; padding:5px;'> " +
-                "           <input type='number' id='hw-pan-y' placeholder='Pan Y' style='width:50px; background:#333; color:white; border:none; padding:5px;'>" +
+                "         <div style='display:flex; gap:10px; align-items:center; margin-top:5px;'>" +
+                "           <span style='font-size:12px; color:#aaa; min-width:60px;'>Posición:</span>" +
+                "           <div style='position:relative; flex:1; max-width:90px;'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>" +
+                "               <input type='number' id='hw-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;'>" +
+                "           </div>" +
+                "           <div style='position:relative; flex:1; max-width:90px;'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>" +
+                "               <input type='number' id='hw-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px;'>" +
+                "           </div>" +
                 "         </div>" +
                 "      </div>" +
 
