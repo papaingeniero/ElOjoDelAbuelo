@@ -627,5 +627,15 @@ Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto ini
 **El Problema**: La temperatura y batería en la cabecera web no se actualizaban automáticamente (requerían recarga manual).
 **Diagnóstico**: El script JS `startStatsUpdater` usaba `document.getElementById('stat-temp')`, pero el HTML generado por el servidor Java solo asignaba `class="stat-temp"`, sin ID. Esto causaba un `TypeError: null` silencioso cada 5 segundos.
 **La Solución**: Añadidos atributos `id` explícitos (`stat-bat`, `stat-temp`, etc.) en `NanoHttpServer.getCommonHeaderHtml`.
-**Lección**: Nunca asumas que el DOM tiene IDs solo porque el JS los busca. Verifica siempre la concordancia entre Generador (Java) y Consumidor (JS).
+### ✨ Feat: Tendencia Térmica Pegajosa (Sticky Trend)
+**Versión**: v3.9.1-dev.16 | **Fecha**: 19 de Enero de 2026
+
+**El Objetivo**: Proporcionar información sobre la "inercia térmica" (si venimos de subir o bajar) incluso en periodos de estabilidad.
+**La Solución**: Implementada lógica "Sticky" en JS:
+*   Si $Temp_{actual} > Temp_{anterior} \rightarrow$ ▲ (Rojo)
+*   Si $Temp_{actual} < Temp_{anterior} \rightarrow$ ▼ (Verde)
+*   Si $Temp_{actual} == Temp_{anterior} \rightarrow$ Mantener indicador previo.
+
+**Lección (Bug del Emoji)**: Inicialmente usamos flechas Unicode estándar (`⬆`, `⬇`), pero iOS/Android las renderizan forzosamente como Emojis (blanco/azul), ignorando el CSS `color: red`.
+**Corrección**: Cambiado a formas geométricas puras (`▲`, `▼`) que sí respetan el coloreado CSS.
 

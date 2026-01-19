@@ -559,7 +559,7 @@ public class NanoHttpServer {
         // Version
         String versionName = "v?";
         try {
-            versionName = "v" + context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+            versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1046,14 +1046,24 @@ public class NanoHttpServer {
                 "\n" +
                 "// --- LIVE STATS UPDATER (Phase 8) ---\n" +
                 "function startStatsUpdater() {\n" +
+                "  var lastTemp = null;\n" +
+                "  var currentTrendHtml = '';\n" +
                 "  setInterval(function() {\n" +
                 "    fetch('/stats').then(r => r.json()).then(data => {\n" +
                 "      // Battery\n" +
                 "      var batIcon = data.charging ? '⚡' : (data.bat > 20 ? '🔋' : '🪫');\n" +
                 "      document.getElementById('stat-bat').innerText = batIcon + ' ' + data.bat + '%';\n" +
-                "      // Temp\n" +
+                "      // Temp (Sticky Trend)\n" +
+                "      if (lastTemp === null) lastTemp = data.temp;\n" +
+                "      if (data.temp > lastTemp) {\n" +
+                "          currentTrendHtml = ' <span style=\"color:#ff4444; font-size:0.8em;\">▲</span>';\n" +
+                "          lastTemp = data.temp;\n" +
+                "      } else if (data.temp < lastTemp) {\n" +
+                "          currentTrendHtml = ' <span style=\"color:#66ff66; font-size:0.8em;\">▼</span>';\n" +
+                "          lastTemp = data.temp;\n" +
+                "      }\n" +
                 "      var tempIcon = data.temp > 40 ? '🔥' : '🌡️';\n" +
-                "      document.getElementById('stat-temp').innerText = tempIcon + ' ' + data.temp + '°C';\n" +
+                "      document.getElementById('stat-temp').innerHTML = tempIcon + ' ' + data.temp + '°C' + currentTrendHtml;\n" +
                 "      // Storage\n" +
                 "      document.getElementById('stat-storage').innerText = '💾 ' + data.storage;\n" +
                 "      // Status\n" +
