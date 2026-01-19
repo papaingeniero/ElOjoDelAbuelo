@@ -853,9 +853,9 @@ La solución definitiva fue cambiar el paradigma de coordenadas:
 ### 🚀 Phase 25: Homogeneización Interactiva - Touch Px a % (v3.9.3-dev.7) | Fecha: 19 de Enero de 2026
 
 **El Problema (Storytelling) 📜**
-Tras migrar los Slider de configuración de la web a Porcentajes (`%`), el sistema táctil (`pinch & drag`) del reproductor interactivo quedó desfasado. Al arrastrar con el dedo, seguía inyectando valores en píxeles (`px`), rompiendo la nueva lógica.
+Teníamos el sistema migrado a porcentajes (`%`) para que fuera responsive, pero detectamos un **bug crítico**: una línea perdida de código antiguo en la función táctil (`updateTransform`) seguía inyectando píxeles (`px`) al arrastrar con el dedo.
+Esto "jodía la marrana": al tocar la pantalla, el sistema dejaba de usar la lógica relativa y volvía al comportamiento absoluto errático, rompiendo la consistencia que acabábamos de arreglar.
 
 **La Solución (Ingeniería) 🛠️**
-Actualizamos el motor táctil (`updateTransform`) para que aplique también transformaciones porcentuales: `translate(x%, y%)`.
-Esto unifica el lenguaje de todo el sistema (Web Settings + Touch).
-*   **Efecto secundario conocido**: Al pasar de píxeles a porcentajes (donde 1 unidad = 1% del ancho), la sensibilidad del arrastre aumenta drásticamente. Un movimiento de dedo de 100px se interpreta como un "100% de desplazamiento", haciendo que la imagen se mueva muy rápido. Priorizamos la **Coherencia Geométrica** (fix visual) sobre la calibración de sensibilidad, que se ajustará en la siguiente fase.
+Localizamos y corregimos la línea culpable. Cambiamos la concatenación de strings para usar `%` en lugar de `px`.
+Ahora, tanto los sliders de configuración como el input táctil hablan el mismo idioma. Asunto arreglado.

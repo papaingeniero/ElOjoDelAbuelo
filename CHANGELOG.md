@@ -11,8 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v3.9.3-dev.7] - 2026-01-19
 ### Changed
-- **Touch Engine**: Migración del control táctil (`pinch & drag`) de coordenadas absolutas (`px`) a relativas (`%`).
-- **Behavior**: Alineación total del ecosistema (Sliders + Touch). **Nota**: La sensibilidad del arrastre aumenta significativamente al mapear 1px de movimiento a 1% de desplazamiento.
+- **Bugfix (JS)**: Corregida una línea errante en el motor táctil que seguía usando `px` en lugar de `%`. Esto provocaba que el sistema ignorase la nueva lógica responsive al tocar la pantalla. Alineación de unidades completada.
 
 ## [v3.9.3-dev.6] - 2026-01-19
 ### Changed
