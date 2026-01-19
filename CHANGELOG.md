@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.1] - 2026-01-19
+### Released
+- **Gold Master**: Versión estable consolidada. Incluye todas las mejoras de la serie v3.9.1-dev (Sticky Trends, correcciones de UI, Conformidad de Reglas).
+
 ## [v3.9.1-dev.16] - 2026-01-19
 ### Added
 - **Web Dashboard**: New "Sticky Trend" indicators for temperature. Shows a Red ▲ when heating up and Green ▼ when cooling down. The indicator persists during stability to show recent history.

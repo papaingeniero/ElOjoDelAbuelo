@@ -611,22 +611,30 @@ Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto ini
 **La Solución**: Modificación del Kernel (`legacy_dev_rules.md`) para codificar dos nuevas leyes inmutables:
 1.  **Bitácora Universal (Regla 5)**: Eliminado el filtro de "relevancia". Si se trabaja, se loguea.
 2.  **Protocolo Cuaternario (Regla 7)**: Se obliga a cerrar cada tarea con la secuencia estricta: `id -> log -> changelog -> commit`.
+
+
 ### [Meta-Ingeniería] Estandarización de Identidad en Commits
 **Versión**: v3.9.1-dev.13 | **Fecha**: 18 de Enero de 2026
 
 **El Problema**: La trazabilidad entre el log de Git y el binario era implícita. Algunos commits tenían versión, otros no.
 **La Solución**: Modificada **Regla 4 (Git)** para imponer el prefijo de versión obligatorio en el `Subject` del commit (`vX.Y.Z type: description`).
+
+
 ### [Meta-Ingeniería] Blindaje del Modo Rápido (Regla 9)
 **Versión**: v3.9.1-dev.14 | **Fecha**: 18 de Enero de 2026
 
 **El Problema**: El checklist de seguridad (`task.md`) solo existe en sesiones de Planificación. Las intervenciones rápidas (Chat/Fast Mode) quedaban expuestas al olvido del versionado.
 **La Solución**: Añadida **Regla 9** a `legacy_dev_rules.md`. Obliga a invocar el **Protocolo de Cierre Cuaternario** también al final de intervenciones rápidas.
+
+
 ### 🐛 Fix: Parálisis de Actualización AJAX
 **Versión**: v3.9.1-dev.15 | **Fecha**: 19 de Enero de 2026
 
 **El Problema**: La temperatura y batería en la cabecera web no se actualizaban automáticamente (requerían recarga manual).
 **Diagnóstico**: El script JS `startStatsUpdater` usaba `document.getElementById('stat-temp')`, pero el HTML generado por el servidor Java solo asignaba `class="stat-temp"`, sin ID. Esto causaba un `TypeError: null` silencioso cada 5 segundos.
 **La Solución**: Añadidos atributos `id` explícitos (`stat-bat`, `stat-temp`, etc.) en `NanoHttpServer.getCommonHeaderHtml`.
+
+
 ### ✨ Feat: Tendencia Térmica Pegajosa (Sticky Trend)
 **Versión**: v3.9.1-dev.16 | **Fecha**: 19 de Enero de 2026
 
@@ -639,3 +647,14 @@ Validamos la arquitectura **"Burst Profile"**. El sistema paga un coste alto ini
 **Lección (Bug del Emoji)**: Inicialmente usamos flechas Unicode estándar (`⬆`, `⬇`), pero iOS/Android las renderizan forzosamente como Emojis (blanco/azul), ignorando el CSS `color: red`.
 **Corrección**: Cambiado a formas geométricas puras (`▲`, `▼`) que sí respetan el coloreado CSS.
 
+
+## 🚀 Phase 37: Gold Release (v3.9.1)
+**Versión**: v3.9.1 | **Fecha**: 19 de Enero de 2026
+
+### 📜 1. La Historia (El Hito)
+El proyecto ha alcanzado un punto de estabilidad crítica. El usuario ha solicitado explícitamente "congelar" el estado actual como una versión "Gold" ("Estable como una roca") antes de iniciar nuevas funcionalidades experimentales (Zoom separado).
+Esta versión consolida todas las mejoras de rendimiento, la arquitectura "Zero-Copy" y las correcciones de interfaz acumuladas durante la fase de desarrollo v3.9.1-dev.
+
+### 🛠️ 2. La Solución (Ingeniería)
+*   **Stabilization**: Promoción de `v3.9.1-dev.16` a `v3.9.1` (Canonical Release).
+*   **Tagging**: Etiquetado formal en Git para garantizar un punto de restauración seguro.
