@@ -835,3 +835,16 @@ Hemos alineado la física CSS del `.mini-canvas` con la del player principal:
 }
 ```
 Ahora, matemáticas y píxeles bailan al unísono.
+### 🚀 Phase 24: Migración a Unidades Relativas - % vs px (v3.9.3-dev.6) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Estábamos inmersos en una pesadilla matemática. Para escalar el movimiento del video grande a la miniatura, calculábamos ratios basados en `window.innerWidth`, asumíamos anchos de dispositivo y escribíamos código frágil.
+Un Pan de 100 píxeles a la derecha en una pantalla de 4K es un suspiro; en un móvil de 320px es un terremoto que saca la imagen de cuadro.
+
+**La Solución (Ingeniería) 🛠️**
+Hemos abandonado el sistema de coordenadas absolutas (píxeles) en favor de **coordenadas relativas (%)**.
+`translate(X%, Y%)`
+*   Si le decimos al video grande: *"Muévete un 50% a la derecha"*, se mueve la mitad de su ancho.
+*   Si le decimos a la miniatura: *"Muévete un 50% a la derecha"*, ¡también se mueve la mitad de su propio ancho!
+*   **Resultado**: El código se simplifica drásticamente. Eliminamos las divisiones por `window.innerWidth`. La geometría es idéntica en cualquier pantalla, grande o pequeña. Una solución elegante y _responsive_ por naturaleza.
+

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [v3.9.3-dev.6] - 2026-01-19
+### Changed
+- **Web Engine**: Migración completa de unidades absolutas (`px`) a relativas (`%`) para el control de Pan/Zoom.
+- **Refactor**: Eliminación de cálculos dependientes de `window.innerWidth`. Ahora la sincronización visual entre reproductor y miniaturas es nativa y matemáticamente exacta.
+
 ## [v3.9.3-dev.5] - 2026-01-19
 ### Fixed
 - **CSS**: Sincronización de geometría (`object-fit: contain` + `transform-origin`) para elementos `.mini-canvas`. Asegura que las miniaturas animadas respondan al Zoom/Pan exactamente igual que las estáticas.

@@ -828,29 +828,20 @@ public class NanoHttpServer {
                 "function updateWebTransform(z, x, y) {\n" +
                 "  document.getElementById('web-zoom-val').textContent = z + 'x';\n" +
                 "  \n" +
-                "  // 1. VIDEO PLAYER GRANDE (Aplica los píxeles directos)\n" +
-                "  // En el modo pantalla completa/modal, usamos el valor directo configurado por el usuario.\n" +
-                "  var tMain = 'translate(' + x + 'px, ' + y + 'px) scale(' + z + ')';\n" +
+                "  // LÓGICA DE PORCENTAJES (RESPONSIVE): \n" +
+                "  // Al usar '%', el navegador calcula el desplazamiento relativo al ancho de cada imagen.\n" +
+                "  // Si x=10, mueve el player grande un 10% de su ancho, y la miniatura un 10% de su ancho.\n" +
+                "  // El resultado visual es idéntico en ambos sin matemáticas extra.\n" +
+                "  \n" +
+                "  var transformCSS = 'translate(' + x + '%, ' + y + '%) scale(' + z + ')';\n" +
+                "  \n" +
+                "  // 1. Aplicar a reproductores grandes (Modal y Live)\n" +
                 "  var bigPlayers = document.querySelectorAll('#video-player, #live-stream-img');\n" +
-                "  for(var i=0; i<bigPlayers.length; i++) { bigPlayers[i].style.transform = tMain; }\n" +
+                "  for(var i=0; i<bigPlayers.length; i++) { bigPlayers[i].style.transform = transformCSS; }\n" +
                 "  \n" +
-                "  // 2. MINIATURAS (Cálculo Proporcional)\n" +
-                "  // Calculamos la proporción entre la miniatura (80px) y la pantalla actual del usuario.\n" +
-                "  var screenW = window.innerWidth;\n" +
-                "  if(screenW < 320) screenW = 320; // Seguridad\n" +
-                "  \n" +
-                "  // Si la pantalla es 1000px y la miniatura 80px, el factor es 0.08\n" +
-                "  var ratio = 80.0 / screenW;\n" +
-                "  \n" +
-                "  // Reducimos el desplazamiento usando ese ratio\n" +
-                "  // El Zoom (z) NO se reduce, porque la escala es idéntica en grande y pequeño.\n" +
-                "  var tx = x * ratio;\n" +
-                "  var ty = y * ratio;\n" +
-                "  \n" +
-                "  var tThumb = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + z + ')';\n" +
-                "  \n" +
+                "  // 2. Aplicar a miniaturas (Thumbnails y Canvas)\n" +
                 "  var thumbs = document.querySelectorAll('img.thumb, canvas.mini-canvas');\n" +
-                "  for(var k=0; k<thumbs.length; k++) { thumbs[k].style.transform = tThumb; }\n" +
+                "  for(var k=0; k<thumbs.length; k++) { thumbs[k].style.transform = transformCSS; }\n" +
                 "}\n" +
                 "function updateWebTransformFromInputs() {\n" +
                 "  var z = document.getElementById('web-zoom').value;\n" +
