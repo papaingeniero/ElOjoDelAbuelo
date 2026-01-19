@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.2] - 2026-01-19
+### 🚀 Release
+- Elevación a **Estable** del ciclo de mejoras de UI y gestión de preferencias independientes (Web vs Hardware).
+- Se han consolidado 13 iteraciones de desarrollo (dev.1 a dev.13) manteniendo todo el detalle histórico a continuación.
+
 ## [v3.9.2-dev.13] - 2026-01-19
 ### Changed
 - **Content**: Corrección lingüística de tooltips para mayor claridad y terminología orientada al usuario.
