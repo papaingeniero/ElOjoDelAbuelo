@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.2] - 2026-01-21
+### Fixed
+- **Stability**: Implementación "Safe Mode" en `setPreviewSurface` para evitar crashes al cambiar entre background y foreground. No se reinician los buffers ni callbacks innecesariamente.
+- **Hardware**: Ajuste de rotación hardware a 90 grados (estándar Galaxy S) en lugar de 180.
+
 ## [v3.9.5-dev.1] - 2026-01-20
 ### Added
 - **Performance**: Lazy Load (Infinite Scroll) para la lista de videos. Reduce consumo de CPU y tiempo de carga inicial.

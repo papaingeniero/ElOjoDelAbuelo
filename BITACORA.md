@@ -971,3 +971,20 @@ Implementación de carga diferida (Lazy Load):
 3.  **Javascript**: Lógica de renderizado de tarjetas en cliente y fix de compatibilidad de clicks.
 
 Resultado: Carga inicial instantánea y navegación fluida.
+
+### 🧪 v3.9.5-dev.2: Estabilización de SurfaceView (Safe Mode)
+
+Se detectaron crashes recurrentes al intentar montar la `SurfaceView` en el activity principal (`MainActivity`) mientras el servicio `SentinelService` estaba grabando en background.
+
+**Hipótesis del Fallo**:
+Al llamar a `setPreviewSurface`, la implementación anterior destruía y recreaba agresivamente los buffers (`addCallbackBuffer`) y reiniciaba los callbacks. En dispositivos antiguos (Galaxy S, Android 2.3), alterar la cadena de buffers mientras la cámara está entregando frames causa una excepción nativa o un bloqueo del HAL de cámara.
+
+**La Solución (Safe Mode Hook)**:
+Hemos reescrito `setPreviewSurface` con un enfoque conservador:
+1.  **Stop Atómico**: Detener preview solo lo justo para cambiar el `Display`.
+2.  **Persistencia de Buffers**: NO tocamos `setPreviewCallbackWithBuffer` ni los buffers ya asignados. La cadena de memoria se mantiene intacta.
+3.  **Fallback Background**: Si `holder` es null, intentamos volver a `dummySurface` (SurfaceTexture) en lugar de dejar el display en null, para asegurar que la grabación continúe.
+4.  **Chispa de Arranque**: Solo inyectamos un nuevo buffer si es estrictamente necesario para "desatascar" la pipeline.
+5.  **Corrección de Orientación**: Se ajustó `setDisplayOrientation(90)` que parece ser el valor correcto para este dispositivo en modo Portrait/Landscape híbrido, en lugar del 180 anterior.
+
+Este cambio busca que la transición UI <-> Servicio sea transparente para el hardware de la cámara.
