@@ -146,7 +146,7 @@ public class NanoHttpServer {
                 if (uri.equals("/stream")) {
                     serveLiveStream(os); // Blocks thread while streaming
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
-                    serveVideoFile(os, uri.substring(1)); // Remove leading slash
+                    serveVideoFile(os, uri.substring(1), method); // Remove leading slash & pass method
                 } else if (uri.startsWith("/thumbnails/")) {
                     serveThumbnail(os, uri.substring(12)); // Remove "/thumbnails/"
                 } else if (uri.equals("/stats")) {
@@ -223,7 +223,7 @@ public class NanoHttpServer {
             }
         }
 
-        private void serveVideoFile(OutputStream os, String fileName) throws IOException {
+        private void serveVideoFile(OutputStream os, String fileName, String method) throws IOException {
             File file = new File(STORAGE_DIR, fileName);
             if (!file.exists()) {
                 send404(os);
@@ -235,6 +235,11 @@ public class NanoHttpServer {
             os.write(("Content-Type: application/octet-stream\r\n").getBytes());
             os.write(("Content-Length: " + file.length() + "\r\n").getBytes());
             os.write("\r\n".getBytes());
+
+            if ("HEAD".equalsIgnoreCase(method)) {
+                os.flush();
+                return;
+            }
 
             FileInputStream fis = new FileInputStream(file);
             byte[] buf = new byte[8192];
@@ -302,10 +307,10 @@ public class NanoHttpServer {
             float defZoom = SentinelService.defaultZoom;
             int defPanX = SentinelService.defaultPanX;
             int defPanY = SentinelService.defaultPanY;
-            
+
             SharedPreferences prefs = context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE);
-            int minFreeSpace = prefs.getInt("pref_min_free_space_mb", 500); 
-            
+            int minFreeSpace = prefs.getInt("pref_min_free_space_mb", 500);
+
             // WEB VIEW SETTINGS (Stored in Device Prefs)
             float webZoom = prefs.getFloat("webZoom", 1.0f);
             int webPanX = prefs.getInt("webPanX", 0);
@@ -321,7 +326,6 @@ public class NanoHttpServer {
             os.write(json.getBytes());
         }
 
-
         /**
          * POST /api/save_settings
          * Updates the application configuration on the fly.
@@ -330,11 +334,18 @@ public class NanoHttpServer {
          * @param uri The full request URI containing query parameters.
          */
         private void serveSaveSettings(OutputStream os, String uri) throws IOException {
-            int sens = 90; int time = 10; boolean active = true; int rot = 0;
-            float defZoom = 1.0f; int defPanX = 0; int defPanY = 0;
+            int sens = 90;
+            int time = 10;
+            boolean active = true;
+            int rot = 0;
+            float defZoom = 1.0f;
+            int defPanX = 0;
+            int defPanY = 0;
             int minSpace = 500;
             // Web Vars
-            float webZoom = 1.0f; int webPanX = 0; int webPanY = 0;
+            float webZoom = 1.0f;
+            int webPanX = 0;
+            int webPanY = 0;
 
             try {
                 if (uri.contains("?")) {
@@ -343,41 +354,54 @@ public class NanoHttpServer {
                     for (String pair : pairs) {
                         String[] kv = pair.split("=");
                         if (kv.length == 2) {
-                            String key = kv[0]; String val = kv[1];
-                            if (key.equals("sens")) sens = Integer.parseInt(val);
-                            else if (key.equals("time")) time = Integer.parseInt(val);
-                            else if (key.equals("active")) active = Boolean.parseBoolean(val);
-                            else if (key.equals("rot")) rot = Integer.parseInt(val);
-                            else if (key.equals("defZoom")) defZoom = Float.parseFloat(val);
-                            else if (key.equals("defPanX")) defPanX = Integer.parseInt(val);
-                            else if (key.equals("defPanY")) defPanY = Integer.parseInt(val);
-                            else if (key.equals("min_free_space")) minSpace = Integer.parseInt(val);
+                            String key = kv[0];
+                            String val = kv[1];
+                            if (key.equals("sens"))
+                                sens = Integer.parseInt(val);
+                            else if (key.equals("time"))
+                                time = Integer.parseInt(val);
+                            else if (key.equals("active"))
+                                active = Boolean.parseBoolean(val);
+                            else if (key.equals("rot"))
+                                rot = Integer.parseInt(val);
+                            else if (key.equals("defZoom"))
+                                defZoom = Float.parseFloat(val);
+                            else if (key.equals("defPanX"))
+                                defPanX = Integer.parseInt(val);
+                            else if (key.equals("defPanY"))
+                                defPanY = Integer.parseInt(val);
+                            else if (key.equals("min_free_space"))
+                                minSpace = Integer.parseInt(val);
                             // New Web Vars
-                            else if (key.equals("webZoom")) webZoom = Float.parseFloat(val);
-                            else if (key.equals("webPanX")) webPanX = Integer.parseInt(val);
-                            else if (key.equals("webPanY")) webPanY = Integer.parseInt(val);
+                            else if (key.equals("webZoom"))
+                                webZoom = Float.parseFloat(val);
+                            else if (key.equals("webPanX"))
+                                webPanX = Integer.parseInt(val);
+                            else if (key.equals("webPanY"))
+                                webPanY = Integer.parseInt(val);
                         }
                     }
                 }
-                
+
                 // Save Web Settings to Phone Prefs
                 context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE).edit()
-                    .putInt("pref_min_free_space_mb", minSpace)
-                    .putFloat("webZoom", webZoom)
-                    .putInt("webPanX", webPanX)
-                    .putInt("webPanY", webPanY)
-                    .commit();
-                    
+                        .putInt("pref_min_free_space_mb", minSpace)
+                        .putFloat("webZoom", webZoom)
+                        .putInt("webPanX", webPanX)
+                        .putInt("webPanY", webPanY)
+                        .commit();
+
                 SentinelService.updateSettings(sens, time, active, rot);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: text/plain\r\n".getBytes());
             os.write("\r\n".getBytes());
             os.write("OK".getBytes());
         }
-
 
         private void serveWaitStatus(OutputStream os, String uri) throws IOException {
             // Parse query params manually (uri contains ?current_state=true/false)
@@ -621,8 +645,10 @@ public class NanoHttpServer {
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
                 ".thumb-container { position: relative; width: 80px; height: 60px; margin-right: 15px; border-radius: 8px; overflow: hidden; background: #000; }\n"
                 +
-                ".thumb { width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; transform-origin: 0 0; }\n" +
-                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; }\n" +
+                ".thumb { width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; transform-origin: 0 0; }\n"
+                +
+                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: contain; }\n"
+                +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +
                 "/* Modal Player */\n" +
                 "#player-modal, #live-view-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; flex-direction: column; }\n"
@@ -646,7 +672,7 @@ public class NanoHttpServer {
                 +
                 ".btn-cancel { background: #c62828; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; flex: 1; }\n"
                 +
-                ".zoom-controls { display: flex; gap: 10px; margin-top: 5px; }\n" + 
+                ".zoom-controls { display: flex; gap: 10px; margin-top: 5px; }\n" +
                 "label { font-size: 16px; }\n" +
                 "</style>\n" +
                 "</head><body>\n" +
@@ -707,45 +733,57 @@ public class NanoHttpServer {
                 "         <h3 style='margin:0;'>Configuración ⚙️</h3>\n" +
                 "         <span onclick='closeSettings()' style='cursor:pointer; font-size:24px;'>&times;</span>\n" +
                 "      </div>\n" +
-                
+
                 // 1. WEB SETTINGS
                 "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;'>" +
                 "         <h4 style='margin:0 0 10px 0; color:#4fc3f7;'>🌍 Vista Web (Navegador)</h4>" +
                 "         <label>Escala Web: <span id='web-zoom-val'>1.0x</span></label>" +
-                "         <input type='range' id='web-zoom' min='1' max='3' step='0.1' value='1' style='width:100%' oninput='updateWebTransformFromInputs()'>" +
+                "         <input type='range' id='web-zoom' min='1' max='3' step='0.1' value='1' style='width:100%' oninput='updateWebTransformFromInputs()'>"
+                +
                 "         <div style='display:flex; gap:10px; align-items:center; margin-top:5px;'>" +
                 "           <span style='font-size:12px; color:#aaa; min-width:60px;'>Posición:</span>" +
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
-                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>" +
-                "               <input type='number' id='web-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;' oninput='updateWebTransformFromInputs()'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>"
+                +
+                "               <input type='number' id='web-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;' oninput='updateWebTransformFromInputs()'>"
+                +
                 "           </div>" +
                 "           <div style='width:20px; flex-shrink:0;'></div>" + // FORCED SPACER
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
-                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>" +
-                "               <input type='number' id='web-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;' oninput='updateWebTransformFromInputs()'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>"
+                +
+                "               <input type='number' id='web-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;' oninput='updateWebTransformFromInputs()'>"
+                +
                 "           </div>" +
                 "         </div>" +
-                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom y Desplazamiento (Pan) del video mostrado en el navegador.</div>" +
+                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom y Desplazamiento (Pan) del video mostrado en el navegador.</div>"
+                +
                 "      </div>" +
 
                 // 2. HARDWARE SETTINGS
                 "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;'>" +
                 "         <h4 style='margin:0 0 10px 0; color:#ffa726;'>📱 Vista Abuelo (Pantalla)</h4>" +
                 "         <label>Zoom Físico: <span id='hw-zoom-val'>1.0x</span></label>" +
-                "         <input type='range' id='hw-zoom' min='1' max='4' step='0.1' style='width:100%' oninput=\"document.getElementById('hw-zoom-val').textContent=this.value+'x'\">" +
+                "         <input type='range' id='hw-zoom' min='1' max='4' step='0.1' style='width:100%' oninput=\"document.getElementById('hw-zoom-val').textContent=this.value+'x'\">"
+                +
                 "         <div style='display:flex; gap:10px; align-items:center; margin-top:5px;'>" +
                 "           <span style='font-size:12px; color:#aaa; min-width:60px;'>Posición:</span>" +
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
-                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>" +
-                "               <input type='number' id='hw-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↔</span>"
+                +
+                "               <input type='number' id='hw-pan-x' placeholder='X' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>"
+                +
                 "           </div>" +
                 "           <div style='width:20px; flex-shrink:0;'></div>" + // FORCED SPACER
                 "           <div style='position:relative; flex:1; max-width:90px;'>" +
-                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>" +
-                "               <input type='number' id='hw-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>" +
+                "               <span style='position:absolute; left:8px; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; font-size:14px;'>↕</span>"
+                +
+                "               <input type='number' id='hw-pan-y' placeholder='Y' style='width:100%; padding:5px 5px 5px 25px; background:#333; color:white; border:1px solid #555; border-radius:4px; text-align:right;'>"
+                +
                 "           </div>" +
                 "         </div>" +
-                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom y Desplazamiento (Pan) del video mostrado en la pantalla del móvil de la cámara.</div>" +
+                "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom y Desplazamiento (Pan) del video mostrado en la pantalla del móvil de la cámara.</div>"
+                +
                 "      </div>" +
 
                 // 3. GENERAL SETTINGS
@@ -753,7 +791,8 @@ public class NanoHttpServer {
                 "         <label>Detector Activado:</label>\n" +
                 "         <input type='checkbox' id='set-active' style='transform: scale(1.5);'>\n" +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Activa la vigilancia y grabación por movimiento.</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Activa la vigilancia y grabación por movimiento.</div>\n"
+                +
                 "      <div style='margin-bottom:20px;'>\n" +
                 "         <label>Sensibilidad: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n"
                 +
@@ -764,17 +803,22 @@ public class NanoHttpServer {
                 "            <span style='font-size:12px;'>Max</span>\n" +
                 "         </div>\n" +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-15px; margin-bottom:15px;'>* Umbral de movimiento para iniciar grabación.</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-15px; margin-bottom:15px;'>* Umbral de movimiento para iniciar grabación.</div>\n"
+                +
                 "      <div class='settings-row'>\n" +
                 "         <label>Tiempo extra de Grabación:</label>\n" +
-                "         <input type='number' id='set-time' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='5' max='60'>\n" +
+                "         <input type='number' id='set-time' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='5' max='60'>\n"
+                +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Segundos a grabar tras cesar el movimiento.</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Segundos a grabar tras cesar el movimiento.</div>\n"
+                +
                 "      <div class='settings-row'>\n" +
                 "         <label>Min. Espacio (MB):</label>\n" +
-                "         <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='100' max='5000'>\n" +
+                "         <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='100' max='5000'>\n"
+                +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Borra videos antiguos si queda menos espacio (MB).</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Borra videos antiguos si queda menos espacio (MB).</div>\n"
+                +
                 "      <div class='settings-row'>\n" +
                 "         <label>Rotación:</label>\n" +
                 "         <div>\n" +
@@ -782,7 +826,8 @@ public class NanoHttpServer {
                 "            <input type='radio' name='rot' value='180' id='rot-180'> 180°\n" +
                 "         </div>\n" +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Rota la imagen si aparece al revés (suelo en el techo).</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Rota la imagen si aparece al revés (suelo en el techo).</div>\n"
+                +
                 "\n" +
                 "      <h4 style='border-bottom:1px solid #444; margin-top:20px; padding-bottom:5px; color:#c62828; margin-bottom:10px;'>Zona de Peligro</h4>\n"
                 +
@@ -808,19 +853,21 @@ public class NanoHttpServer {
                 // --- ZOOM / TRANSFORM LOGIC (INJECTED) ---
                 "function updateWebTransform(z, x, y) {\n" +
                 "  document.getElementById('web-zoom-val').textContent = z + 'x';\n" +
-                "  // 1. Live Stream (1:1)\n" +
-                "  var tMain = 'translate(' + x + 'px, ' + y + 'px) scale(' + z + ')';\n" +
-                "  var live = document.getElementById('live-stream-img');\n" +
-                "  if(live) live.style.transform = tMain;\n" +
-                "  // 2. Thumbnails (Dynamic Ratio)\n" +
-                "  // Calculate ratio based on visible width to generic width (fallback to body if no player)\n" +
-                "  var mainWidth = live ? live.offsetWidth : document.body.clientWidth;\n" +
-                "  if(!mainWidth || mainWidth < 1) mainWidth = 320;\n" +
-                "  var ratio = 80.0 / mainWidth;\n" +
-                "  var tx = x * ratio; var ty = y * ratio;\n" +
-                "  var tThumb = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + z + ')';\n" +
+                "  \n" +
+                "  // LÓGICA DE PORCENTAJES (RESPONSIVE): \n" +
+                "  // Al usar '%', el navegador calcula el desplazamiento relativo al ancho de cada imagen.\n" +
+                "  // Si x=10, mueve el player grande un 10% de su ancho, y la miniatura un 10% de su ancho.\n" +
+                "  // El resultado visual es idéntico en ambos sin matemáticas extra.\n" +
+                "  \n" +
+                "  var transformCSS = 'translate(' + x + '%, ' + y + '%) scale(' + z + ')';\n" +
+                "  \n" +
+                "  // 1. Aplicar a reproductores grandes (Modal y Live)\n" +
+                "  var bigPlayers = document.querySelectorAll('#video-player, #live-stream-img');\n" +
+                "  for(var i=0; i<bigPlayers.length; i++) { bigPlayers[i].style.transform = transformCSS; }\n" +
+                "  \n" +
+                "  // 2. Aplicar a miniaturas (Thumbnails y Canvas)\n" +
                 "  var thumbs = document.querySelectorAll('img.thumb, canvas.mini-canvas');\n" +
-                "  thumbs.forEach(t => t.style.transform = tThumb);\n" +
+                "  for(var k=0; k<thumbs.length; k++) { thumbs[k].style.transform = transformCSS; }\n" +
                 "}\n" +
                 "function updateWebTransformFromInputs() {\n" +
                 "  var z = document.getElementById('web-zoom').value;\n" +
@@ -873,10 +920,12 @@ public class NanoHttpServer {
                 "  buffer = newBuffer;\n" +
                 "  while (true) {\n" +
                 "    var start = -1;\n" +
-                "    for(var i=0; i<buffer.length-1; i++) { if(buffer[i] === 0xFF && buffer[i+1] === 0xD8) { start = i; break; } }\n" +
+                "    for(var i=0; i<buffer.length-1; i++) { if(buffer[i] === 0xFF && buffer[i+1] === 0xD8) { start = i; break; } }\n"
+                +
                 "    if(start === -1) break;\n" +
                 "    var end = -1;\n" +
-                "    for(var i=start+2; i<buffer.length-1; i++) { if(buffer[i] === 0xFF && buffer[i+1] === 0xD9) { end = i+2; break; } }\n" +
+                "    for(var i=start+2; i<buffer.length-1; i++) { if(buffer[i] === 0xFF && buffer[i+1] === 0xD9) { end = i+2; break; } }\n"
+                +
                 "    if(end === -1) break;\n" +
                 "    var jpegData = buffer.slice(start, end);\n" +
                 "    var blob = new Blob([jpegData], {type: 'image/jpeg'});\n" +
@@ -946,7 +995,7 @@ public class NanoHttpServer {
                 "\n" +
                 "function resetZoom() { mat.x = gWebPanX; mat.y = gWebPanY; mat.s = gWebZoom; updateTransform(); }\n" +
                 "function updateTransform() {\n" +
-                "   var t = 'translate(' + mat.x + 'px, ' + mat.y + 'px) scale(' + mat.s + ')';\n" +
+                "   var t = 'translate(' + mat.x + '%, ' + mat.y + '%) scale(' + mat.s + ')';\n" +
                 "   playerImg.style.transform = t;\n" +
                 "   playerImg.style.webkitTransform = t;\n" +
                 "   var hud = document.getElementById('hud-stats');\n" +
@@ -1173,11 +1222,14 @@ public class NanoHttpServer {
                 "   loadMoreVideos();\n" +
                 "};\n" +
                 "var currentRecordingState = false;\n" +
+                "var gCurrentRecFilename = null;\n" +
+                "var gRecStartTime = 0;\n" +
                 "function pollStatus() {\n" +
                 "  fetch('/wait_status?current_state=' + currentRecordingState + '&_=' + Date.now())\n" +
                 "      .then(r => r.json())\n" +
                 "      .then(data => {\n" +
-                "          if (data.recording && !currentRecordingState) { injectLivePreview(); }\n" +
+                "          if (data.recording && !currentRecordingState) { gRecStartTime = Date.now(); injectLivePreview(); }\n"
+                +
                 "          else if (!data.recording && currentRecordingState) { cleanupLivePreview(); }\n" +
                 "          currentRecordingState = data.recording;\n" +
                 "          updateStatusIndicator(data.recording);\n" +
@@ -1264,6 +1316,7 @@ public class NanoHttpServer {
                 "function injectLivePreview() {\n" +
                 "   fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
                 "       if(!meta.filename) return;\n" +
+                "       gCurrentRecFilename = meta.filename;\n" +
                 "       var container = document.querySelector('.library');\n" +
                 "       var div = document.createElement('div'); div.className = 'video-item'; div.id = 'temp-preview-card'; div.style.borderLeft = '4px solid #d32f2f'; div.style.background = '#3e2727';\n"
                 +
@@ -1297,17 +1350,84 @@ public class NanoHttpServer {
                 "       pLoop();\n" +
                 "   }\n" +
                 "}\n" +
+                "function parseDateFromFilename(f) {\n" +
+                "    var parts = f.match(/video_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})/);\n" +
+                "    if(!parts) return {date:\"Unknown\", time:\"Unknown\"};\n" +
+                "    return {\n" +
+                "        date: parts[3]+\"/\"+parts[2]+\"/\"+parts[1],\n" +
+                "        time: \"⏰ \" + parts[4]+\":\"+parts[5]+\":\"+parts[6]\n" +
+                "    };\n" +
+                "}\n" +
+"function finalizeRecordingCard(filename) {\n" +
+                "    var durationSec = Math.round((Date.now() - gRecStartTime) / 1000);\n" +
+                "    var durationStr = durationSec + \"s\";\n" +
+                "    var videoUrl = '/' + filename;\n" +
+                "    fetch(videoUrl, { method: 'HEAD' })\n" +
+                "    .then(function(response) {\n" +
+                "        var bytes = response.headers.get('content-length');\n" +
+                "        var sizeMB = (bytes / (1024*1024)).toFixed(1) + \" MB\";\n" +
+                "        var card = document.getElementById('temp-preview-card');\n" +
+                "        if(!card) return;\n" +
+                "        if(parasiteInterval) clearInterval(parasiteInterval);\n" +
+                "        var dt = parseDateFromFilename(filename);\n" +
+                "        var dateStr = dt.date; var timeStr = dt.time;\n" +
+                "        \n" +
+                "        // Derive preview filename from video filename (remove FPS suffix)\n" +
+                "        // video_YYYYMMDD_HHMMSS_XXfps.mjpeg -> preview_YYYYMMDD_HHMMSS.mjpeg\n" +
+                "        var previewFilename = filename.replace(\"video_\", \"preview_\").replace(/_\\d+fps/, \"\");\n" +
+                "        \n" +
+                "        card.className = 'video-item';\n" +
+                "        card.id = '';\n" +
+                "        card.style = '';\n" +
+                "        card.setAttribute('onclick', \"playVideo('\" + filename + \"')\");\n" +
+                "        \n" +
+                "        // Injected canvas for animation\n" +
+                "        var innerContent = \"<div class='thumb-container'>\" +\n" +
+                "            \"<img class='thumb' src='/thumbnails/\" + filename + \"?t=\" + Date.now() + \"'>\" +\n" +
+                "            \"<canvas class='mini-canvas' data-src='/\" + previewFilename + \"'></canvas>\" + \n" +
+                "            \"</div>\" +\n" +
+                "            \"<div class='info'>\" +\n" +
+                "            \"<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>\" + dateStr + \" &nbsp; \" + timeStr + \"</div>\" +\n" +
+                "            \"<div style='color:#ccc; font-size:13px;'>\" +\n" +
+                "            \"<b>💾 \" + sizeMB + \"</b>\" +\n" +
+                "            \" &nbsp;|&nbsp; \" +\n" +
+                "            \"<b>⏳ \" + durationStr + \"</b>\" +\n" +
+                "            \" &nbsp;|&nbsp; \" +\n" +
+                "            \"🎥 MJPEG\" +\n" +
+                "            \"</div></div>\";\n" +
+                "        card.innerHTML = innerContent;\n" +
+                "        if(typeof gWebZoom !== 'undefined') updateWebTransform(gWebZoom, gWebPanX, gWebPanY);\n" +
+                "        \n" +
+                "        // Start animation immediately\n" +
+                "        var canvas = card.querySelector('.mini-canvas');\n" +
+                "        if(canvas) loadMiniPreview('/' + previewFilename, canvas);\n" +
+                "        \n" +
+                "    }).catch(function(err) {\n" +
+                "        console.error(\"Error finalizing card:\", err);\n" +
+                "        location.reload();\n" +
+                "    });\n" +
+                "}\n" +
+                "\n" +
                 "function cleanupLivePreview() {\n" +
                 "   if(parasiteInterval) clearInterval(parasiteInterval);\n" +
-                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n" +
-                "   setTimeout(function() { location.reload(); }, 3000);\n" +
+                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n"
+                +
+                "   setTimeout(function() { \n" +
+                "       fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
+                "            if(meta.filename) {\n" +
+                "                finalizeRecordingCard(meta.filename); \n" +
+                "            } else {\n" +
+                "                console.error(\"No filename found after finalization\");\n" +
+                "                location.reload();\n" +
+                "            }\n" +
+                "       }).catch(e => location.reload());\n" +
+                "   }, 1500);\n" +
                 "}\n" +
 
                 "</script>\n" +
                 "</body></html>";
     }
 
-    
     // Phase 23: DRY Header Generation
     private String getCommonHeaderHtml(String versionName, String batIcon, int batLevel, String tempIcon, int temp,
             String freeStorage) {
@@ -1325,7 +1445,3 @@ public class NanoHttpServer {
                 "  </div>\n";
     }
 }
-
-
-
-

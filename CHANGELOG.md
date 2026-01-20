@@ -11,6 +11,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **API**: Nuevo endpoint `/api/list_videos` en JSON.
 - **Fix**: Handler de clicks en tarjetas de video para mayor compatibilidad.
 
+## [v3.9.4] - 2026-01-20
+### Added
+- **UX**: Zero-Reload Recording Cycle (Hot-Swap). La tarjeta de grabación se transforma en tarjeta de video sin recargar la página.
+### Fixed
+- **UI**: Eliminados botones redundantes y corregida inconsistencia visual.
+- **Core**: Corregida condición de carrera al iniciar grabación.
+- **Protocol**: Soporte para método `HEAD` en servidor HTTP.
+- **Bugfix**: Múltiples correcciones de sincronización y URLs.
+
+## [v3.9.3] - 2026-01-20
+### Added
+- **Web Engine**: Sistema de posicionamiento relativo (Responsive Pan/Zoom).
+- **UX**: Coherencia visual total entre Monitor (Grande), Miniaturas (Pequeñas) y Preview Animado.
+
+## [v3.9.3-dev.7] - 2026-01-19
+### Changed
+- **Bugfix (JS)**: Corregida una línea errante que seguía usando `px` en lugar de `%`. Esto provocaba que el sistema ignorase la nueva lógica responsive al aplicar el pan por defecto a las miniaturas y a la vista del video en grande.
+
+## [v3.9.3-dev.6] - 2026-01-19
+### Changed
+- **Web Engine**: Cambio de paradigma en el posicionamiento de video (Pan). Se sustituyen los píxeles (`px`) por porcentajes (`%`) relativos al ancho de la imagen.
+- **Fix**: Soluciona la discrepancia visual entre el video monitor (grande) y las miniaturas (pequeñas), garantizando un encuadre idéntico independientemente del tamaño de pantalla.
+
+## [v3.9.3-dev.5] - 2026-01-19
+### Fixed
+- **CSS**: Sincronización de geometría (`object-fit: contain` + `transform-origin`) para elementos `.mini-canvas`. Asegura que las miniaturas animadas respondan al Zoom/Pan exactamente igual que las estáticas.
+
+## [v3.9.3-dev.4] - 2026-01-19
+### Fixed
+- **Web UI**: Cálculo matemático de miniaturas sincronizado con el ancho del viewport. Soluciona el problema de desaparición de miniaturas al desplazar el video main.
+>>>>>>> origin/main
+
 ## [v3.9.3-dev.3] - 2026-01-19
 ### Fixed
 - **UI Logic**: Desplazamiento de Pan adaptable al ancho de pantalla (Dynamic Ratio). Soluciona el problema de "movimiento excesivo" en navegadores de escritorio.

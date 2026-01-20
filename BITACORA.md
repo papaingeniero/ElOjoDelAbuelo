@@ -802,7 +802,6 @@ var tx = x * ratio;
 ```
 Si la pantalla es gigante, el ratio baja (ej: 0.08). Si es pequeña, sube (ej: 0.25).
 La física se auto-ajusta al dispositivo del observador.
-
 ### ⚡ v3.9.5-dev.1: Lazy Load (Infinite Scroll)
 
 El usuario reportó saturación de CPU al generar la lista HTML de cientos de videos.
@@ -813,3 +812,159 @@ Implementación de carga diferida (Lazy Load):
 3.  **Javascript**: Lógica de renderizado de tarjetas en cliente y fix de compatibilidad de clicks.
 
 Resultado: Carga inicial instantánea y navegación fluida.
+### 🚀 Phase 22: Geometría Proporcional en Miniaturas (v3.9.3-dev.4) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Las miniaturas en el dashboard web heredaban el desplazamiento (`translate X, Y`) pensado para la pantalla grande/modal. Si el usuario desplazaba el video 300 píxeles a la derecha en el modo pantalla completa para ver un detalle, las miniaturas de apenas 80 píxeles también se movían 300 píxeles, saliéndose completamente de su contenedor y dejando un hueco negro. Era como intentar aplicar las coordenadas de atraque de un transatlántico a un bote de remos.
+
+**La Solución (Ingeniería) 🛠️**
+Implementamos **Matemática Proporcional** en la función `updateWebTransform`.
+1.  **Cálculo del Ratio**: Determinamos qué fracción de la pantalla representa la miniatura.
+    `ratio = 80.0 / window.innerWidth`
+2.  **Escalado Diferencial**:
+    *   **Video Grande**: Recibe el desplazamiento crudo (`x`, `y`).
+    *   **Miniaturas**: Reciben el desplazamiento escalado (`x * ratio`, `y * ratio`).
+3.  **Compatibilidad Legacy**: Reemplazamos `forEach` por bucles `for(;;)` tradicionales para asegurar que el Javascript funcione incluso en navegadores antiguos de tablets o móviles viejos que se usen como consolas de monitoreo.
+
+**Lecciones Aprendidas 🎓**
+*   **Contexto de Escala**: Nunca compartir coordenadas absolutas (píxeles) entre elementos de diferente tamaño sin un factor de normalización.
+*   **Defensive Coding**: Siempre asumir que `window.innerWidth` puede ser muy pequeño o nulo, estableciendo mínimos de seguridad (320px).
+### 🚀 Phase 23: Coherencia Visual Miniatura `canvas` (v3.9.3-dev.5) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+El player principal tenía un comportamiento `object-fit: contain`. Las miniaturas estáticas (`img`) también. Pero... ¡el `canvas` de la previsualización en vivo (el famoso /preview_) se había quedado desnudo!
+Sin `transform-origin: 0 0` ni `object-fit: contain`, el canvas reaccionaba al escalado (Zoom) creciendo desde su centro en lugar de desde la esquina superior izquierda, y estirando la imagen de forma diferente a sus hermanos estáticos.
+Esto provocaba que, al aplicar Zoom/Pan, el preview animado se desencajase visualmente del marco negro, rompiendo la ilusión de solidez.
+
+**La Solución (Ingeniería) 🛠️**
+Hemos alineado la física CSS del `.mini-canvas` con la del player principal:
+```css
+.mini-canvas {
+    transform-origin: 0 0;  /* Anclaje idéntico al Player */
+    object-fit: contain;    /* Geometría idéntica al Player */
+}
+```
+Ahora, matemáticas y píxeles bailan al unísono.
+### 🚀 Phase 24: Migración a Unidades Relativas - % vs px (v3.9.3-dev.6) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Nos enfrentábamos a un problema de **incoherencia espacial**. Cuando el usuario configuraba un Pan (desplazamiento) de "50" para centrar una puerta en el monitor, ese valor en píxeles (`50px`) era insignificante para la pantalla grande, pero "sacaba de cuadro" a la miniatura pequeña de 80px.
+Intentamos arreglarlo con ratios matemáticos complicados basados en `window.innerWidth`, pero fallaban porque no consideraban el "aire" (bandas negras) del contenedor.
+
+**La Solución (Ingeniería) 🛠️**
+La solución definitiva fue cambiar el paradigma de coordenadas:
+*   **Antes (Absoluto)**: `translate(50px, 0)`. Dependiente de la resolución.
+*   **Ahora (Relativo)**: `translate(10%, 0)`. Independiente de la resolución.
+    *   Le decimos al navegador: *"Mueve la imagen un 10% de su ancho"*.
+    *   En el Monitor (1000px), se mueve 100px.
+    *   En la Miniatura (80px), se mueve 8px.
+*   **Resultado**: Un solo valor de configuración (`Pan X: 10%`) produce un encuadre visualmente idéntico en todas las pantallas del sistema, sin importar su tamaño.
+
+### 🚀 Phase 25: Homogeneización Interactiva - Touch Px a % (v3.9.3-dev.7) | Fecha: 19 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Teníamos el sistema migrado a porcentajes (`%`) para que fuera responsive, pero detectamos un **bug crítico**: una línea perdida de código antiguo en la función táctil (`updateTransform`) seguía inyectando píxeles (`px`).
+Esto "jodía la marrana": al aplicar el pan por defecto a miniaturas y video grande, el sistema dejaba de usar la lógica relativa y volvía al comportamiento absoluto errático, rompiendo la consistencia que acabábamos de arreglar.
+
+**La Solución (Ingeniería) 🛠️**
+Localizamos y corregimos la línea culpable. Cambiamos la concatenación de strings para usar `%` en lugar de `px`.
+Asunto arreglado.
+
+## 🚀 Phase 26: Release Universum (v3.9.3)
+**Versión**: v3.9.3 | **Fecha**: 19 de Enero de 2026
+
+### 📜 1. La Historia (El Cierre)
+Durante el ciclo `v3.9.3-dev`, nos enfrentamos a un desafío geométrico fundamental: **El Principio de Relatividad Visual**.
+Al querer encuadrar un objeto (ej: una puerta) en el monitor, usábamos distancias absolutas ("50 pasos"). Pero en la miniatura de la interfaz, "50 pasos" significaba salirse del mapa.
+Intentamos parches matemáticos (Ratios), pero fracasaron ante la realidad de los contenedores web (`img vs canvas`, `contain vs cover`).
+
+La solución final no fue matemática, fue conceptual: dejar de hablar en pasos (píxeles) y empezar a hablar en proporciones (porcentajes).
+
+### 🛠️ 2. Resumen de Logros (Ingeniería)
+1.  **Unificación CSS (`dev.5`)**: Miniaturas estáticas y Canvas animados ahora comparten `object-fit: contain` y `transform-origin` idénticos.
+2.  **Relatividad Universal (`dev.6`)**: Migración de todo el motor de posicionamiento web `updateWebTransform` de Píxeles (`px`) a Porcentajes (`%`).
+3.  **Consistencia Táctil (`dev.7`)**: Corrección del motor `touchmove` para que use el nuevo estándar relativo.
+
+**Resultado**: Un sistema de coordenadas **Agnóstico de Resolución**. El mismo valor numérico (`Pan X: 20%`) produce el mismo encuadre visual idéntico en un monitor 4K, en un móvil y en una miniatura de 80px.
+
+### 🚀 Phase 39: UI Hot-Swap - Zero Reload (v3.9.4-dev.1) | Fecha: 20 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Cada vez que el Abuelo terminaba de grabar un vídeo, la interfaz web hacía un `location.reload()` completo ("El Cebollazo") para mostrar la nueva miniatura en la lista.
+Esto era ineficiente (recarga de scripts, CSS, reconexión de sockets) y visualmente tosco (parpadeo blanco).
+Queríamos que la tarjeta roja de "🔴 GRABANDO..." se transformara mágicamente en la tarjeta final del vídeo sin tocar el resto de la página.
+
+**La Solución (Ingeniería) 🛠️**
+Hemos implementado una cirugía plástica en el DOM usando **Javascript Puro (Client-Side)**.
+1.  **Interceptación**: Cuando empieza a grabar, capturamos el nombre del archivo (`gCurrentRecFilename`) que ya viaja en la API `latest_video_meta`.
+2.  **Cronómetro Local**: Guardamos `Date.now()` para calcular luego la duración exacta sin preguntar al servidor.
+3.  **Transmutación**: Al terminar (evento `recording: false`), en vez de recargar:
+    *   Hacemos un `HEAD` request ligero para saber el tamaño en MB.
+    *   Sustituimos el HTML de la tarjeta temporal por el de una tarjeta estándar.
+    *   Le inyectamos la miniatura `.thumb` que el servidor acaba de guardar.
+    *   Aplicamos el Zoom/Pan configurado a la nueva imagen.
+
+**Resultado**: El usuario ve cómo la grabación se detiene y aparecen los botones de "Ver/Borrar" instantáneamente. Cero tráfico extra. Cero parpadeos. ⚡
+
+### 🧹 Phase 39.1: Refinamiento Visual (v3.9.4-dev.2)
+**El Ajuste**: El usuario detectó que añadimos botones "Ver/Borrar" superfluos que rompían el lenguaje de diseño minimalista original.
+**La Solución**: Hemos alineado la función `finalizeRecordingCard` (JS) para generar HTML **idéntico estructuralmente** al que genera Java en el servidor. Usamos un contenedor `div.video-item` limpio, con el trigger `onclick` global y sin controles redundantes. Mantenemos la consistencia visual absoluta. 🎨
+
+### 🏥 Phase 39.2: JS Syntax Recovery (v3.9.4-dev.3)
+**El Fallo**: La edición manual de texto "Java dentro de JS" provocó un `ReferenceError` catastrófico (función descabezada) que rompió toda la interactividad de la web.
+**La Cura**: Hemos realizado una micro-cirugía con un script Python para reinsertar la cabecera de `finalizeRecordingCard` perdida. La web vuelve a responder. 🩹
+
+### 🚦 Phase 39.3: Race Condition (v3.9.4-dev.4)
+**El Bug**: La tarjeta "Grabando..." no aparecía.
+**El Diagnóstico**: Condición de carrera. El servicio notificaba `statusLock.notifyAll()` (diciendole al cliente que graba) *antes* de que `openNewRecordingFile()` creara el archivo en disco. El cliente pedía el nombre del archivo (`/api/latest_video_meta`) y recibía `null`, abortando la creación de la tarjeta.
+**La Solución**: Reordenamiento atómico en `SentinelService.java`. Primero creamos el archivo, luego notificamos. Orden restaurado. ⚖️
+
+### 🧩 Phase 39.4: The Identity Crisis (v3.9.4-dev.5)
+**El Bug**: Al terminar la grabación, la tarjeta mostraba "0.1 MB" y un thumbnail roto.
+**El Diagnóstico**: El cliente guardaba el nombre original (`video.mjpeg`) pero el servidor, al cerrar el archivo, lo renombra inteligentemente (`video_15fps.mjpeg`). El JS intentaba cargar el archivo antiguo.
+**La Solución**: Hemos actualizado `NanoHttpServer` (JS) para que sea humilde: al terminar, no asume nada, sino que pregunta al servidor (`/api/latest_video_meta`) cuál es el nombre *final* del archivo. Sincronización completa. 🤝
+
+### 🎬 Phase 39.5: The Missing Soul (v3.9.4-dev.6)
+**El Bug**: La tarjeta se creaba perfecta... pero estática. La miniatura no se movía.
+**El Diagnóstico**: El Javascript inyectaba la imagen (`<img>`) pero olvidaba el `<canvas>`, que es el motor de la animación. Además, el archivo de previsualización no tiene el sufijo `_fps`, lo cual confundía al script.
+**La Solución**: Hemos enseñado al JS a deducir el nombre del archivo de previsualización (quitando los `_fps` del nombre del video) e inyectar el código del `<canvas>` necesario para invocar al espíritu del movimiento. 👻📽️
+
+### 📏 Phase 39.6: The Polite Server (v3.9.4-dev.7)
+**El Bug**: El tamaño del archivo se reportaba casi siempre como "0.1 MB".
+**El Diagnóstico**: El servidor Java era un bárbaro. Cuando el cliente pedía solo el tamaño (`HEAD`), el servidor le vomitaba el video entero (`GET`), saturando la conexión y cortando la respuesta antes de tiempo.
+**La Solución**: Hemos implementado modales HTTP en `NanoHttpServer`. Ahora sabe distinguir `HEAD` (solo cabeceras) de `GET` (cuerpo entero), permitiendo verificaciones de peso instantáneas y precisas. 🎩
+
+### 🔗 Phase 39.7: The Wrong Address (v3.9.4-dev.8)
+**El Bug**: El tamaño seguía mostrando "0.1 MB" a pesar del soporte HEAD.
+**El Diagnóstico**: El JS pedía el archivo a `/videos/video_...`, pero el servidor solo escucha en `/video_...`. La petición se iba al Dashboard en lugar de al manejador de archivos.
+**La Solución**: Corregida la URL en el JS para usar el path correcto (`'/' + filename`). Ahora la petición HEAD llega al destino correcto. 🏠
+
+---
+
+## 🏁 Phase 39: RELEASE v3.9.4 | 20 de Enero de 2026
+
+### 📜 El Problema (Storytelling)
+Cada vez que finalizaba una grabación, la web recargaba completamente, perdiendo el estado del UI y generando una experiencia brusca. El usuario veía un destello blanco, la lista de videos se reconstruía desde cero, y el flujo se sentía desconectado.
+
+### 🛠️ La Solución (Ingeniería)
+Implementamos un sistema de "Hot-Swap" completamente client-side:
+
+1. **Estado Global**: Variables JS (`gCurrentRecFilename`, `gRecStartTime`) capturan metadatos al inicio de grabación.
+2. **Polling Inteligente**: `pollStatus` detecta transiciones de estado (idle→recording→idle).
+3. **Tarjeta Temporal**: `injectLivePreview` inserta una tarjeta roja con preview en vivo durante la grabación.
+4. **Metamorfosis**: `finalizeRecordingCard` transforma la tarjeta roja en permanente sin recarga, obteniendo el nombre final del archivo (con FPS) y su tamaño real via HEAD request.
+5. **Animación**: Se inyecta un `<canvas>` y se invoca `loadMiniPreview` para activar la miniatura animada inmediatamente.
+
+### 🐛 Bugs Aplastados en el Camino
+- **Race Condition Start**: `openNewRecordingFile` antes de `notifyAll`.
+- **Race Condition Stop**: `closeRecordingFile` (rename) antes de `notifyAll`.
+- **JS Syntax Error**: Función descabezada por edición multi-lenguaje.
+- **Filename Mismatch**: Cliente usaba nombre sin FPS, servidor renombraba con FPS.
+- **Missing Canvas**: JS solo inyectaba `<img>`, faltaba el motor de animación.
+- **HEAD Protocol**: Servidor ignoraba método HEAD, enviaba body completo.
+- **Wrong URL**: JS pedía `/videos/...`, servidor escuchaba en `/video_...`.
+
+### 🎓 Lecciones Aprendidas
+- El código Java-embedded-JS es extremadamente frágil. Los scripts Python de parche quirúrgico son la solución más segura.
+- El orden de operaciones en código concurrente es crítico. Siempre preparar recursos ANTES de notificar.
+- HTTP HEAD existe por una razón. Implementarlo correctamente ahorra ancho de banda y evita bugs sutiles.
