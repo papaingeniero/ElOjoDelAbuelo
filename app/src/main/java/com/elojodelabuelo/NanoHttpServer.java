@@ -146,7 +146,7 @@ public class NanoHttpServer {
                 if (uri.equals("/stream")) {
                     serveLiveStream(os); // Blocks thread while streaming
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
-                    serveVideoFile(os, uri.substring(1)); // Remove leading slash
+                    serveVideoFile(os, uri.substring(1), method); // Remove leading slash & pass method
                 } else if (uri.startsWith("/thumbnails/")) {
                     serveThumbnail(os, uri.substring(12)); // Remove "/thumbnails/"
                 } else if (uri.equals("/stats")) {
@@ -221,7 +221,7 @@ public class NanoHttpServer {
             }
         }
 
-        private void serveVideoFile(OutputStream os, String fileName) throws IOException {
+        private void serveVideoFile(OutputStream os, String fileName, String method) throws IOException {
             File file = new File(STORAGE_DIR, fileName);
             if (!file.exists()) {
                 send404(os);
@@ -233,6 +233,11 @@ public class NanoHttpServer {
             os.write(("Content-Type: application/octet-stream\r\n").getBytes());
             os.write(("Content-Length: " + file.length() + "\r\n").getBytes());
             os.write("\r\n".getBytes());
+
+            if ("HEAD".equalsIgnoreCase(method)) {
+                os.flush();
+                return;
+            }
 
             FileInputStream fis = new FileInputStream(file);
             byte[] buf = new byte[8192];
@@ -1138,11 +1143,14 @@ public class NanoHttpServer {
                 "   pollStatus();\n" +
                 "};\n" +
                 "var currentRecordingState = false;\n" +
+                "var gCurrentRecFilename = null;\n" +
+                "var gRecStartTime = 0;\n" +
                 "function pollStatus() {\n" +
                 "  fetch('/wait_status?current_state=' + currentRecordingState + '&_=' + Date.now())\n" +
                 "      .then(r => r.json())\n" +
                 "      .then(data => {\n" +
-                "          if (data.recording && !currentRecordingState) { injectLivePreview(); }\n" +
+                "          if (data.recording && !currentRecordingState) { gRecStartTime = Date.now(); injectLivePreview(); }\n"
+                +
                 "          else if (!data.recording && currentRecordingState) { cleanupLivePreview(); }\n" +
                 "          currentRecordingState = data.recording;\n" +
                 "          updateStatusIndicator(data.recording);\n" +
@@ -1229,6 +1237,7 @@ public class NanoHttpServer {
                 "function injectLivePreview() {\n" +
                 "   fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
                 "       if(!meta.filename) return;\n" +
+                "       gCurrentRecFilename = meta.filename;\n" +
                 "       var container = document.querySelector('.library');\n" +
                 "       var div = document.createElement('div'); div.className = 'video-item'; div.id = 'temp-preview-card'; div.style.borderLeft = '4px solid #d32f2f'; div.style.background = '#3e2727';\n"
                 +
@@ -1262,11 +1271,78 @@ public class NanoHttpServer {
                 "       pLoop();\n" +
                 "   }\n" +
                 "}\n" +
+                "function parseDateFromFilename(f) {\n" +
+                "    var parts = f.match(/video_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})/);\n" +
+                "    if(!parts) return {date:\"Unknown\", time:\"Unknown\"};\n" +
+                "    return {\n" +
+                "        date: parts[3]+\"/\"+parts[2]+\"/\"+parts[1],\n" +
+                "        time: \"⏰ \" + parts[4]+\":\"+parts[5]+\":\"+parts[6]\n" +
+                "    };\n" +
+                "}\n" +
+"function finalizeRecordingCard(filename) {\n" +
+                "    var durationSec = Math.round((Date.now() - gRecStartTime) / 1000);\n" +
+                "    var durationStr = durationSec + \"s\";\n" +
+                "    var videoUrl = '/' + filename;\n" +
+                "    fetch(videoUrl, { method: 'HEAD' })\n" +
+                "    .then(function(response) {\n" +
+                "        var bytes = response.headers.get('content-length');\n" +
+                "        var sizeMB = (bytes / (1024*1024)).toFixed(1) + \" MB\";\n" +
+                "        var card = document.getElementById('temp-preview-card');\n" +
+                "        if(!card) return;\n" +
+                "        if(parasiteInterval) clearInterval(parasiteInterval);\n" +
+                "        var dt = parseDateFromFilename(filename);\n" +
+                "        var dateStr = dt.date; var timeStr = dt.time;\n" +
+                "        \n" +
+                "        // Derive preview filename from video filename (remove FPS suffix)\n" +
+                "        // video_YYYYMMDD_HHMMSS_XXfps.mjpeg -> preview_YYYYMMDD_HHMMSS.mjpeg\n" +
+                "        var previewFilename = filename.replace(\"video_\", \"preview_\").replace(/_\\d+fps/, \"\");\n" +
+                "        \n" +
+                "        card.className = 'video-item';\n" +
+                "        card.id = '';\n" +
+                "        card.style = '';\n" +
+                "        card.setAttribute('onclick', \"playVideo('\" + filename + \"')\");\n" +
+                "        \n" +
+                "        // Injected canvas for animation\n" +
+                "        var innerContent = \"<div class='thumb-container'>\" +\n" +
+                "            \"<img class='thumb' src='/thumbnails/\" + filename + \"?t=\" + Date.now() + \"'>\" +\n" +
+                "            \"<canvas class='mini-canvas' data-src='/\" + previewFilename + \"'></canvas>\" + \n" +
+                "            \"</div>\" +\n" +
+                "            \"<div class='info'>\" +\n" +
+                "            \"<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>\" + dateStr + \" &nbsp; \" + timeStr + \"</div>\" +\n" +
+                "            \"<div style='color:#ccc; font-size:13px;'>\" +\n" +
+                "            \"<b>💾 \" + sizeMB + \"</b>\" +\n" +
+                "            \" &nbsp;|&nbsp; \" +\n" +
+                "            \"<b>⏳ \" + durationStr + \"</b>\" +\n" +
+                "            \" &nbsp;|&nbsp; \" +\n" +
+                "            \"🎥 MJPEG\" +\n" +
+                "            \"</div></div>\";\n" +
+                "        card.innerHTML = innerContent;\n" +
+                "        if(typeof gWebZoom !== 'undefined') updateWebTransform(gWebZoom, gWebPanX, gWebPanY);\n" +
+                "        \n" +
+                "        // Start animation immediately\n" +
+                "        var canvas = card.querySelector('.mini-canvas');\n" +
+                "        if(canvas) loadMiniPreview('/' + previewFilename, canvas);\n" +
+                "        \n" +
+                "    }).catch(function(err) {\n" +
+                "        console.error(\"Error finalizing card:\", err);\n" +
+                "        location.reload();\n" +
+                "    });\n" +
+                "}\n" +
+                "\n" +
                 "function cleanupLivePreview() {\n" +
                 "   if(parasiteInterval) clearInterval(parasiteInterval);\n" +
                 "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n"
                 +
-                "   setTimeout(function() { location.reload(); }, 3000);\n" +
+                "   setTimeout(function() { \n" +
+                "       fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
+                "            if(meta.filename) {\n" +
+                "                finalizeRecordingCard(meta.filename); \n" +
+                "            } else {\n" +
+                "                console.error(\"No filename found after finalization\");\n" +
+                "                location.reload();\n" +
+                "            }\n" +
+                "       }).catch(e => location.reload());\n" +
+                "   }, 1500);\n" +
                 "}\n" +
 
                 "</script>\n" +

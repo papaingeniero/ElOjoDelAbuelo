@@ -36,8 +36,9 @@ public class SentinelService extends Service {
     private static final int NOTIFICATION_ID = 1;
 
     // --- SOFTWARE PREVIEW INTERFACE ---
-    public static java.util.List<String> debugLogs = java.util.Collections.synchronizedList(new java.util.ArrayList<String>());
-    
+    public static java.util.List<String> debugLogs = java.util.Collections
+            .synchronizedList(new java.util.ArrayList<String>());
+
     public interface UiPreviewCallback {
         void onFrame(byte[] jpegData);
     }
@@ -132,7 +133,8 @@ public class SentinelService extends Service {
 
         // 1.5 Screen Lock (ENCENDER PANTALLA)
         // SCREEN_BRIGHT + ACQUIRE_CAUSES_WAKEUP enciende la pantalla al activarlo
-        screenLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "ElOjoDelAbuelo:ScreenLock");
+        screenLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "ElOjoDelAbuelo:ScreenLock");
         screenLock.setReferenceCounted(false); // Asegurar que release siempre funciona
 
         // 2. Foreground Service
@@ -193,7 +195,7 @@ public class SentinelService extends Service {
                 // Fallback for API < 11 if SurfaceTexture fails (Safety Net)
                 camera.setPreviewDisplay(null);
             }
-            
+
             camera.setPreviewCallbackWithBuffer(previewCallback);
             camera.startPreview();
 
@@ -244,7 +246,7 @@ public class SentinelService extends Service {
     private void writeCameraInfoToFile(Camera.Parameters params) {
         File logFile = new File(Environment.getExternalStorageDirectory(), "camera_info.txt");
         try {
-            java.io.FileWriter writer = new java.io.FileWriter(logFile, false); 
+            java.io.FileWriter writer = new java.io.FileWriter(logFile, false);
             writer.write("--- CAMERA CAPABILITIES AUDIT ---\n");
             writer.write("Current Preview Rate: " + params.getPreviewFrameRate() + "\n");
             // ... (rest of logging kept simple)
@@ -262,12 +264,12 @@ public class SentinelService extends Service {
                 isCameraError = true;
                 return;
             }
-            isCameraError = false; 
+            isCameraError = false;
 
             // Phase 9.2: Frame Throttling (50% Reduction)
             processNextFrame = !processNextFrame;
             if (!processNextFrame) {
-                camera.addCallbackBuffer(data); 
+                camera.addCallbackBuffer(data);
                 return;
             }
 
@@ -285,13 +287,18 @@ public class SentinelService extends Service {
             // Motion Detection Logic
             if (!isDetectorActive) {
                 if (isRecording) {
+                    // 1. Logic Stop
                     isRecording = false;
                     isRecordingPublic = false;
+
+                    // 2. IO & Rename (Renames .mjpeg -> _fps.mjpeg)
+                    closeRecordingFile();
+
+                    // 3. Notify Clients (Now they will see the new name)
                     synchronized (statusLock) {
                         statusLock.notifyAll();
                     }
                     updateNotification(false);
-                    closeRecordingFile();
                 }
             } else {
                 int score = motionDetector.getMotionScore(processedData, PREVIEW_WIDTH, PREVIEW_HEIGHT);
@@ -300,21 +307,27 @@ public class SentinelService extends Service {
                 if (score > currentThreshold) {
                     lastMotionTime = System.currentTimeMillis();
                     if (!isRecording) {
+                        // 1. Prepare Storage (CRITICAL: Must be first for API availability)
+                        openNewRecordingFile();
+
+                        // 2. Set Flags
                         isRecording = true;
                         isRecordingPublic = true;
-                        
-                        // --- NUEVO: ENCENDER PANTALLA ---
-                        if (screenLock != null) {
-                             screenLock.acquire(); // ¡ZAS! Pantalla encendida
-                        }
-                        try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch(Exception e){}
-                        // --------------------------------
 
+                        // 3. Hardware Actions
+                        if (screenLock != null) {
+                            screenLock.acquire(); // ¡ZAS! Pantalla encendida
+                        }
+                        try {
+                            sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START"));
+                        } catch (Exception e) {
+                        }
+
+                        // 4. Notify Clients (Last step)
                         synchronized (statusLock) {
                             statusLock.notifyAll();
                         }
                         updateNotification(true);
-                        openNewRecordingFile();
                     }
                 }
 
@@ -323,7 +336,8 @@ public class SentinelService extends Service {
                     if (score > maxMotionScore) {
                         maxMotionScore = score;
                         try {
-                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
+                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT,
+                                    null);
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
                             yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 80, out);
                             bestFrameJpeg = out.toByteArray();
@@ -335,25 +349,30 @@ public class SentinelService extends Service {
 
                 // Check timeout
                 if (isRecording && (System.currentTimeMillis() - lastMotionTime > (recordingTimeout * 1000L))) {
+                    // 1. Logic Stop
                     isRecording = false;
                     isRecordingPublic = false;
+
+                    // 2. IO & Rename (Renames .mjpeg -> _fps.mjpeg)
+                    closeRecordingFile();
+
+                    // 3. Notify Clients (Now they will see the new name)
                     synchronized (statusLock) {
                         statusLock.notifyAll();
                     }
                     updateNotification(false);
-                    closeRecordingFile();
                 }
-            } 
+            }
 
             // Force Sync public state to be safe
             isRecordingPublic = isRecording;
 
-            final byte[] finalData = processedData; 
+            final byte[] finalData = processedData;
             processingHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     processFrame(finalData);
-                    camera.addCallbackBuffer(data); 
+                    camera.addCallbackBuffer(data);
                 }
             });
         }
@@ -372,12 +391,12 @@ public class SentinelService extends Service {
         int i = 0;
         int count = 0;
 
-        // Invert Y 
+        // Invert Y
         for (i = width * height - 1; i >= 0; i--) {
             targetBuffer[count++] = data[i];
         }
 
-        // Invert U and V 
+        // Invert U and V
         for (i = size - 1; i >= width * height; i -= 2) {
             targetBuffer[count++] = data[i - 1]; // V
             targetBuffer[count++] = data[i]; // U
@@ -401,17 +420,25 @@ public class SentinelService extends Service {
                 if (now - lastPreviewTime > 1000) {
                     lastPreviewTime = now;
                     try {
-                        if (previewOutputStream != null) previewOutputStream.write(jpeg);
-                    } catch (IOException e) {}
+                        if (previewOutputStream != null)
+                            previewOutputStream.write(jpeg);
+                    } catch (IOException e) {
+                    }
                 }
             }
 
             // 2. Stream
-            try { httpServer.broadcast(jpeg); } catch (Exception e) {}
+            try {
+                httpServer.broadcast(jpeg);
+            } catch (Exception e) {
+            }
 
             // 3. UI Preview
             if (uiPreviewCallback != null) {
-                try { uiPreviewCallback.onFrame(jpeg); } catch (Exception e) {}
+                try {
+                    uiPreviewCallback.onFrame(jpeg);
+                } catch (Exception e) {
+                }
             }
 
         } catch (Exception e) {
@@ -421,7 +448,8 @@ public class SentinelService extends Service {
 
     private synchronized void openNewRecordingFile() {
         File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
-        if (!dir.exists()) dir.mkdirs();
+        if (!dir.exists())
+            dir.mkdirs();
 
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         currentFile = new File(dir, "video_" + timeStamp + ".mjpeg");
@@ -445,22 +473,33 @@ public class SentinelService extends Service {
         if (screenLock != null && screenLock.isHeld()) {
             screenLock.release(); // Dejar que se duerma
         }
-        try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_STOP")); } catch(Exception e){}
+        try {
+            sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_STOP"));
+        } catch (Exception e) {
+        }
         // ------------------------------
 
         if (fileOutputStream != null) {
-            try { fileOutputStream.close(); } catch (IOException e) {}
+            try {
+                fileOutputStream.close();
+            } catch (IOException e) {
+            }
             fileOutputStream = null;
             if (previewOutputStream != null) {
-                try { previewOutputStream.close(); } catch (IOException e) {}
+                try {
+                    previewOutputStream.close();
+                } catch (IOException e) {
+                }
                 previewOutputStream = null;
             }
             long duration = System.currentTimeMillis() - recordingStartTime;
             if (duration > 0 && frameCount > 0) {
                 int fps = (int) (frameCount * 1000 / duration);
-                if (fps < 1) fps = 1;
+                if (fps < 1)
+                    fps = 1;
                 File newFile = new File(currentFile.getAbsolutePath().replace(".mjpeg", "_" + fps + "fps.mjpeg"));
-                if (currentFile.renameTo(newFile)) currentFile = newFile; 
+                if (currentFile.renameTo(newFile))
+                    currentFile = newFile;
             }
             if (bestFrameJpeg != null && currentFile != null) {
                 final byte[] jpegToSave = bestFrameJpeg;
@@ -473,7 +512,8 @@ public class SentinelService extends Service {
                             FileOutputStream fos = new FileOutputStream(jpgPath);
                             fos.write(jpegToSave);
                             fos.close();
-                        } catch (IOException e) {}
+                        } catch (IOException e) {
+                        }
                     }
                 });
             }
@@ -490,12 +530,14 @@ public class SentinelService extends Service {
                     int minMb = prefs.getInt("pref_min_free_space_mb", 500);
                     long minBytes = minMb * 1024L * 1024L;
                     File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
-                    if (!dir.exists()) return;
+                    if (!dir.exists())
+                        return;
                     StatFs stat = new StatFs(dir.getAbsolutePath());
                     long available = (long) stat.getAvailableBlocks() * (long) stat.getBlockSize();
                     if (available < minBytes) {
                         File[] files = dir.listFiles();
-                        if (files == null) return;
+                        if (files == null)
+                            return;
                         Arrays.sort(files, new Comparator<File>() {
                             public int compare(File f1, File f2) {
                                 return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
@@ -504,40 +546,56 @@ public class SentinelService extends Service {
                         for (File f : files) {
                             if (f.isFile() && (f.getName().endsWith(".mjpeg") || f.getName().endsWith(".jpg"))) {
                                 long size = f.length();
-                                if (f.delete()) available += size;
+                                if (f.delete())
+                                    available += size;
                             }
-                            if (available > minBytes + (50 * 1024 * 1024)) break;
+                            if (available > minBytes + (50 * 1024 * 1024))
+                                break;
                         }
                     }
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }).start();
     }
 
     private synchronized void saveToFile(byte[] jpeg) {
         if (fileOutputStream != null) {
-            try { fileOutputStream.write(jpeg); } catch (IOException e) {}
+            try {
+                fileOutputStream.write(jpeg);
+            } catch (IOException e) {
+            }
         }
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) { return START_STICKY; }
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
     @Override
-    public IBinder onBind(Intent intent) { return null; }
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
     @Override
     public void onDestroy() {
         instance = null;
         super.onDestroy();
-        if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        if (wakeLock != null && wakeLock.isHeld())
+            wakeLock.release();
         if (camera != null) {
             camera.stopPreview();
             camera.release();
             camera = null;
         }
-        if (httpServer != null) httpServer.stop();
-        if (processingThread != null) processingThread.quit();
+        if (httpServer != null)
+            httpServer.stop();
+        if (processingThread != null)
+            processingThread.quit();
         closeRecordingFile();
-        if (screenLock != null && screenLock.isHeld()) screenLock.release();
+        if (screenLock != null && screenLock.isHeld())
+            screenLock.release();
     }
 
     public static void updateSettings(int sens, int time, boolean active, int rot) {
@@ -547,8 +605,10 @@ public class SentinelService extends Service {
         boolean rotationChanged = (cameraRotation != rot);
         cameraRotation = rot;
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 20) currentThreshold = 20;
-        if (currentThreshold > 50000) currentThreshold = 50000;
+        if (currentThreshold < 20)
+            currentThreshold = 20;
+        if (currentThreshold > 50000)
+            currentThreshold = 50000;
         if (instance != null) {
             SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
@@ -556,7 +616,7 @@ public class SentinelService extends Service {
             editor.putInt("recordingTimeout", time);
             editor.putBoolean("isDetectorActive", active);
             editor.putInt("cameraRotation", rot);
-            editor.apply(); 
+            editor.apply();
             if (rotationChanged && instance.processingHandler != null) {
                 instance.processingHandler.post(new Runnable() {
                     @Override
@@ -565,7 +625,7 @@ public class SentinelService extends Service {
                             instance.camera.stopPreview();
                             instance.camera.release();
                             instance.camera = null;
-                            instance.startCamera(); 
+                            instance.startCamera();
                         }
                     }
                 });
@@ -586,7 +646,7 @@ public class SentinelService extends Service {
             editor.putInt("defaultPanX", x);
             editor.putInt("defaultPanY", y);
             editor.apply();
-            
+
             // 2. NUEVO: Enviar señal de radio a la MainActivity
             try {
                 Intent intent = new Intent("com.elojodelabuelo.ACTION_ZOOM_UPDATED");
@@ -599,7 +659,8 @@ public class SentinelService extends Service {
     }
 
     public static File getCurrentRecordingFile() {
-        if (instance != null) return instance.currentFile;
+        if (instance != null)
+            return instance.currentFile;
         return null;
     }
 
@@ -609,28 +670,29 @@ public class SentinelService extends Service {
             try {
                 // 1. FRENAR
                 instance.camera.stopPreview();
-                
+
                 // 2. CAMBIAR SUPERFICIE
                 if (holder != null) {
                     instance.camera.setPreviewDisplay(holder);
                 } else {
                     instance.camera.setPreviewDisplay(null);
                 }
-                
+
                 // 3. RECUPERACIÓN DE BUFFERS (Vital para detección)
-                int bufferSize = instance.PREVIEW_WIDTH * instance.PREVIEW_HEIGHT * android.graphics.ImageFormat.getBitsPerPixel(android.graphics.ImageFormat.NV21) / 8;
+                int bufferSize = instance.PREVIEW_WIDTH * instance.PREVIEW_HEIGHT
+                        * android.graphics.ImageFormat.getBitsPerPixel(android.graphics.ImageFormat.NV21) / 8;
                 instance.camera.setPreviewCallbackWithBuffer(null);
                 instance.camera.setPreviewCallbackWithBuffer(instance.previewCallback);
                 for (int i = 0; i < 3; i++) {
                     instance.camera.addCallbackBuffer(new byte[bufferSize]);
                 }
-                
+
                 // 4. FIX ROTACIÓN: Girar 180 grados la imagen hardware
                 instance.camera.setDisplayOrientation(180);
-                
+
                 // 5. ARRANCAR
                 instance.camera.startPreview();
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

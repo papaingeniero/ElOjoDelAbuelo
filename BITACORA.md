@@ -877,5 +877,54 @@ La solución final no fue matemática, fue conceptual: dejar de hablar en pasos 
 
 **Resultado**: Un sistema de coordenadas **Agnóstico de Resolución**. El mismo valor numérico (`Pan X: 20%`) produce el mismo encuadre visual idéntico en un monitor 4K, en un móvil y en una miniatura de 80px.
 
-### ✅ Estado Final
-El Ojo del Abuelo ahora tiene "Ojo Biónico". Ve lo mismo en todas las escalas.
+### 🚀 Phase 39: UI Hot-Swap - Zero Reload (v3.9.4-dev.1) | Fecha: 20 de Enero de 2026
+
+**El Problema (Storytelling) 📜**
+Cada vez que el Abuelo terminaba de grabar un vídeo, la interfaz web hacía un `location.reload()` completo ("El Cebollazo") para mostrar la nueva miniatura en la lista.
+Esto era ineficiente (recarga de scripts, CSS, reconexión de sockets) y visualmente tosco (parpadeo blanco).
+Queríamos que la tarjeta roja de "🔴 GRABANDO..." se transformara mágicamente en la tarjeta final del vídeo sin tocar el resto de la página.
+
+**La Solución (Ingeniería) 🛠️**
+Hemos implementado una cirugía plástica en el DOM usando **Javascript Puro (Client-Side)**.
+1.  **Interceptación**: Cuando empieza a grabar, capturamos el nombre del archivo (`gCurrentRecFilename`) que ya viaja en la API `latest_video_meta`.
+2.  **Cronómetro Local**: Guardamos `Date.now()` para calcular luego la duración exacta sin preguntar al servidor.
+3.  **Transmutación**: Al terminar (evento `recording: false`), en vez de recargar:
+    *   Hacemos un `HEAD` request ligero para saber el tamaño en MB.
+    *   Sustituimos el HTML de la tarjeta temporal por el de una tarjeta estándar.
+    *   Le inyectamos la miniatura `.thumb` que el servidor acaba de guardar.
+    *   Aplicamos el Zoom/Pan configurado a la nueva imagen.
+
+**Resultado**: El usuario ve cómo la grabación se detiene y aparecen los botones de "Ver/Borrar" instantáneamente. Cero tráfico extra. Cero parpadeos. ⚡
+
+### 🧹 Phase 39.1: Refinamiento Visual (v3.9.4-dev.2)
+**El Ajuste**: El usuario detectó que añadimos botones "Ver/Borrar" superfluos que rompían el lenguaje de diseño minimalista original.
+**La Solución**: Hemos alineado la función `finalizeRecordingCard` (JS) para generar HTML **idéntico estructuralmente** al que genera Java en el servidor. Usamos un contenedor `div.video-item` limpio, con el trigger `onclick` global y sin controles redundantes. Mantenemos la consistencia visual absoluta. 🎨
+
+### 🏥 Phase 39.2: JS Syntax Recovery (v3.9.4-dev.3)
+**El Fallo**: La edición manual de texto "Java dentro de JS" provocó un `ReferenceError` catastrófico (función descabezada) que rompió toda la interactividad de la web.
+**La Cura**: Hemos realizado una micro-cirugía con un script Python para reinsertar la cabecera de `finalizeRecordingCard` perdida. La web vuelve a responder. 🩹
+
+### 🚦 Phase 39.3: Race Condition (v3.9.4-dev.4)
+**El Bug**: La tarjeta "Grabando..." no aparecía.
+**El Diagnóstico**: Condición de carrera. El servicio notificaba `statusLock.notifyAll()` (diciendole al cliente que graba) *antes* de que `openNewRecordingFile()` creara el archivo en disco. El cliente pedía el nombre del archivo (`/api/latest_video_meta`) y recibía `null`, abortando la creación de la tarjeta.
+**La Solución**: Reordenamiento atómico en `SentinelService.java`. Primero creamos el archivo, luego notificamos. Orden restaurado. ⚖️
+
+### 🧩 Phase 39.4: The Identity Crisis (v3.9.4-dev.5)
+**El Bug**: Al terminar la grabación, la tarjeta mostraba "0.1 MB" y un thumbnail roto.
+**El Diagnóstico**: El cliente guardaba el nombre original (`video.mjpeg`) pero el servidor, al cerrar el archivo, lo renombra inteligentemente (`video_15fps.mjpeg`). El JS intentaba cargar el archivo antiguo.
+**La Solución**: Hemos actualizado `NanoHttpServer` (JS) para que sea humilde: al terminar, no asume nada, sino que pregunta al servidor (`/api/latest_video_meta`) cuál es el nombre *final* del archivo. Sincronización completa. 🤝
+
+### 🎬 Phase 39.5: The Missing Soul (v3.9.4-dev.6)
+**El Bug**: La tarjeta se creaba perfecta... pero estática. La miniatura no se movía.
+**El Diagnóstico**: El Javascript inyectaba la imagen (`<img>`) pero olvidaba el `<canvas>`, que es el motor de la animación. Además, el archivo de previsualización no tiene el sufijo `_fps`, lo cual confundía al script.
+**La Solución**: Hemos enseñado al JS a deducir el nombre del archivo de previsualización (quitando los `_fps` del nombre del video) e inyectar el código del `<canvas>` necesario para invocar al espíritu del movimiento. 👻📽️
+
+### 📏 Phase 39.6: The Polite Server (v3.9.4-dev.7)
+**El Bug**: El tamaño del archivo se reportaba casi siempre como "0.1 MB".
+**El Diagnóstico**: El servidor Java era un bárbaro. Cuando el cliente pedía solo el tamaño (`HEAD`), el servidor le vomitaba el video entero (`GET`), saturando la conexión y cortando la respuesta antes de tiempo.
+**La Solución**: Hemos implementado modales HTTP en `NanoHttpServer`. Ahora sabe distinguir `HEAD` (solo cabeceras) de `GET` (cuerpo entero), permitiendo verificaciones de peso instantáneas y precisas. 🎩
+
+### 🔗 Phase 39.7: The Wrong Address (v3.9.4-dev.8)
+**El Bug**: El tamaño seguía mostrando "0.1 MB" a pesar del soporte HEAD.
+**El Diagnóstico**: El JS pedía el archivo a `/videos/video_...`, pero el servidor solo escucha en `/video_...`. La petición se iba al Dashboard en lugar de al manejador de archivos.
+**La Solución**: Corregida la URL en el JS para usar el path correcto (`'/' + filename`). Ahora la petición HEAD llega al destino correcto. 🏠

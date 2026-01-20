@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [v3.9.4] - 2026-01-20
+### Added
+- **UX**: Zero-Reload Recording Cycle (Hot-Swap). La tarjeta de grabación se transforma en tarjeta de video sin recargar la página.
+### Fixed
+- **UI**: Eliminados botones redundantes y corregida inconsistencia visual.
+- **Core**: Corregida condición de carrera al iniciar grabación.
+- **Protocol**: Soporte para método `HEAD` en servidor HTTP.
+- **Bugfix**: Múltiples correcciones de sincronización y URLs.
+
 ## [v3.9.3] - 2026-01-20
 ### Added
 - **Web Engine**: Sistema de posicionamiento relativo (Responsive Pan/Zoom).
