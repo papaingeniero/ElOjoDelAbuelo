@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.1] - 2026-01-20
+### Added
+- **Performance**: Lazy Load (Infinite Scroll) para la lista de videos. Reduce consumo de CPU y tiempo de carga inicial.
+- **API**: Nuevo endpoint `/api/list_videos` en JSON.
+- **Fix**: Handler de clicks en tarjetas de video para mayor compatibilidad.
+
 ## [v3.9.3-dev.3] - 2026-01-19
 ### Fixed
 - **UI Logic**: Desplazamiento de Pan adaptable al ancho de pantalla (Dynamic Ratio). Soluciona el problema de "movimiento excesivo" en navegadores de escritorio.
