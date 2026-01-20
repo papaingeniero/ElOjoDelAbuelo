@@ -802,16 +802,7 @@ var tx = x * ratio;
 ```
 Si la pantalla es gigante, el ratio baja (ej: 0.08). Si es pequeña, sube (ej: 0.25).
 La física se auto-ajusta al dispositivo del observador.
-### ⚡ v3.9.5-dev.1: Lazy Load (Infinite Scroll)
 
-El usuario reportó saturación de CPU al generar la lista HTML de cientos de videos.
-**La Solución**:
-Implementación de carga diferida (Lazy Load):
-1.  **Backend**: Nueva API `/api/list_videos` que pagina los resultados y extrae metadatos solo de los nombres de archivo (Regex), evitando I/O costoso.
-2.  **Frontend**: Carga inicial vacía + `IntersectionObserver` que pide bloques de 10 videos al hacer scroll.
-3.  **Javascript**: Lógica de renderizado de tarjetas en cliente y fix de compatibilidad de clicks.
-
-Resultado: Carga inicial instantánea y navegación fluida.
 ### 🚀 Phase 22: Geometría Proporcional en Miniaturas (v3.9.3-dev.4) | Fecha: 19 de Enero de 2026
 
 **El Problema (Storytelling) 📜**
@@ -968,3 +959,15 @@ Implementamos un sistema de "Hot-Swap" completamente client-side:
 - El código Java-embedded-JS es extremadamente frágil. Los scripts Python de parche quirúrgico son la solución más segura.
 - El orden de operaciones en código concurrente es crítico. Siempre preparar recursos ANTES de notificar.
 - HTTP HEAD existe por una razón. Implementarlo correctamente ahorra ancho de banda y evita bugs sutiles.
+
+
+### ⚡ v3.9.5-dev.1: Lazy Load (Infinite Scroll)
+
+El usuario reportó saturación de CPU al generar la lista HTML de cientos de videos.
+**La Solución**:
+Implementación de carga diferida (Lazy Load):
+1.  **Backend**: Nueva API `/api/list_videos` que pagina los resultados y extrae metadatos solo de los nombres de archivo (Regex), evitando I/O costoso.
+2.  **Frontend**: Carga inicial vacía + `IntersectionObserver` que pide bloques de 10 videos al hacer scroll.
+3.  **Javascript**: Lógica de renderizado de tarjetas en cliente y fix de compatibilidad de clicks.
+
+Resultado: Carga inicial instantánea y navegación fluida.
