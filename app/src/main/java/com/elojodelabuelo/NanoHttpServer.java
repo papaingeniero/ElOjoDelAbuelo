@@ -175,6 +175,8 @@ public class NanoHttpServer {
                     serveSaveSettings(os, uri);
                 } else if (uri.equals("/api/latest_video_meta")) {
                     serveLatestVideoMeta(os);
+                } else if (uri.startsWith("/api/list_videos")) {
+                    serveVideoList(os, uri);
                 } else if (uri.startsWith("/wait_status")) {
                     serveWaitStatus(os, uri);
                 } else if (uri.equals("/api/debug")) {
@@ -435,6 +437,117 @@ public class NanoHttpServer {
             os.flush();
         }
 
+        /**
+         * GET /api/list_videos?offset=0&limit=10
+         * Returns paginated list of videos with metadata (extracted from filename only).
+         * Response: JSON array [{name, size, date, thumb, preview, duration, fps}, ...]
+         */
+        private void serveVideoList(OutputStream os, String uri) throws IOException {
+            int offset = 0;
+            int limit = 10;
+            
+            // Parse query params
+            try {
+                if (uri.contains("?")) {
+                    String query = uri.substring(uri.indexOf("?") + 1);
+                    String[] pairs = query.split("&");
+                    for (String pair : pairs) {
+                        String[] kv = pair.split("=");
+                        if (kv.length == 2) {
+                            if (kv[0].equals("offset")) offset = Integer.parseInt(kv[1]);
+                            else if (kv[0].equals("limit")) limit = Integer.parseInt(kv[1]);
+                        }
+                    }
+                }
+            } catch (Exception e) { /* Use defaults */ }
+            
+            StringBuilder jsonArray = new StringBuilder("[");
+            
+            if (STORAGE_DIR.exists()) {
+                File[] files = STORAGE_DIR.listFiles();
+                if (files != null) {
+                    // Filter only .mjpeg videos
+                    java.util.List<File> videos = new java.util.ArrayList<>();
+                    for (File f : files) {
+                        if (f.getName().startsWith("video_") && f.getName().endsWith(".mjpeg")) {
+                            videos.add(f);
+                        }
+                    }
+                    
+                    // Sort by date (newest first)
+                    java.util.Collections.sort(videos, new Comparator<File>() {
+                        @Override
+                        public int compare(File f1, File f2) {
+                            return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
+                        }
+                    });
+                    
+                    // Paginate
+                    int start = Math.min(offset, videos.size());
+                    int end = Math.min(offset + limit, videos.size());
+                    
+                    for (int i = start; i < end; i++) {
+                        File f = videos.get(i);
+                        String name = f.getName();
+                        long size = f.length();
+                        long date = f.lastModified();
+                        
+                        // Extract metadata from filename ONLY (Regex)
+                        String thumbName = name.replace(".mjpeg", ".jpg");
+                        String timestamp = "";
+                        int fps = 10; // Default
+                        long duration = 0;
+                        
+                        // Pattern: video_YYYYMMDD_HHMMSS_Xfps.mjpeg
+                        java.util.regex.Matcher m = java.util.regex.Pattern
+                                .compile("video_(\\d{8}_\\d{6})_(\\d+)fps")
+                                .matcher(name);
+                        if (m.find()) {
+                            timestamp = m.group(1);
+                            fps = Integer.parseInt(m.group(2));
+                            
+                            // Duration from filename timestamp + lastModified
+                            try {
+                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
+                                java.util.Date creationDate = sdf.parse(timestamp);
+                                duration = (f.lastModified() - creationDate.getTime()) / 1000;
+                                if (duration < 0) duration = 0;
+                            } catch (Exception e) { }
+                        }
+                        
+                        // Preview file check
+                        String previewName = "preview_" + timestamp + ".mjpeg";
+                        File previewFile = new File(STORAGE_DIR, previewName);
+                        boolean hasPreview = previewFile.exists();
+                        File thumbFile = new File(STORAGE_DIR, thumbName);
+                        boolean hasThumb = thumbFile.exists();
+                        
+                        if (i > start) jsonArray.append(",");
+                        jsonArray.append("{");
+                        jsonArray.append("\"name\":\"").append(name).append("\",");
+                        jsonArray.append("\"size\":").append(size).append(",");
+                        jsonArray.append("\"date\":").append(date).append(",");
+                        jsonArray.append("\"thumb\":").append(hasThumb ? "\"" + thumbName + "\"" : "null").append(",");
+                        jsonArray.append("\"preview\":").append(hasPreview ? "\"" + previewName + "\"" : "null").append(",");
+                        jsonArray.append("\"duration\":").append(duration).append(",");
+                        jsonArray.append("\"fps\":").append(fps);
+                        jsonArray.append("}");
+                    }
+                }
+            }
+            
+            jsonArray.append("]");
+            String json = jsonArray.toString();
+            
+            os.write("HTTP/1.1 200 OK\r\n".getBytes());
+            os.write("Content-Type: application/json\r\n".getBytes());
+            os.write("Cache-Control: no-cache\r\n".getBytes());
+            os.write(("Content-Length: " + json.length() + "\r\n").getBytes());
+            os.write("\r\n".getBytes());
+            os.write(json.getBytes());
+            os.flush();
+        }
+
         private void serveDashboard(OutputStream os) throws IOException {
             String html = generateDashboardHtml();
             byte[] body = html.getBytes("UTF-8");
@@ -453,103 +566,11 @@ public class NanoHttpServer {
 
     }
 
-private String generateDashboardHtml() {
+    private String generateDashboardHtml() {
+        // LAZY LOAD: Video list generated by JavaScript, not Java
         StringBuilder listHtml = new StringBuilder();
-        if (STORAGE_DIR.exists()) {
-            File[] files = STORAGE_DIR.listFiles();
-            if (files != null) {
-                Arrays.sort(files, new Comparator<File>() {
-                    @Override
-                    public int compare(File f1, File f2) {
-                        return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified()); // Newest first
-                    }
-                });
-
-                for (File f : files) {
-                    if (f.getName().startsWith("video_") && f.getName().endsWith(".mjpeg")) {
-                        long sizeKb = f.length() / 1024;
-                        String thumbName = f.getName().replace(".mjpeg", ".jpg");
-                        File thumbFile = new File(STORAGE_DIR, thumbName);
-
-                        listHtml.append("<div class='video-item' onclick=\"playVideo('").append(f.getName())
-                                .append("')\">");
-
-                        String timestamp = "";
-                        java.util.regex.Matcher m = java.util.regex.Pattern.compile("video_(\\d{8}_\\d{6})")
-                                .matcher(f.getName());
-                        if (m.find()) {
-                            timestamp = m.group(1);
-                        }
-                        File previewFile = new File(STORAGE_DIR, "preview_" + timestamp + ".mjpeg");
-
-                        listHtml.append("<div class='thumb-container'>");
-                        if (thumbFile.exists()) {
-                            listHtml.append("<img src='/thumbnails/").append(thumbName).append("' class='thumb'>");
-                        }
-                        if (previewFile.exists()) {
-                            listHtml.append("<canvas class='mini-canvas' data-src='/").append(previewFile.getName())
-                                    .append("'></canvas>");
-                        }
-                        listHtml.append("</div>");
-
-                        if (!thumbFile.exists() && !previewFile.exists()) {
-                            listHtml.append("<div class='icon'>📼</div>");
-                        }
-
-                        // Phase 21: Metadata (Size & Duration)
-                        String sizeStr;
-                        if (f.length() > 1024 * 1024) {
-                            sizeStr = String.format(Locale.US, "%.1f MB", f.length() / (1024.0 * 1024.0));
-                        } else {
-                            sizeStr = (f.length() / 1024) + " KB";
-                        }
-
-                        String durationStr = "";
-                        try {
-                            if (timestamp.length() >= 15) {
-                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss",
-                                        Locale.US);
-                                java.util.Date creationDate = sdf.parse(timestamp);
-                                long durationMs = f.lastModified() - creationDate.getTime();
-                                if (durationMs > 0) {
-                                    durationStr = " | " + (durationMs / 1000) + "s";
-                                }
-                            }
-                        } catch (Exception e) {
-                        }
-
-                        String dateStr = "Unknown Date";
-                        String timeStr = "Unknown Time";
-                        String fpsStr = "?? FPS";
-
-                        java.util.regex.Matcher metaMatcher = java.util.regex.Pattern
-                                .compile("video_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})_(\\d+)fps")
-                                .matcher(f.getName());
-
-                        if (metaMatcher.find()) {
-                            dateStr = "📅 " + metaMatcher.group(3) + "/" + metaMatcher.group(2) + "/"
-                                    + metaMatcher.group(1);
-                            timeStr = "⏰ " + metaMatcher.group(4) + ":" + metaMatcher.group(5) + ":"
-                                    + metaMatcher.group(6);
-                            fpsStr = "🎥 " + metaMatcher.group(7) + " FPS";
-                        }
-
-                        listHtml.append("<div class='info'>")
-                                .append("<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>")
-                                .append(dateStr).append(" &nbsp; ").append(timeStr)
-                                .append("</div>")
-                                .append("<div style='color:#ccc; font-size:13px;'>")
-                                .append("<b>💾 ").append(sizeStr).append("</b>")
-                                .append(" &nbsp;|&nbsp; ")
-                                .append("<b>⏳ ").append(durationStr.replace(" | ", "")).append("</b>")
-                                .append(" &nbsp;|&nbsp; ")
-                                .append(fpsStr)
-                                .append("</div></div>");
-                        listHtml.append("</div>");
-                    }
-                }
-            }
-        }
+        listHtml.append("<div id='video-list-container'></div>");
+        listHtml.append("<div id='loading-sentinel' style='text-align:center; padding:20px; color:#888;'>⏳ Cargando grabaciones...</div>");
 
         // Stats
         int batLevel = SystemStats.getBatteryLevel(context);
@@ -1088,10 +1109,68 @@ private String generateDashboardHtml() {
                 "   fetch('/api/save_settings' + qs, { method: 'POST' })\n" +
                 "   .then(function() { setTimeout(function() { location.reload(); }, 800); });\n" +
                 "}\n" +
+
+                // ------ LAZY LOAD JAVASCRIPT ------
+                "var currentOffset = 0; var LIMIT = 10; var isLoading = false; var noMoreVideos = false;\n" +
+                "function loadMoreVideos() {\n" +
+                "  if(isLoading || noMoreVideos) return;\n" +
+                "  isLoading = true;\n" +
+                "  fetch('/api/list_videos?offset=' + currentOffset + '&limit=' + LIMIT)\n" +
+                "    .then(r => r.json())\n" +
+                "    .then(videos => {\n" +
+                "      if(videos.length === 0) { noMoreVideos = true; document.getElementById('loading-sentinel').innerHTML = '✅ Fin de grabaciones'; return; }\n" +
+                "      renderCards(videos);\n" +
+                "      currentOffset += videos.length;\n" +
+                "      isLoading = false;\n" +
+                "    })\n" +
+                "    .catch(e => { console.log('Error loading videos', e); isLoading = false; });\n" +
+                "}\n" +
+                "function renderCards(videos) {\n" +
+                "  var container = document.getElementById('video-list-container');\n" +
+                "  videos.forEach(function(v) {\n" +
+                "    var div = document.createElement('div');\n" +
+                "    div.className = 'video-item';\n" +
+                "    // Thumbnail\n" +
+                "    var thumbHtml = '<div class=\\'thumb-container\\'>';\n" +
+                "    if(v.thumb) thumbHtml += '<img src=\\'/thumbnails/' + v.thumb + '\\' class=\\'thumb\\' loading=\\'lazy\\'>';\n" +
+                "    if(v.preview) thumbHtml += '<canvas class=\\'mini-canvas\\' data-src=\\'/' + v.preview + '\\'></canvas>';\n" +
+                "    if(!v.thumb && !v.preview) thumbHtml += '<div class=\\'icon\\'>📼</div>';\n" +
+                "    thumbHtml += '</div>';\n" +
+                "    // Metadata\n" +
+                "    var d = new Date(v.date);\n" +
+                "    var dateStr = '📅 ' + ('0'+d.getDate()).slice(-2) + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + d.getFullYear();\n" +
+                "    var timeStr = '⏰ ' + ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2) + ':' + ('0'+d.getSeconds()).slice(-2);\n" +
+                "    var sizeStr = v.size > 1024*1024 ? (v.size/(1024*1024)).toFixed(1) + ' MB' : Math.floor(v.size/1024) + ' KB';\n" +
+                "    var durationStr = v.duration + 's';\n" +
+                "    var fpsStr = '🎥 ' + v.fps + ' FPS';\n" +
+                "    var infoHtml = '<div class=\\'info\\'>' +\n" +
+                "      '<div style=\\'font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;\\'>' + dateStr + ' &nbsp; ' + timeStr + '</div>' +\n" +
+                "      '<div style=\\'color:#ccc; font-size:13px;\\'><b>💾 ' + sizeStr + '</b> &nbsp;|&nbsp; <b>⏳ ' + durationStr + '</b> &nbsp;|&nbsp; ' + fpsStr + '</div></div>';\n" +
+                "    div.innerHTML = thumbHtml + infoHtml;\n" +
+                "    div.setAttribute('onclick', \"playVideo('\" + v.name + \"')\");\n" +
+                "    container.appendChild(div);\n" +
+                "    // Init canvas animation if preview exists\n" +
+                "    if(v.preview) {\n" +
+                "      var canvas = div.querySelector('.mini-canvas');\n" +
+                "      if(canvas) loadMiniPreview('/' + v.preview, canvas);\n" +
+                "    }\n" +
+                "  });\n" +
+                "  // Apply current zoom/pan to new thumbnails\n" +
+                "  if(typeof updateWebTransformFromInputs === 'function') updateWebTransformFromInputs();\n" +
+                "}\n" +
+                "// IntersectionObserver for infinite scroll\n" +
+                "var sentinel = document.getElementById('loading-sentinel');\n" +
+                "if(sentinel && 'IntersectionObserver' in window) {\n" +
+                "  var observer = new IntersectionObserver(function(entries) {\n" +
+                "    if(entries[0].isIntersecting) loadMoreVideos();\n" +
+                "  }, { rootMargin: '200px' });\n" +
+                "  observer.observe(sentinel);\n" +
+                "}\n" +
                 "window.onload = function() {\n" +
                 "   loadSettings();\n" +
                 "   startStatsUpdater();\n" +
                 "   pollStatus();\n" +
+                "   loadMoreVideos();\n" +
                 "};\n" +
                 "var currentRecordingState = false;\n" +
                 "function pollStatus() {\n" +

@@ -1,0 +1,5 @@
+v3.9.5-dev.1 feat(perf): Lazy Load implementation
+
+- API /api/list_videos with pagination
+- Infinite Scroll with IntersectionObserver
+- Fixed click handlers
