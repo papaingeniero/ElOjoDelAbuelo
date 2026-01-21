@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.elojodelabuelo"
-    android:versionCode="1"
-    android:versionName="3.2.1-debug20d">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="19" />
 

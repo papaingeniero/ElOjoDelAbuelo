@@ -664,8 +664,7 @@ public class SentinelService extends Service {
         return null;
     }
 
-    // --- HARDWARE PREVIEW ANCHOR (FINAL + ROTATION FIX) ---
-// --- HARDWARE PREVIEW ANCHOR (SAFE MODE) ---
+    // --- HARDWARE PREVIEW ANCHOR (SAFE MODE) ---
     public static void setPreviewSurface(android.view.SurfaceHolder holder) {
         if (instance != null && instance.camera != null) {
             try {
@@ -704,3 +703,4 @@ public class SentinelService extends Service {
             }
         }
     }
+}
