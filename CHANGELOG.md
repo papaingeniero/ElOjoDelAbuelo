@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.10] - 2026-01-21
+### Changed
+- **Meta**: Nueva Regla 11 en `legacy_dev_rules.md` para gestión de BACKLOG.md. Incluye templates obligatorios para bugs (B###), features (F###) y tech debt (T###).
+
 ## [v3.9.5-dev.9] - 2026-01-21
 ### Added
 - **Docs**: Creado `BACKLOG.md` para gestión de bugs, features y mejoras técnicas. Incluye 3 bugs (B001-B003) y 1 feature (F001) documentados.
