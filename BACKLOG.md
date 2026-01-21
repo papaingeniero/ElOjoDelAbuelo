@@ -31,18 +31,7 @@ Este documento registra funcionalidades pendientes, bugs conocidos y mejoras té
   - **Impacto**: Medio - El usuario ve la cámara en vivo sin el encuadre configurado, obligándole a ajustar manualmente cada vez.
   - **Archivos Relacionados**: `NanoHttpServer.java` (HTML/CSS/JS del modal de stream en vivo)
 
-- [ ] **[B003]** **Regresión de temperatura: 42°C en reposo vs 38-39°C en v3.9.2**
-  - **Síntoma**: Después de un tiempo de funcionamiento (sin detecciones de movimiento ni tráfico web), la temperatura del dispositivo se estabiliza en **42°C** y no baja.
-  - **Baseline Esperado**: En v3.9.2, la temperatura en modo vigilancia (idle) bajaba a **38-39°C**.
-  - **Delta**: +3-4°C de incremento térmico constante.
-  - **Contexto**: Ocurre incluso sin actividad del usuario (sin navegador abierto, sin detecciones). Sugiere un proceso en background consumiendo CPU/recursos de forma continua.
-  - **Hipótesis Iniciales**:
-    - Posible polling/loop activo en `SentinelService` o `NanoHttpServer`
-    - Leak de threads o timers no cancelados
-    - Cambio en la gestión de buffers de cámara entre v3.9.2 y v3.9.5
-  - **Impacto**: Alto - Afecta la longevidad del hardware y la autonomía de batería.
-  - **Investigación Requerida**: Comparar diff de `SentinelService.java` y `NanoHttpServer.java` entre v3.9.2 y HEAD. Profiling de CPU con `adb shell top`.
-  - **Archivos Relacionados**: `SentinelService.java`, `NanoHttpServer.java`
+
 
 
 
@@ -81,6 +70,7 @@ Este documento registra funcionalidades pendientes, bugs conocidos y mejoras té
 
 ## ✅ Completados Recientemente (Últimos 5)
 
+- [x] **[B003]** Regresión de temperatura (42°C→39°C) + Activity crash → Resuelto en `v3.9.5-dev.11`
 - [x] **[B000]** AndroidManifest crash por atributos faltantes → Resuelto en `v3.9.5-dev.6`
 - [x] **[F000]** Lazy Load para lista de videos → Implementado en `v3.9.5-dev.1`
 
