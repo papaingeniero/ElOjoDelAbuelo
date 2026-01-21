@@ -96,3 +96,13 @@ Qué hacer cuando una Verificación FALLA:
 ## 9. Modo Rápido (Blindaje de Protocolo)
 *   Si operas en modo chat/fast (sin `task.md`) y realizas CUALQUIER modificación en el repositorio (código o docs), es **OBLIGATORIO** finalizar tu intervención ejecutando (o proponiendo ejecutar) el **Protocolo de Cierre Cuaternario** (Regla 7).
 *   *Nunca dejes un cambio "suelto" sin versionar, incluso si fue una intervención rápida.*
+
+## 10. AndroidManifest.xml (Intocable para Versionado)
+*   🚫 **NUNCA eliminar** los atributos `android:versionCode` y `android:versionName` del `<manifest>`.
+*   **Valores Fijos Legacy**: Estos atributos deben permanecer como valores estáticos de compatibilidad:
+    ```xml
+    android:versionCode="1"
+    android:versionName="3.2.1-debug20d"
+    ```
+*   **Razón Técnica**: El runtime de Android 2.3/4.x (CyanogenMod) requiere estos atributos para que el ClassLoader resuelva correctamente las Activities. Aunque Gradle moderno ignora estos valores y usa los de `build.gradle`, el dispositivo objetivo (Samsung Galaxy S GT-I9000) los necesita presentes en el Manifest para arrancar la Activity.
+*   **Versionado Real**: El número de versión "oficial" que ve el usuario y se usa en releases sigue viniendo exclusivamente de `build.gradle` → `versionName`. El Manifest solo contiene valores de compatibilidad que NO se modifican.

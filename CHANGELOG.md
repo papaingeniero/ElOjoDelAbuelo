@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.6] - 2026-01-21
+### Fixed
+- **Stability**: Restaurado `AndroidManifest.xml` exactamente como en v3.9.2 (con `versionCode` y `versionName` legacy). Esto corrige el crash de la Activity en Android Legacy.
+
+### Changed
+- **Meta**: Nueva Regla 10 en `legacy_dev_rules.md` para proteger los atributos del Manifest.
+
 ## [v3.9.5] - 2026-01-21
 ### Added
 - **Performance**: Lazy Load (Infinite Scroll) para la lista de videos en el dashboard web. Reduce drásticamente el tiempo de carga inicial y el consumo de CPU.
