@@ -115,13 +115,14 @@ Qué hacer cuando una Verificación FALLA:
 *   **Razón Técnica**: El runtime de Android 2.3/4.x (CyanogenMod) requiere estos atributos para que el ClassLoader resuelva correctamente las Activities. Aunque Gradle moderno ignora estos valores y usa los de `build.gradle`, el dispositivo objetivo (Samsung Galaxy S GT-I9000) los necesita presentes en el Manifest para arrancar la Activity.
 *   **Versionado Real**: El número de versión "oficial" que ve el usuario y se usa en releases sigue viniendo exclusivamente de `build.gradle` → `versionName`. El Manifest solo contiene valores de compatibilidad que NO se modifican.
 
-## 11. Gestión de BACKLOG.md
-*   **Consulta Proactiva**: Antes de proponer una nueva tarea, el agente DEBE revisar `BACKLOG.md` para priorizar items existentes.
-*   **Actualización al Completar**: Si un commit resuelve un item del backlog (ej: `Fixes [B001]`), mover el item a "Completados" con la versión.
-*   **No Obligatorio para Hotfixes**: En correcciones urgentes, documentar primero en BITACORA, añadir al BACKLOG después.
+## 11. Gestión de Issues (GitHub Issues)
+*   **Herramienta Principal**: Usar GitHub Issues para gestionar bugs, features y tech debt.
+*   **Consulta Proactiva**: Antes de proponer una nueva tarea, el agente DEBE revisar las issues abiertas con `gh issue list`.
+*   **Crear Issues**: Usar `gh issue create` con templates estructurados (ver abajo).
+*   **Actualización al Completar**: Al completar una issue, cerrarla con `gh issue close <número> --comment "Resuelto en vX.Y.Z"`.
 
-### Template para Bugs (B###)
-Al añadir un bug, DEBE incluir:
+### Template para Bugs (label: bug)
+Al crear un bug, DEBE incluir en el body:
 - **Síntoma**: Descripción observable del problema
 - **Contexto**: Cuándo/dónde ocurre
 - **Comportamiento Esperado**: (Opcional) Qué debería pasar
@@ -129,17 +130,32 @@ Al añadir un bug, DEBE incluir:
 - **Archivos Relacionados**: Lista de archivos Java/XML involucrados
 - **Hipótesis**: (Opcional) Posibles causas técnicas
 
-### Template para Features (F###)
-Al añadir una feature, DEBE incluir:
+### Template para Features (label: enhancement)
+Al añadir una feature, DEBE incluir en el body:
 - **Descripción**: Qué funcionalidad se solicita
 - **Beneficio**: Por qué es útil para el usuario
 - **Complejidad Estimada**: Baja/Media/Alta
 - **Archivos Relacionados**: Dónde se implementaría
 - **Detalles Técnicos**: (Opcional) Gestos, APIs, etc.
 
-### Template para Tech Debt (T###)
-Al añadir mejora técnica, DEBE incluir:
+### Template para Tech Debt (label: technical-debt)
+Al añadir mejora técnica, DEBE incluir en el body:
 - **Problema Actual**: Qué código/arquitectura necesita mejora
 - **Propuesta**: Cómo refactorizar
 - **Beneficio**: Mantenibilidad, rendimiento, etc.
 - **Archivos Relacionados**: Scope del refactor
+
+### Comandos Útiles
+```bash
+# Listar issues abiertas
+gh issue list
+
+# Crear bug
+gh issue create --title "[ID] Título" --body "..." --label "bug"
+
+# Crear feature
+gh issue create --title "[ID] Título" --body "..." --label "enhancement"
+
+# Cerrar issue
+gh issue close <número> --comment "Resuelto en vX.Y.Z"
+```
