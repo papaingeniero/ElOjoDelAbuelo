@@ -679,10 +679,9 @@ public class SentinelService extends Service {
                 }
 
                 // 3. RECUPERACIÓN DE BUFFERS (Vital para detección)
+                // NOTA: NO tocar el callback, solo rellenar los buffers perdidos
                 int bufferSize = instance.PREVIEW_WIDTH * instance.PREVIEW_HEIGHT
                         * android.graphics.ImageFormat.getBitsPerPixel(android.graphics.ImageFormat.NV21) / 8;
-                instance.camera.setPreviewCallbackWithBuffer(null);
-                instance.camera.setPreviewCallbackWithBuffer(instance.previewCallback);
                 for (int i = 0; i < 3; i++) {
                     instance.camera.addCallbackBuffer(new byte[bufferSize]);
                 }
