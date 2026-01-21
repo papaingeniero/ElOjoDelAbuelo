@@ -988,3 +988,19 @@ Hemos reescrito `setPreviewSurface` con un enfoque conservador:
 5.  **Corrección de Orientación**: Se ajustó `setDisplayOrientation(90)` que parece ser el valor correcto para este dispositivo en modo Portrait/Landscape híbrido, en lugar del 180 anterior.
 
 Este cambio busca que la transición UI <-> Servicio sea transparente para el hardware de la cámara.
+
+### ❌ Intento Fallido (v3.9.5-dev.2): El Límite de la Historia (API 10)
+
+Intentamos modernizar la gestión de superficies usando `setPreviewTexture` como fallback elegante en lugar de anular el display (`null`).
+**El Resultado**: Crash inmediato de `MainActivity` al arrancar.
+**La Causa (Arqueología)**:
+El método `setPreviewTexture(SurfaceTexture)` fue introducido en Android 3.0 (**API 11**).
+Nuestro hardware objetivo (Galaxy S GT-I9000) corre Android 2.3.6 (**API 10**).
+El sistema lanzó `java.lang.NoSuchMethodError`.
+
+### ⚡ v3.9.5-dev.3: Regreso al Pasado
+
+Hemos revertido la lógica de "fallback" para ser estrictamente compatible con API 10:
+*   **Antes (dev.2)**: `if (bg) setPreviewTexture(...)` 💥
+*   **Ahora (dev.3)**: `if (bg) setPreviewDisplay(null)` ✅
+Esto permite que la cámara siga capturando frames en background (gracias al truco de los buffers) sin que la `SurfaceView` UI intente llamar a métodos inexistentes.

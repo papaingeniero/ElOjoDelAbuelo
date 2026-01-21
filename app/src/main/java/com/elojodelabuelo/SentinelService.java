@@ -677,12 +677,8 @@ public class SentinelService extends Service {
                     // IMPORTANTE: Rotación Hardware (Solo si la pantalla lo pide)
                     try { instance.camera.setDisplayOrientation(90); } catch(Exception e){} // En muchos Galaxy S es 90, no 180
                 } else {
-                    // Volver a la textura oculta para seguir grabando en background
-                    if (instance.dummySurface != null) {
-                        instance.camera.setPreviewTexture(instance.dummySurface);
-                    } else {
-                        instance.camera.setPreviewDisplay(null);
-                    }
+                    // Volver al modo headless (API 10 compatible)
+                    instance.camera.setPreviewDisplay(null);
                 }
 
                 // 3. NO TOCAMOS LOS BUFFERS NI EL CALLBACK
