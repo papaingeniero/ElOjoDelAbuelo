@@ -1004,3 +1004,17 @@ Hemos revertido la lógica de "fallback" para ser estrictamente compatible con A
 *   **Antes (dev.2)**: `if (bg) setPreviewTexture(...)` 💥
 *   **Ahora (dev.3)**: `if (bg) setPreviewDisplay(null)` ✅
 Esto permite que la cámara siga capturando frames en background (gracias al truco de los buffers) sin que la `SurfaceView` UI intente llamar a métodos inexistentes.
+
+### ⚡ v3.9.5-dev.4: Restauración de Estabilidad (Legacy Protocol)
+
+Tras los fallos de las versiones `dev.2` (Safe Mode) y `dev.3` (Partial Fix), hemos tomado una decisión radical pero segura: **Regresar al protocolo de cámara de la v3.9.4**.
+
+**El Hallazgo**:
+Aunque el "Safe Mode" de `dev.2` pretendía ser más ligero al no tocar los buffers, el hardware del Galaxy S (Android 2.3) es extremadamente sensible al cambio de contexto. Al detener el preview para cambiar el Display, el motor de cámara parece corromper la cadena de callbacks si estos no se limpian y recrean desde cero.
+
+**Cambios Aplicados**:
+1.  **Recreación de Buffers**: Volvemos a limpiar (`callback = null`) y asignar 3 buffers NV21 nuevos en cada cambio de superficie.
+2.  **Display Orientation**: Restaurado a `180` grados, confirmando que es el valor estable para esta montura.
+3.  **Orden Síncrono**: Se sigue estrictamente el orden: Stop -> Display -> Buffers Re-init -> Start.
+
+Esta versión recupera la estabilidad que permitía a la `MainActivity` convivir con el servicio en background sin cerrarse.

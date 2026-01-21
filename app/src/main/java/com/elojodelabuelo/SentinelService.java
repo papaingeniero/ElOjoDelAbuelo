@@ -664,37 +664,36 @@ public class SentinelService extends Service {
         return null;
     }
 
-    // --- HARDWARE PREVIEW ANCHOR (SAFE MODE) ---
+    // --- HARDWARE PREVIEW ANCHOR (FINAL + ROTATION FIX) ---
     public static void setPreviewSurface(android.view.SurfaceHolder holder) {
         if (instance != null && instance.camera != null) {
             try {
-                // 1. SOLO DETENEMOS SI VAMOS A CAMBIAR ALGO
+                // 1. FRENAR
                 instance.camera.stopPreview();
 
-                // 2. CAMBIO DE SUPERFICIE ATÓMICO
+                // 2. CAMBIAR SUPERFICIE
                 if (holder != null) {
                     instance.camera.setPreviewDisplay(holder);
-                    // IMPORTANTE: Rotación Hardware (Solo si la pantalla lo pide)
-                    try { instance.camera.setDisplayOrientation(90); } catch(Exception e){} // En muchos Galaxy S es 90, no 180
                 } else {
-                    // Volver al modo headless (API 10 compatible)
                     instance.camera.setPreviewDisplay(null);
                 }
 
-                // 3. NO TOCAMOS LOS BUFFERS NI EL CALLBACK
-                // (Ya están configurados desde onCreate y no queremos romper la cadena de detección)
-
-                // 4. REINICIAR MOTOR
-                instance.camera.startPreview();
-
-                // 5. INYECTAR PRIMER BUFFER (La chispa de arranque)
-                // Si el motor se caló al parar, le damos un empujón.
+                // 3. RECUPERACIÓN DE BUFFERS (Vital para detección)
                 int bufferSize = instance.PREVIEW_WIDTH * instance.PREVIEW_HEIGHT
                         * android.graphics.ImageFormat.getBitsPerPixel(android.graphics.ImageFormat.NV21) / 8;
-                instance.camera.addCallbackBuffer(new byte[bufferSize]);
+                instance.camera.setPreviewCallbackWithBuffer(null);
+                instance.camera.setPreviewCallbackWithBuffer(instance.previewCallback);
+                for (int i = 0; i < 3; i++) {
+                    instance.camera.addCallbackBuffer(new byte[bufferSize]);
+                }
+
+                // 4. FIX ROTACIÓN: Girar 180 grados la imagen hardware
+                instance.camera.setDisplayOrientation(180);
+
+                // 5. ARRANCAR
+                instance.camera.startPreview();
 
             } catch (Exception e) {
-                Log.e(TAG, "Error crítico cambiando superficie: " + e.getMessage());
                 e.printStackTrace();
             }
         }

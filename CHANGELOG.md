@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.4] - 2026-01-21
+### Fixed
+- **Stability**: Restaurada lógica completa de gestión de cámara v3.9.4. Se vuelve a usar la reinicialización total de buffers y callbacks al cambiar de superficie para evitar el cierre inesperado de la Activity en Android 2.3.
+
 ## [v3.9.5-dev.3] - 2026-01-21
 ### Fixed
 - **Crash**: Revertido uso de `setPreviewTexture` (API 11+) incompatible con Android 2.3 (API 10). Restaurado `setPreviewDisplay(null)` para soporte Legacy.
