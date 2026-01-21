@@ -116,7 +116,7 @@ Qué hacer cuando una Verificación FALLA:
 *   **Versionado Real**: El número de versión "oficial" que ve el usuario y se usa en releases sigue viniendo exclusivamente de `build.gradle` → `versionName`. El Manifest solo contiene valores de compatibilidad que NO se modifican.
 
 ## 11. Gestión de Issues (GitHub Issues)
-*   **Herramienta Principal**: Usar GitHub Issues para gestionar bugs, features y tech debt.
+*   **Herramienta Principal**: Usar GitHub Issues para gestionar bugs, features.
 *   **Consulta Proactiva**: Antes de proponer una nueva tarea, el agente DEBE revisar las issues abiertas con `gh issue list`.
 *   **Crear Issues**: Usar `gh issue create` con templates estructurados (ver abajo).
 *   **Actualización al Completar**: Al completar una issue, cerrarla con `gh issue close <número> --comment "Resuelto en vX.Y.Z"`.
@@ -137,13 +137,6 @@ Al añadir una feature, DEBE incluir en el body:
 - **Complejidad Estimada**: Baja/Media/Alta
 - **Archivos Relacionados**: Dónde se implementaría
 - **Detalles Técnicos**: (Opcional) Gestos, APIs, etc.
-
-### Template para Tech Debt (label: technical-debt)
-Al añadir mejora técnica, DEBE incluir en el body:
-- **Problema Actual**: Qué código/arquitectura necesita mejora
-- **Propuesta**: Cómo refactorizar
-- **Beneficio**: Mantenibilidad, rendimiento, etc.
-- **Archivos Relacionados**: Scope del refactor
 
 ### Comandos Útiles
 ```bash

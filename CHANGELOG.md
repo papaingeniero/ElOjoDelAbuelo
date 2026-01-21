@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.12] - 2026-01-21
+### Changed
+- **Meta**: Migración completa de BACKLOG.md a GitHub Issues. Actualizada Regla 11 en `legacy_dev_rules.md` para usar `gh` CLI.
+- **Workflow**: Creadas 7 issues en GitHub (4 abiertas: #1-#4, 3 cerradas: #5-#7).
+- **Docs**: BACKLOG.md archivado como BACKLOG.md.archived y restaurado para referencia local.
+
 ## [v3.9.5-dev.11] - 2026-01-21
 ### Fixed
 - **Critical**: Eliminadas líneas de reset de callback en `setPreviewSurface` que causaban race condition en HAL de cámara Android 2.3. Alineado con arquitectura documentada en `HARDWARE_PREVIEW_WALKTHROUGH.md`.
