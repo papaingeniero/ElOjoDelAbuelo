@@ -1018,3 +1018,37 @@ Aunque el "Safe Mode" de `dev.2` pretendía ser más ligero al no tocar los buff
 3.  **Orden Síncrono**: Se sigue estrictamente el orden: Stop -> Display -> Buffers Re-init -> Start.
 
 Esta versión recupera la estabilidad que permitía a la `MainActivity` convivir con el servicio en background sin cerrarse.
+## 🚀 Phase 23: Lazy Load & Legacy Stability Fix (v3.9.5) | Fecha: 21 de Enero de 2026
+
+### 📜 1. La Historia (El Problema)
+Teníamos dos objetivos en paralelo:
+1.  **Rendimiento Web**: El dashboard generaba TODA la lista de videos en el HTML inicial, causando tiempos de carga lentos y saturación de CPU.
+2.  **Estabilidad Legacy**: Tras optimizaciones de renderizado, la `MainActivity` crasheaba al abrirse, aunque el servicio seguía funcionando en background.
+
+### 🛠️ 2. La Solución (Ingeniería)
+
+#### A) Lazy Load (Infinite Scroll)
+Implementamos un sistema de carga diferida completo:
+*   **Backend (Java)**: Nuevo endpoint `/api/list_videos?offset=N&limit=M` que devuelve metadatos en JSON. Usa Regex sobre nombres de archivo para extraer FPS y duración sin abrir los videos.
+*   **Frontend (JavaScript)**: `IntersectionObserver` detecta cuando el usuario llega al final de la lista y pide el siguiente bloque de 10 videos.
+*   **Fix Clicks**: Usamos `setAttribute('onclick', ...)` en lugar de closures para compatibilidad con WebViews antiguos.
+
+#### B) Arqueología del Crash (5 Intentos Documentados)
+| Versión | Hipótesis | Resultado |
+|---------|-----------|-----------|
+| dev.2 | "Safe Mode" sin tocar buffers | ❌ Crash |
+| dev.3 | Revertir `setPreviewTexture` (API 11) | ❌ Crash |
+| dev.4 | Restaurar lógica completa v3.9.4 | ❌ Crash |
+| dev.5 | Restaurar `package` en Manifest | ✅ Funciona |
+
+**La Causa Raíz**: Al eliminar el atributo `package="com.elojodelabuelo"` del `AndroidManifest.xml` para "limpiar" warnings de Gradle, rompimos la resolución de clases en el runtime de Android Legacy. Aunque Gradle moderno no lo necesita, el dispositivo objetivo (Android 2.3/4.x con CyanogenMod) sí lo requería.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Manifest Legacy**: El atributo `package` en el `<manifest>` NO es redundante en dispositivos antiguos. Es la fuente de verdad para el ClassLoader del runtime.
+*   **Documentación de Fallos**: Anotar cada intento fallido en la Bitácora nos permitió descartar hipótesis rápidamente y encontrar la causa real.
+*   **Lazy Load**: El patrón de paginación + `IntersectionObserver` es universalmente superior a renderizar listas completas.
+
+### 📖 4. Glosario
+*   **IntersectionObserver**: API de JavaScript que detecta cuándo un elemento entra o sale del viewport.
+*   **HAL**: Hardware Abstraction Layer. Capa de drivers que comunica el SO con el hardware de cámara.
+*   **Manifest package**: Atributo XML que define el namespace de la aplicación para el sistema Android.

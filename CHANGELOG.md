@@ -5,6 +5,16 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5] - 2026-01-21
+### Added
+- **Performance**: Lazy Load (Infinite Scroll) para la lista de videos en el dashboard web. Reduce drásticamente el tiempo de carga inicial y el consumo de CPU.
+- **API**: Nuevo endpoint `/api/list_videos` con paginación JSON.
+
+### Fixed
+- **Stability**: Restaurado protocolo completo de gestión de cámara (reinicialización de buffers y callbacks) para evitar el cierre de la Activity en Android Legacy.
+- **Compatibility**: Restaurado atributo `package` en AndroidManifest.xml, requerido por el runtime de Android 2.3/4.x para resolver clases.
+- **UI**: Corregido handler de clicks en tarjetas de video para mayor compatibilidad con WebViews antiguos.
+
 ## [v3.9.5-dev.4] - 2026-01-21
 ### Fixed
 - **Stability**: Restaurada lógica completa de gestión de cámara v3.9.4. Se vuelve a usar la reinicialización total de buffers y callbacks al cambiar de superficie para evitar el cierre inesperado de la Activity en Android 2.3.
