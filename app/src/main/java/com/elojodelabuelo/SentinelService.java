@@ -647,32 +647,46 @@ public class SentinelService extends Service {
         return null;
     }
 
-    // --- HARDWARE PREVIEW ANCHOR (FINAL + ROTATION FIX) ---
+// --- HARDWARE PREVIEW ANCHOR (FINAL FIX: PANTALLA NEGRA) ---
     public static void setPreviewSurface(android.view.SurfaceHolder holder) {
         if (instance != null && instance.camera != null) {
             try {
-                // 1. FRENAR
+                // 1. FRENAR (Imprescindible para tocar nada)
                 instance.camera.stopPreview();
 
                 // 2. CAMBIAR SUPERFICIE
                 if (holder != null) {
                     instance.camera.setPreviewDisplay(holder);
                 } else {
-                    instance.camera.setPreviewDisplay(null);
+                    // Si nos vamos a background, volvemos a la textura ciega si es posible
+                    if (instance.dummySurface != null) {
+                        instance.camera.setPreviewTexture(instance.dummySurface);
+                    } else {
+                        instance.camera.setPreviewDisplay(null);
+                    }
                 }
 
-                // 3. RECUPERACIÓN DE BUFFERS (Vital para detección)
-                // NOTA: NO tocar el callback, solo rellenar los buffers perdidos
+                // 3. EL "RE-ENGANCHE" (SOLUCIÓN PANTALLA NEGRA)
+                // Es vital volver a decirle a la cámara quién es el callback.
+                // Si no hacemos esto, el driver pierde la referencia y no manda datos.
                 int bufferSize = instance.PREVIEW_WIDTH * instance.PREVIEW_HEIGHT
                         * android.graphics.ImageFormat.getBitsPerPixel(android.graphics.ImageFormat.NV21) / 8;
+                
+                try {
+                    instance.camera.setPreviewCallbackWithBuffer(null); // Limpieza suave
+                    instance.camera.setPreviewCallbackWithBuffer(instance.previewCallback); // ¡CONEXIÓN!
+                } catch (Exception e) {
+                    // Si falla el re-enganche, logueamos pero seguimos intentando arrancar
+                    Log.e(TAG, "Error re-hooking callback", e);
+                }
+
+                // 4. RELLENAR BUFFERS (Gasolina para el callback)
                 for (int i = 0; i < 3; i++) {
                     instance.camera.addCallbackBuffer(new byte[bufferSize]);
                 }
 
-                // 4. FIX ROTACIÓN: Girar 180 grados la imagen hardware
+                // 5. FIX ROTACIÓN y ARRANQUE
                 instance.camera.setDisplayOrientation(180);
-
-                // 5. ARRANCAR
                 instance.camera.startPreview();
 
             } catch (Exception e) {
