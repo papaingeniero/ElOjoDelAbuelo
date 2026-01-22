@@ -67,6 +67,8 @@ public class SentinelService extends Service {
     private FileOutputStream fileOutputStream;
     private FileOutputStream previewOutputStream; // For mini-mjpeg
     private long lastPreviewTime = 0;
+    // [NUEVO] Contador para el Throttling Dinámico (Modo Eco)
+    private int frameSkipCounter = 0;
 
     // Phase 9.2: Optimization
     private boolean processNextFrame = true;
@@ -239,6 +241,20 @@ public class SentinelService extends Service {
         PREVIEW_HEIGHT = bestSize.height;
 
         params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
+
+        // [NUEVO] THERMAL OPTIMIZATION: Hardware FPS Limit
+        try {
+             java.util.List<int[]> ranges = params.getSupportedPreviewFpsRange();
+             if (ranges != null) {
+                 for (int[] range : ranges) {
+                     if (range[1] <= 20000) {
+                         params.setPreviewFpsRange(range[0], range[1]);
+                         break;
+                     }
+                 }
+             }
+        } catch (Exception e) {}
+
         camera.setParameters(params);
         NanoHttpServer.setLastError("Camera OK. Size: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT);
     }
@@ -266,12 +282,15 @@ public class SentinelService extends Service {
             }
             isCameraError = false;
 
-            // Phase 9.2: Frame Throttling (50% Reduction)
-            processNextFrame = !processNextFrame;
-            if (!processNextFrame) {
-                camera.addCallbackBuffer(data);
+            // [NUEVO] MODO ECO: DYNAMIC THROTTLING
+            frameSkipCounter++;
+            int skipTarget = isRecording ? 2 : 5; 
+
+            if (frameSkipCounter % skipTarget != 0) {
+                camera.addCallbackBuffer(data); 
                 return;
             }
+            if (frameSkipCounter > 1000) frameSkipCounter = 0;
 
             if (thermalGuardian.isOverheating()) {
                 camera.addCallbackBuffer(data);
@@ -287,84 +306,48 @@ public class SentinelService extends Service {
             // Motion Detection Logic
             if (!isDetectorActive) {
                 if (isRecording) {
-                    // 1. Logic Stop
                     isRecording = false;
                     isRecordingPublic = false;
-
-                    // 2. IO & Rename (Renames .mjpeg -> _fps.mjpeg)
                     closeRecordingFile();
-
-                    // 3. Notify Clients (Now they will see the new name)
-                    synchronized (statusLock) {
-                        statusLock.notifyAll();
-                    }
+                    synchronized (statusLock) { statusLock.notifyAll(); }
                     updateNotification(false);
                 }
             } else {
                 int score = motionDetector.getMotionScore(processedData, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-                // Optimized: Use pre-calculated threshold
                 if (score > currentThreshold) {
                     lastMotionTime = System.currentTimeMillis();
                     if (!isRecording) {
-                        // 1. Prepare Storage (CRITICAL: Must be first for API availability)
                         openNewRecordingFile();
-
-                        // 2. Set Flags
                         isRecording = true;
                         isRecordingPublic = true;
-
-                        // 3. Hardware Actions
-                        if (screenLock != null) {
-                            screenLock.acquire(); // ¡ZAS! Pantalla encendida
-                        }
-                        try {
-                            sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START"));
-                        } catch (Exception e) {
-                        }
-
-                        // 4. Notify Clients (Last step)
-                        synchronized (statusLock) {
-                            statusLock.notifyAll();
-                        }
+                        if (screenLock != null) { screenLock.acquire(); }
+                        try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch (Exception e) {}
+                        synchronized (statusLock) { statusLock.notifyAll(); }
                         updateNotification(true);
                     }
                 }
 
-                // PEAK MOTION LOGIC
                 if (isRecording) {
                     if (score > maxMotionScore) {
                         maxMotionScore = score;
                         try {
-                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT,
-                                    null);
+                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
                             yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 80, out);
                             bestFrameJpeg = out.toByteArray();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        } catch (Exception e) { e.printStackTrace(); }
                     }
                 }
 
-                // Check timeout
                 if (isRecording && (System.currentTimeMillis() - lastMotionTime > (recordingTimeout * 1000L))) {
-                    // 1. Logic Stop
                     isRecording = false;
                     isRecordingPublic = false;
-
-                    // 2. IO & Rename (Renames .mjpeg -> _fps.mjpeg)
                     closeRecordingFile();
-
-                    // 3. Notify Clients (Now they will see the new name)
-                    synchronized (statusLock) {
-                        statusLock.notifyAll();
-                    }
+                    synchronized (statusLock) { statusLock.notifyAll(); }
                     updateNotification(false);
                 }
             }
-
-            // Force Sync public state to be safe
             isRecordingPublic = isRecording;
 
             final byte[] finalData = processedData;

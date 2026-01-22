@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.13] - 2026-01-22
+### Added
+- **Experimental**: Modo Eco Térmico - Throttling dinámico de frames (5:1 en idle, 2:1 grabando) + límite hardware 20 FPS.
+
+### Known Issues
+- ⚠️ **Pantalla negra**: La Activity se mantiene abierta pero no muestra la imagen de la cámara (solo botón APAGAR visible). Requiere investigación.
+
 ## [v3.9.5-dev.12] - 2026-01-21
 ### Changed
 - **Meta**: Migración completa de BACKLOG.md a GitHub Issues. Actualizada Regla 11 en `legacy_dev_rules.md` para usar `gh` CLI.
