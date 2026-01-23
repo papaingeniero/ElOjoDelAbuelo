@@ -48,6 +48,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SentinelService.logToWeb("MainActivity: CREATED");
         try {
             // --- NUEVO: PASE VIP (Saltar bloqueo de pantalla) ---
             // FLAG_DISMISS_KEYGUARD: Quita el candado si no hay contraseña.
@@ -100,6 +101,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onResume() {
         super.onResume();
+        SentinelService.logToWeb("MainActivity: RESUMED (Visible)");
         applyZoomLogic();
         
         // Al volver manual, restaurar timeout normal para poder usar el móvil
@@ -118,6 +120,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onPause() {
         super.onPause();
+        SentinelService.logToWeb("MainActivity: PAUSED (Background)");
         try { unregisterReceiver(systemReceiver); } catch (Exception e) {}
     }
     
