@@ -5,6 +5,14 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.20] - 2026-01-23
+### Fixed
+- **UI Freeze ([B006])**: Movida configuración de layout `MATCH_PARENT` de `onResume` a `onCreate`. **Resuelto arranque fluido**.
+- **Cleanup**: Eliminado check innecesario de instancia en `onPause`.
+
+### Known Issues
+- ⚠️ **Hot-Swap Rotation Freeze**: Cambiar la rotación (0/180) desde la web congela la imagen en la pantalla del teléfono hasta que se reinicia la app.
+
 ## [v3.9.5-dev.19] - 2026-01-23
 ### Fixed
 - **UI Rescue**: Restaurada visualización de cámara (`MATCH_PARENT`) tras eliminar zoom software.

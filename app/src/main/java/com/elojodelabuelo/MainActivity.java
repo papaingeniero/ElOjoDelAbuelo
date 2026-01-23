@@ -16,6 +16,7 @@ import android.widget.FrameLayout; // Ya no se usa para zoom, pero lo dejo por s
 import android.util.Log;
 import android.widget.Toast;
 
+
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private static final String TAG = "MainUI";
     
@@ -48,12 +49,28 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onCreate(savedInstanceState);
         SentinelService.logToWeb("MainActivity: CREATED");
         try {
-            // PASE VIP (Saltar bloqueo)
+            // PASE VIP
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                                  WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                                  WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
             setContentView(R.layout.activity_main);
+            
+            // --- [MOVIDO AQUÍ] FIX PANTALLA NEGRA 📺 ---
+            // Preparamos el terreno ANTES de que llegue la cámara.
+            // Así evitamos el choque y la imagen congelada.
+            try {
+                SurfaceView surface = (SurfaceView) findViewById(R.id.cameraPreview);
+                if (surface != null) {
+                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT, 
+                            FrameLayout.LayoutParams.MATCH_PARENT);
+                    surface.setLayoutParams(params);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error Layout UI Create", e);
+            }
+            // ---------------------------------------------
             
             // 1. Guardar Timeout Original
             try {
@@ -93,31 +110,21 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         }
     }
 
-    @Override
+@Override
     protected void onResume() {
         super.onResume();
+        
+        // 1. TRAZA DE VISIBILIDAD
         SentinelService.logToWeb("MainActivity: RESUMED (Visible)");
         
-        // 1. [NUEVO] FIX PANTALLA NEGRA ⬛ -> 📺
-        // Como quitamos el zoom antiguo, la vista se quedó sin tamaño definido.
-        // Aquí le ordenamos: "Ocupa toda la pantalla (MATCH_PARENT)".
-        try {
-            SurfaceView surface = (SurfaceView) findViewById(R.id.cameraPreview);
-            if (surface != null) {
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT, 
-                        FrameLayout.LayoutParams.MATCH_PARENT);
-                surface.setLayoutParams(params);
-            }
-        } catch (Exception e) {
-            SentinelService.logToWeb("Error UI Layout: " + e.getMessage());
-        }
+        // [ELIMINADO EL FIX DE PANTALLA DE AQUÍ PARA EVITAR CONGELACIÓN]
+        // Ya lo hemos hecho en onCreate.
 
         // 2. RESTAURAR TIMEOUT ORIGINAL
         if (originalTimeout > 0) setTimeout(originalTimeout);
-        setWindowBrightness(-1.0f); // Brillo automático
+        setWindowBrightness(-1.0f);
 
-        // 3. REGISTRAR EL RECEPTOR DE MENSAJES
+        // 3. REGISTRAR RECEIVER
         try {
             IntentFilter filter = new IntentFilter();
             filter.addAction("com.elojodelabuelo.ACTION_REC_START");
@@ -125,13 +132,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             registerReceiver(systemReceiver, filter);
         } catch (Exception e) {}
 
-        // 4. [CRÍTICO] AVISAR AL SERVICIO: "ESTOY MIRANDO" 👀
-        // Esto evita que el "Pintor Vago" reduzca los FPS mientras la pantalla está encendida.
+        // 4. AVISAR AL SERVICIO: "ESTOY MIRANDO"
         SentinelService.setUiCallback(new SentinelService.UiPreviewCallback() {
             @Override
             public void onFrame(byte[] jpegData) {
-                // No hacemos nada con la imagen (ya se pinta sola), 
-                // pero este callback le dice al servicio que la UI está viva.
+                // Callback vacío para mantener despierto al servicio
             }
         });
     }
