@@ -70,6 +70,8 @@ public class SentinelService extends Service {
 
     private boolean isRecording = false;
     private long lastMotionTime = 0;
+    // [AÑADIR ESTO] Variable que falta para que compile el modo CSI:
+    private long lastRecordingEndTime = 0;
     private File currentFile;
     private FileOutputStream fileOutputStream;
     private FileOutputStream previewOutputStream; // For mini-mjpeg
@@ -363,17 +365,36 @@ public class SentinelService extends Service {
             } else {
                 int score = motionDetector.getMotionScore(processedData, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
+                // [MODIFICADO] TRAMPA FORENSE GHOST (CSI EL ABUELO) 🕵️‍♂️📸
+                // 1. Calculamos tiempo desde el último cierre
+                long timeSinceStop = System.currentTimeMillis() - lastRecordingEndTime;
+                // 2. Definimos Zona de Peligro (AHORA 5 SEGUNDOS)
+                boolean isDangerZone = (timeSinceStop < 8000); 
+
                 if (score > currentThreshold) {
-                    lastMotionTime = System.currentTimeMillis();
-                    if (!isRecording) {
-                        openNewRecordingFile();
-                        isRecording = true;
-                        isRecordingPublic = true;
-                        if (screenLock != null) { screenLock.acquire(); }
-                        try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch (Exception e) {}
-                        synchronized (statusLock) { statusLock.notifyAll(); }
-                        updateNotification(true);
-                        logToWeb("MOTION DETECTED! Rec Started. Score: " + score);
+                    
+                    if (isDangerZone) {
+                        // --- CASO FANTASMA: Bloquear y Guardar Prueba ---
+                        logToWeb("⛔ GHOST BLOCKED! Time: " + timeSinceStop + "ms | Score: " + score);
+                        saveDebugImage(processedData, "GHOST_" + timeSinceStop + "ms_score" + score);
+                        // ¡IMPORTANTE! No actualizamos lastMotionTime ni iniciamos grabación
+                        
+                    } else {
+                        // --- CASO REAL: Actuar normalmente ---
+                        // [EXTRA] Logueamos el delta para confirmar que han pasado más de 8s
+                        logToWeb("MOTION DETECTED! Rec Started. Score: " + score + " (Delta: " + timeSinceStop + "ms)");
+                        lastMotionTime = System.currentTimeMillis();
+                        if (!isRecording) {
+                            openNewRecordingFile();
+                            isRecording = true;
+                            isRecordingPublic = true;
+                            if (screenLock != null) { screenLock.acquire(); }
+                            try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch (Exception e) {}
+                            synchronized (statusLock) { statusLock.notifyAll(); }
+                            updateNotification(true);
+                            // Logueamos el delta temporal para ajustar la trampa si hace falta
+                            logToWeb("MOTION DETECTED! Rec Started. Score: " + score + " (Delta: " + timeSinceStop + "ms)");
+                        }
                     }
                 }
 
@@ -392,7 +413,7 @@ public class SentinelService extends Service {
                 if (isRecording && (System.currentTimeMillis() - lastMotionTime > (recordingTimeout * 1000L))) {
                     isRecording = false;
                     isRecordingPublic = false;
-                    closeRecordingFile();
+                    closeRecordingFile(); // Esto actualizará lastRecordingEndTime
                     synchronized (statusLock) { statusLock.notifyAll(); }
                     updateNotification(false);
                     logToWeb("Rec Stopped (Timeout)");
@@ -410,6 +431,23 @@ public class SentinelService extends Service {
             });
         }
     };
+
+    // --- AÑADE ESTE MÉTODO EN TU CLASE SentinelService PARA GUARDAR LA FOTO ---
+    private void saveDebugImage(byte[] data, String name) {
+        try {
+            File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo/DebugGhost");
+            if (!dir.exists()) dir.mkdirs();
+            
+            File file = new File(dir, name + ".jpg");
+            YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
+            FileOutputStream fos = new FileOutputStream(file);
+            yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 90, fos);
+            fos.close();
+            logToWeb("📸 Debug Evidence Saved: " + file.getName());
+        } catch (Exception e) {
+            logToWeb("Error saving debug image: " + e.getMessage());
+        }
+    }
 
     private byte[] rotateNV21Degree180(byte[] data, int width, int height) {
         int size = width * height * 3 / 2;
@@ -580,6 +618,8 @@ public class SentinelService extends Service {
         // [NUEVO] FIX GHOST TRIGGER: RESET DEL CEREBRO 🧠✨
         // Borramos la memoria del detector para evitar el "salto temporal"
         motionDetector = new MotionDetector();
+        // [FALTA ESTA LÍNEA] ACTIVAR EL CRONÓMETRO ⏱️🚨
+        lastRecordingEndTime = System.currentTimeMillis();
     }
 
     private void manageStorage() {

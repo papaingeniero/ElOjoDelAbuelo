@@ -5,6 +5,22 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.24] - 2026-01-24
+### Fixed
+- **Ghost Hunter (CSI 2.1)**: Ampliada zona de peligro a **8000ms**.
+- **Traceability**: Log del "Delta Time" siempre activo al detectar movimiento real.
+
+## [v3.9.5-dev.23] - 2026-01-24
+### Fixed
+- **Ghost Hunter (CSI 2.0)**: Ampliada zona de peligro a **5000ms**.
+- **Traceability**: Log del "Delta Time" al iniciar grabación para saber cuánto tiempo real pasa entre stop y start.
+
+## [v3.9.5-dev.22] - 2026-01-24
+### Fixed
+- **Ghost Hunter (CSI)**: Implementada "Zona de Peligro" (3000ms) tras grabación.
+  - Bloquea falsos positivos causados por el latigazo de exposición de la cámara al parar de grabar.
+  - Guarda evidencia visual del "fantasma" en `/sdcard/ElOjoDelAbuelo/DebugGhost/`.
+
 ## [v3.9.5-dev.21] - 2026-01-23
 ### Fixed
 - **Amnesia Fix**: Persistencia de `activeSurfaceHolder` para reconectar pantalla física tras reinicios (ej: rotación).
