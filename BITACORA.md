@@ -1381,3 +1381,46 @@ La versión es funcional para operación normal. El cambio de rotación requerir
 **Próximos Pasos**:
 - Monitorear estabilidad a largo plazo (24h+).
 - Disfrutar de un "Abuelo" más fresco y estable. 🧊👴
+
+### 👻 v3.9.5-dev.22: "Ghost Hunter" (CSI) - Intento 1 (3000ms)
+
+**Estado**: ❌ **FALLIDO**
+
+**El Experimento**:
+- Implementación de una "Zona de Peligro" forense de 3000ms tras finalizar una grabación.
+- Si se detecta movimiento en esa zona, se bloquea la nueva grabación y se guarda una foto debug.
+
+**Resultado Real**:
+- El "fantasma" (grabación falsa consecutiva) siguió apareciendo inmediatamente.
+- **Conclusión**: 3 segundos no fueron suficientes para cubrir el "latigazo" del sensor o la latencia de disco.
+
+---
+
+### 👻 v3.9.5-dev.23: "Ghost Hunter" (CSI 2.0) - Intento 2 (5000ms)
+
+**Estado**: ❌ **FALLIDO**
+
+**El Ajuste**:
+- Se aumentó la zona de peligro a **5000ms**.
+- Se añadió un log específico (`Delta: XXXms`) al iniciar grabación real para medir la diferencia exacta.
+
+**Resultado Real**:
+- El "fantasma" volvió a aparecer.
+- Esto sugiere que el problema podría estar relacionado con un **reset incorrecto de la variable `lastRecordingEndTime`** o que el IO delay es masivo.
+
+---
+
+### 👻 v3.9.5-dev.24: "Ghost Hunter" (CSI 2.1) - Intento 3 (8000ms)
+
+**Estado**: 🧪 **EN PRUEBAS (SNAPSHOT)**
+
+**El Ajuste Extremo**:
+- Zona de peligro aumentada a **8000ms** (8 segundos).
+- Logs activados permanentemente para cualquier inicio de grabación.
+
+**Hipótesis Forense**:
+- Si el fantasma aparece incluso con 8s, el problema NO es temporal (latencia), sino lógico (ej: `lastRecordingEndTime` no se está actualizando cuando creemos).
+- Si con 8s se bloquea, confirmaremos que la latencia de estabilización del sensor/disco es astronómica en este hardware.
+
+**Próximos Pasos**:
+- Verificar logs en `/log` buscando `MOTION DETECTED... (Delta: ...)`.
