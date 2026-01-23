@@ -134,9 +134,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         // 5. [CRÍTICO] AVISAR AL PINTOR VAGO: "ME VOY A DORMIR" 💡🔴
         // Esto pone uiPreviewCallback = null.
         // Al ocurrir esto, el 'processFrame' del servicio entra en MODO 1 FPS (Enfriamiento).
-        if (SentinelService.instance != null) { // Check de seguridad (aunque instance es static)
-             SentinelService.setUiCallback(null);
-        }
+        SentinelService.setUiCallback(null);
     }
     
     @Override
