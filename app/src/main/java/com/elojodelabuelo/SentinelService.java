@@ -1,3 +1,4 @@
+//Hola cabroncete
 package com.elojodelabuelo;
 
 import android.app.Notification;
@@ -28,6 +29,11 @@ import android.content.SharedPreferences;
 import android.os.StatFs;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class SentinelService extends Service {
 
@@ -109,6 +115,7 @@ public class SentinelService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        logToWeb(">>> SENTINEL SERVICE CREATING... (Inicio Sistema)");
 
         // Load Preferences
         SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
@@ -174,6 +181,7 @@ public class SentinelService extends Service {
 
     private void startCamera() {
         try {
+            logToWeb("Intentando abrir cámara...");
             camera = Camera.open();
 
             // --- DIAGNOSTICS AUDIT (Phase 8 - REVISED File Based) ---
@@ -200,6 +208,7 @@ public class SentinelService extends Service {
 
             camera.setPreviewCallbackWithBuffer(previewCallback);
             camera.startPreview();
+            logToWeb("Cámara arrancada OK");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -325,6 +334,7 @@ public class SentinelService extends Service {
                         try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch (Exception e) {}
                         synchronized (statusLock) { statusLock.notifyAll(); }
                         updateNotification(true);
+                        logToWeb("MOTION DETECTED! Rec Started. Score: " + score);
                     }
                 }
 
@@ -346,6 +356,7 @@ public class SentinelService extends Service {
                     closeRecordingFile();
                     synchronized (statusLock) { statusLock.notifyAll(); }
                     updateNotification(false);
+                    logToWeb("Rec Stopped (Timeout)");
                 }
             }
             isRecordingPublic = isRecording;
@@ -501,6 +512,7 @@ public class SentinelService extends Service {
                 });
             }
         }
+        logToWeb("File Closed: " + currentFile.getName());
         manageStorage();
     }
 
@@ -563,6 +575,7 @@ public class SentinelService extends Service {
 
     @Override
     public void onDestroy() {
+        logToWeb("!!! SENTINEL SERVICE DESTROYED !!!");
         instance = null;
         super.onDestroy();
         if (wakeLock != null && wakeLock.isHeld())
@@ -647,7 +660,7 @@ public class SentinelService extends Service {
         return null;
     }
 
-// --- HARDWARE PREVIEW ANCHOR (FINAL FIX: PANTALLA NEGRA) ---
+    // --- HARDWARE PREVIEW ANCHOR (FINAL FIX: PANTALLA NEGRA) ---
     public static void setPreviewSurface(android.view.SurfaceHolder holder) {
         if (instance != null && instance.camera != null) {
             try {
@@ -657,10 +670,12 @@ public class SentinelService extends Service {
                 // 2. CAMBIAR SUPERFICIE
                 if (holder != null) {
                     instance.camera.setPreviewDisplay(holder);
+                    logToWeb("Surface ATTACHED (Pantalla conectada)");
                 } else {
                     // Si nos vamos a background, volvemos a la textura ciega si es posible
                     if (instance.dummySurface != null) {
                         instance.camera.setPreviewTexture(instance.dummySurface);
+                        logToWeb("Surface DETACHED (Modo Background)");
                     } else {
                         instance.camera.setPreviewDisplay(null);
                     }
@@ -678,6 +693,7 @@ public class SentinelService extends Service {
                 } catch (Exception e) {
                     // Si falla el re-enganche, logueamos pero seguimos intentando arrancar
                     Log.e(TAG, "Error re-hooking callback", e);
+                    logToWeb("Surface Error: " + e.toString());
                 }
 
                 // 4. RELLENAR BUFFERS (Gasolina para el callback)
@@ -693,5 +709,47 @@ public class SentinelService extends Service {
                 e.printStackTrace();
             }
         }
+    }
+    
+
+    // --- SISTEMA DE LOGS HÍBRIDO (RAM + DISCO) ---
+    // Lista sincronizada para evitar errores de concurrencia
+    public static List<String> debugLogs = Collections.synchronizedList(new ArrayList<String>());
+
+    public static void logToWeb(final String msg) {
+        final String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date());
+        final String entry = "[" + time + "] " + msg;
+        
+        // 1. Logcat estándar (Para depurar con Android Studio)
+        Log.d(TAG, msg); 
+        
+        // 2. RAM (Para el servidor Web /log)
+        synchronized (debugLogs) {
+            debugLogs.add(entry);
+            // Mantenemos solo las últimas 50 líneas para no llenar la memoria
+            if (debugLogs.size() > 50) debugLogs.remove(0);
+        }
+
+        // 3. DISCO (Persistencia Real para ADB: tail -f abuelolog.log)
+        // Lo lanzamos en un hilo aparte (new Thread) para que guardar en la SD
+        // no frene ni un milisegundo a la cámara.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
+                    if (!dir.exists()) dir.mkdirs();
+                    File logFile = new File(dir, "abuelolog.log");
+                    
+                    // El 'true' en FileWriter activa el modo APPEND (añadir al final)
+                    BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true)); 
+                    buf.append(entry);
+                    buf.newLine();
+                    buf.close();
+                } catch (IOException e) {
+                    // Si falla el log, fallamos en silencio para no romper nada más
+                }
+            }
+        }).start();
     }
 }

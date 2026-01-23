@@ -5,6 +5,14 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.15] - 2026-01-23
+### Added
+- **Feature**: Sistema de "Caja Negra" (Blackbox Logging) para diagnóstico del crash diferido.
+  - Buffer RAM circular (50 líneas) para visualización web en `/log`
+  - Persistencia asíncrona en disco: `/sdcard/ElOjoDelAbuelo/abuelolog.log`
+  - Sondas de diagnóstico en: `onCreate`, `startCamera`, `setPreviewSurface`, `previewCallback`
+- **Debug**: Permite auditoría forense post-mortem vía `adb shell tail -f /sdcard/ElOjoDelAbuelo/abuelolog.log`
+
 ## [v3.9.5-dev.14] - 2026-01-22
 ### Fixed
 - **Critical**: Solucionada pantalla negra en Activity. El driver de cámara del Galaxy S necesita el re-enganche del callback (`setPreviewCallbackWithBuffer`) en `setPreviewSurface` para activar el enlace pantalla↔driver.
