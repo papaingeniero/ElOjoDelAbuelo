@@ -1268,7 +1268,7 @@ Con esta secuencia podremos identificar exactamente en qué punto del ciclo de v
 
 ---
 
-## 🧊 v3.9.5-dev.18: Proyecto "Ice Age" - Estabilización Térmica Total
+## 🧊 v3.9.5-dev.18: Proyecto "Ice Age" - Estabilización Térmica Total - Hardware Zoom + Pintor Vago + Caza-Fantasmas
 
 ### 📜 El Problema (Storytelling)
 El Abuelo sufría de dos males graves:
