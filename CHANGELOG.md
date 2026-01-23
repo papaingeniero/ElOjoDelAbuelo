@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.21] - 2026-01-23
+### Fixed
+- **Amnesia Fix**: Persistencia de `activeSurfaceHolder` para reconectar pantalla física tras reinicios (ej: rotación).
+- **Pintor Vago PRO**: Cronómetro estricto (`activeSurfaceHolder` y `lastLazyTime`) para throttling a 0.5 FPS (1 frame/2s) REALES cuando no hay actividad.
+
 ## [v3.9.5-dev.20] - 2026-01-23
 ### Fixed
 - **UI Freeze ([B006])**: Movida configuración de layout `MATCH_PARENT` de `onResume` a `onCreate`. **Resuelto arranque fluido**.

@@ -49,6 +49,8 @@ public class SentinelService extends Service {
     }
 
     private static UiPreviewCallback uiPreviewCallback;
+    // [NUEVO] Memoria para recordar la pantalla física si reiniciamos la cámara
+    private static android.view.SurfaceHolder activeSurfaceHolder = null;
 
     public static void setUiCallback(UiPreviewCallback cb) {
         uiPreviewCallback = cb;
@@ -200,14 +202,27 @@ public class SentinelService extends Service {
 
             // TRY-CATCH WRAPPER FOR API LEVEL COMPATIBILITY
             try {
-                dummySurface = new SurfaceTexture(10);
-                camera.setPreviewTexture(dummySurface);
+                // [NUEVO] LÓGICA DE RECUPERACIÓN DE PANTALLA (Amnesia Fix) 🧠✨
+                // Preguntamos: "¿Teníamos una pantalla conectada antes de morir?"
+                if (activeSurfaceHolder != null) {
+                    // SÍ: La recuperamos. ¡Adiós pantalla congelada!
+                    camera.setPreviewDisplay(activeSurfaceHolder);
+                    logToWeb("Cámara reiniciada recuperando SurfaceHolder activo.");
+                } else {
+                    // NO: Estamos en background real. Usamos textura ciega.
+                    dummySurface = new SurfaceTexture(10);
+                    camera.setPreviewTexture(dummySurface);
+                }
             } catch (Throwable t) {
                 // Fallback for API < 11 if SurfaceTexture fails (Safety Net)
                 camera.setPreviewDisplay(null);
             }
 
             camera.setPreviewCallbackWithBuffer(previewCallback);
+            
+            // [IMPORTANTE] Aseguramos que al reiniciar se mantenga tu rotación física de 180º
+            camera.setDisplayOrientation(180);
+
             camera.startPreview();
             logToWeb("Cámara arrancada OK");
 
@@ -216,7 +231,6 @@ public class SentinelService extends Service {
             NanoHttpServer.setLastError("Camera Error: " + e.toString());
         }
     }
-
     // Globals to store actual size
     private int PREVIEW_WIDTH = 320;
     private int PREVIEW_HEIGHT = 240;
@@ -429,24 +443,20 @@ public class SentinelService extends Service {
     // ------------------------------------------------------------------------
     private void processFrame(byte[] data) {
         try {
-            // [OPTIMIZACIÓN TÉRMICA CRÍTICA] ❄️
-            // Si NO estamos grabando y NO hay UI (pantalla apagada/crasheada),
-            // no gastamos CPU en comprimir JPEG solo por si acaso.
-            // (La web seguirá funcionando, pero quizás con un poco más de lag al conectar,
-            //  o podemos forzar que el HttpServer active un flag 'hasClients' en el futuro).
-            // De momento, si Activity murió y no grabamos: ¡NO HACEMOS NADA!
             boolean uiAlive = (uiPreviewCallback != null);
             
-            // Si solo estamos vigilando (sin grabar) y no hay pantalla encendida:
-            // Ahorramos el 90% del calor saltándonos la compresión JPEG la mayoría de las veces.
+            // [OPTIMIZACIÓN TÉRMICA ROBUSTA] ❄️
+            // Versión PRO: Usamos el cronómetro lastLazyTime
             if (!isRecording && !uiAlive) {
-                 // Truco: Solo comprimimos 1 de cada 4 frames que llegan aquí 
-                 // (que ya vienen filtrados a 5fps, así que se queda en ~1 fps real para la web latente).
-                 // Esto mantiene el servidor web "vivo" pero helado.
-                 if (System.currentTimeMillis() % 1000 > 200) return; 
+                 long now = System.currentTimeMillis();
+                 // Estrictamente 1 frame cada 2000ms (0.5 FPS)
+                 if (now - lastLazyTime < 2000) { 
+                     return; 
+                 }
+                 lastLazyTime = now;
             }
 
-            // --- AQUI EMPIEZA EL GASTO DE CPU (COMPRESIÓN) ---
+            // --- AQUI EMPIEZA EL GASTO DE CPU ---
             YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 60, out);
@@ -478,7 +488,6 @@ public class SentinelService extends Service {
                 try {
                     uiPreviewCallback.onFrame(jpeg);
                 } catch (Exception e) {
-                    // Si falla la UI, la marcamos como muerta para dejar de intentarlo
                     uiPreviewCallback = null; 
                 }
             }
@@ -487,6 +496,9 @@ public class SentinelService extends Service {
             e.printStackTrace();
         }
     }
+
+
+
     private synchronized void openNewRecordingFile() {
         File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
         if (!dir.exists())
@@ -649,16 +661,16 @@ public class SentinelService extends Service {
     }
 
     public static void updateSettings(int sens, int time, boolean active, int rot) {
+        boolean rotationChanged = (cameraRotation != rot);
         motionSensitivity = sens;
         recordingTimeout = time;
         isDetectorActive = active;
-        boolean rotationChanged = (cameraRotation != rot);
         cameraRotation = rot;
+        
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 20)
-            currentThreshold = 20;
-        if (currentThreshold > 50000)
-            currentThreshold = 50000;
+        if (currentThreshold < 20) currentThreshold = 20;
+        if (currentThreshold > 50000) currentThreshold = 50000;
+
         if (instance != null) {
             SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
@@ -667,7 +679,10 @@ public class SentinelService extends Service {
             editor.putBoolean("isDetectorActive", active);
             editor.putInt("cameraRotation", rot);
             editor.apply();
+
             if (rotationChanged && instance.processingHandler != null) {
+                // [NUEVO] Log para saber por qué se reinicia
+                logToWeb("Config Update: Rotation changed to " + rot + "°. Restarting Camera...");
                 instance.processingHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -683,6 +698,7 @@ public class SentinelService extends Service {
         }
     }
 
+    
     public static void updateViewSettings(float zoom, int x, int y) {
         defaultZoom = zoom;
         defaultPanX = x;
@@ -733,12 +749,16 @@ public class SentinelService extends Service {
 
     // --- HARDWARE PREVIEW ANCHOR (FINAL FIX: PANTALLA NEGRA) ---
     public static void setPreviewSurface(android.view.SurfaceHolder holder) {
+        // 1. [NUEVO] Guardamos (o borramos) la referencia en memoria
+        // Esto es lo que permite que el servicio recuerde la pantalla si se reinicia la cámara.
+        activeSurfaceHolder = holder; 
+
         if (instance != null && instance.camera != null) {
             try {
-                // 1. FRENAR (Imprescindible para tocar nada)
+                // 2. FRENAR (Imprescindible para tocar nada)
                 instance.camera.stopPreview();
 
-                // 2. CAMBIAR SUPERFICIE
+                // 3. CAMBIAR SUPERFICIE
                 if (holder != null) {
                     instance.camera.setPreviewDisplay(holder);
                     logToWeb("Surface ATTACHED (Pantalla conectada)");
@@ -752,9 +772,7 @@ public class SentinelService extends Service {
                     }
                 }
 
-                // 3. EL "RE-ENGANCHE" (SOLUCIÓN PANTALLA NEGRA)
-                // Es vital volver a decirle a la cámara quién es el callback.
-                // Si no hacemos esto, el driver pierde la referencia y no manda datos.
+                // 4. EL "RE-ENGANCHE" (SOLUCIÓN PANTALLA NEGRA)
                 int bufferSize = instance.PREVIEW_WIDTH * instance.PREVIEW_HEIGHT
                         * android.graphics.ImageFormat.getBitsPerPixel(android.graphics.ImageFormat.NV21) / 8;
                 
@@ -762,17 +780,16 @@ public class SentinelService extends Service {
                     instance.camera.setPreviewCallbackWithBuffer(null); // Limpieza suave
                     instance.camera.setPreviewCallbackWithBuffer(instance.previewCallback); // ¡CONEXIÓN!
                 } catch (Exception e) {
-                    // Si falla el re-enganche, logueamos pero seguimos intentando arrancar
                     Log.e(TAG, "Error re-hooking callback", e);
                     logToWeb("CRITICAL Surface Error (Re-hook failed): " + e.getMessage());
                 }
 
-                // 4. RELLENAR BUFFERS (Gasolina para el callback)
+                // 5. RELLENAR BUFFERS
                 for (int i = 0; i < 3; i++) {
                     instance.camera.addCallbackBuffer(new byte[bufferSize]);
                 }
 
-                // 5. FIX ROTACIÓN y ARRANQUE
+                // 6. FIX ROTACIÓN y ARRANQUE
                 instance.camera.setDisplayOrientation(180);
                 instance.camera.startPreview();
 
@@ -780,8 +797,7 @@ public class SentinelService extends Service {
                 e.printStackTrace();
             }
         }
-    }
-    
+    }    
 
     // --- SISTEMA DE LOGS HÍBRIDO (RAM + DISCO) ---
     // La variable debugLogs ya está definida arriba (línea 45)
