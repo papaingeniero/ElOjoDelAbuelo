@@ -25,6 +25,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private BroadcastReceiver systemReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            SentinelService.logToWeb("MainActivity: Broadcast -> " + intent.getAction());
             String action = intent.getAction();
             
             if ("com.elojodelabuelo.ACTION_ZOOM_UPDATED".equals(action)) {
@@ -89,6 +90,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             btnKill.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     try {
+                        SentinelService.logToWeb("MainActivity: User Kill Switch");
                         stopService(new Intent(MainActivity.this, SentinelService.class));
                         restoreOriginalSettings();
                         finish();
