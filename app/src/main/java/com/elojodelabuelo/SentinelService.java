@@ -713,8 +713,7 @@ public class SentinelService extends Service {
     
 
     // --- SISTEMA DE LOGS HÍBRIDO (RAM + DISCO) ---
-    // Lista sincronizada para evitar errores de concurrencia
-    public static List<String> debugLogs = Collections.synchronizedList(new ArrayList<String>());
+    // La variable debugLogs ya está definida arriba (línea 45)
 
     public static void logToWeb(final String msg) {
         final String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date());
