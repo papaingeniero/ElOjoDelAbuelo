@@ -1,4 +1,3 @@
-//Hola cabroncete
 package com.elojodelabuelo;
 
 import android.app.Notification;
@@ -76,6 +75,8 @@ public class SentinelService extends Service {
     // [NUEVO] Contador para el Throttling Dinámico (Modo Eco)
     private int frameSkipCounter = 0;
 
+// [NUEVO] Para el Cronómetro Estricto del Pintor Vago
+    private long lastLazyTime = 0;
     // Phase 9.2: Optimization
     private boolean processNextFrame = true;
 
@@ -224,7 +225,7 @@ public class SentinelService extends Service {
         Camera.Parameters params = camera.getParameters();
         java.util.List<Camera.Size> sizes = params.getSupportedPreviewSizes();
 
-        // Phase 9.1: Optimization - Native Resolution (CIF)
+        // 1. Buscamos Resolución Nativa (CIF)
         Camera.Size bestSize = null;
         for (Camera.Size size : sizes) {
             if (size.width == 352 && size.height == 288) {
@@ -232,8 +233,6 @@ public class SentinelService extends Service {
                 break;
             }
         }
-
-        // Fallback
         if (bestSize == null) {
             bestSize = sizes.get(0);
             int minDiff = Integer.MAX_VALUE;
@@ -245,13 +244,11 @@ public class SentinelService extends Service {
                 }
             }
         }
-
         PREVIEW_WIDTH = bestSize.width;
         PREVIEW_HEIGHT = bestSize.height;
-
         params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-        // [NUEVO] THERMAL OPTIMIZATION: Hardware FPS Limit
+        // 2. Optimización Térmica FPS (Hardware Limit)
         try {
              java.util.List<int[]> ranges = params.getSupportedPreviewFpsRange();
              if (ranges != null) {
@@ -264,9 +261,37 @@ public class SentinelService extends Service {
              }
         } catch (Exception e) {}
 
+        // 3. [NUEVO] APLICAR ZOOM POR HARDWARE (La Lupa Fría 🔍❄️)
+        if (params.isZoomSupported()) {
+            SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
+            float targetZoomValue = prefs.getFloat("defaultZoom", 1.0f);
+            
+            // Convertimos float (2.7) a int (270)
+            int targetZoomInt = (int) (targetZoomValue * 100);
+            
+            List<Integer> zoomRatios = params.getZoomRatios();
+            int bestIndex = 0;
+            int minDiff = Integer.MAX_VALUE;
+
+            if (zoomRatios != null) {
+                // Buscamos el escalón más cercano
+                for (int i = 0; i < zoomRatios.size(); i++) {
+                    int diff = Math.abs(zoomRatios.get(i) - targetZoomInt);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        bestIndex = i;
+                    }
+                }
+                params.setZoom(bestIndex);
+                int finalZoom = zoomRatios.get(bestIndex);
+                logToWeb("Hardware Zoom aplicado. Deseado: " + targetZoomInt + ", Conseguido: " + finalZoom);
+                NanoHttpServer.setLastError("Cam OK. Zoom HW: " + (finalZoom/100f) + "x");
+            }
+        }
+
         camera.setParameters(params);
-        NanoHttpServer.setLastError("Camera OK. Size: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT);
     }
+
 
     private void writeCameraInfoToFile(Camera.Parameters params) {
         File logFile = new File(Environment.getExternalStorageDirectory(), "camera_info.txt");
@@ -399,8 +424,29 @@ public class SentinelService extends Service {
         return targetBuffer;
     }
 
+    // ------------------------------------------------------------------------
+    // SUSTITUIR EN SentinelService.java (MODO "PINTOR VAGO")
+    // ------------------------------------------------------------------------
     private void processFrame(byte[] data) {
         try {
+            // [OPTIMIZACIÓN TÉRMICA CRÍTICA] ❄️
+            // Si NO estamos grabando y NO hay UI (pantalla apagada/crasheada),
+            // no gastamos CPU en comprimir JPEG solo por si acaso.
+            // (La web seguirá funcionando, pero quizás con un poco más de lag al conectar,
+            //  o podemos forzar que el HttpServer active un flag 'hasClients' en el futuro).
+            // De momento, si Activity murió y no grabamos: ¡NO HACEMOS NADA!
+            boolean uiAlive = (uiPreviewCallback != null);
+            
+            // Si solo estamos vigilando (sin grabar) y no hay pantalla encendida:
+            // Ahorramos el 90% del calor saltándonos la compresión JPEG la mayoría de las veces.
+            if (!isRecording && !uiAlive) {
+                 // Truco: Solo comprimimos 1 de cada 4 frames que llegan aquí 
+                 // (que ya vienen filtrados a 5fps, así que se queda en ~1 fps real para la web latente).
+                 // Esto mantiene el servidor web "vivo" pero helado.
+                 if (System.currentTimeMillis() % 1000 > 200) return; 
+            }
+
+            // --- AQUI EMPIEZA EL GASTO DE CPU (COMPRESIÓN) ---
             YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 60, out);
@@ -428,10 +474,12 @@ public class SentinelService extends Service {
             }
 
             // 3. UI Preview
-            if (uiPreviewCallback != null) {
+            if (uiAlive) {
                 try {
                     uiPreviewCallback.onFrame(jpeg);
                 } catch (Exception e) {
+                    // Si falla la UI, la marcamos como muerta para dejar de intentarlo
+                    uiPreviewCallback = null; 
                 }
             }
 
@@ -439,7 +487,6 @@ public class SentinelService extends Service {
             e.printStackTrace();
         }
     }
-
     private synchronized void openNewRecordingFile() {
         File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
         if (!dir.exists())
@@ -463,16 +510,16 @@ public class SentinelService extends Service {
     }
 
     private synchronized void closeRecordingFile() {
-        // --- NUEVO: SOLTAR PANTALLA ---
+        // --- SOLTAR PANTALLA ---
         if (screenLock != null && screenLock.isHeld()) {
-            screenLock.release(); // Dejar que se duerma
+            screenLock.release(); 
         }
         try {
             sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_STOP"));
         } catch (Exception e) {
         }
-        // ------------------------------
-
+        
+        // --- CERRAR FICHEROS ---
         if (fileOutputStream != null) {
             try {
                 fileOutputStream.close();
@@ -486,15 +533,18 @@ public class SentinelService extends Service {
                 }
                 previewOutputStream = null;
             }
+            
+            // Renombrar con FPS reales
             long duration = System.currentTimeMillis() - recordingStartTime;
             if (duration > 0 && frameCount > 0) {
                 int fps = (int) (frameCount * 1000 / duration);
-                if (fps < 1)
-                    fps = 1;
+                if (fps < 1) fps = 1;
                 File newFile = new File(currentFile.getAbsolutePath().replace(".mjpeg", "_" + fps + "fps.mjpeg"));
                 if (currentFile.renameTo(newFile))
                     currentFile = newFile;
             }
+            
+            // Guardar Thumbnail
             if (bestFrameJpeg != null && currentFile != null) {
                 final byte[] jpegToSave = bestFrameJpeg;
                 final File videoFile = currentFile;
@@ -514,6 +564,10 @@ public class SentinelService extends Service {
         }
         logToWeb("File Closed: " + currentFile.getName());
         manageStorage();
+
+        // [NUEVO] FIX GHOST TRIGGER: RESET DEL CEREBRO 🧠✨
+        // Borramos la memoria del detector para evitar el "salto temporal"
+        motionDetector = new MotionDetector();
     }
 
     private void manageStorage() {
@@ -635,7 +689,6 @@ public class SentinelService extends Service {
         defaultPanY = y;
 
         if (instance != null) {
-            // 1. Guardar Preferencias (Como antes)
             SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putFloat("defaultZoom", zoom);
@@ -643,17 +696,35 @@ public class SentinelService extends Service {
             editor.putInt("defaultPanY", y);
             editor.apply();
 
-            // 2. NUEVO: Enviar señal de radio a la MainActivity
-            try {
-                Intent intent = new Intent("com.elojodelabuelo.ACTION_ZOOM_UPDATED");
-                instance.sendBroadcast(intent);
-                Log.d(TAG, "Broadcast enviado: ZOOM UPDATED");
-            } catch (Exception e) {
-                Log.e(TAG, "Error enviando broadcast zoom", e);
+            // [NUEVO] APLICAR ZOOM LIVE SIN REINICIAR CÁMARA
+            // Como el zoom ahora es por Hardware, tenemos que decírselo a la cámara YA.
+            if (instance.camera != null) {
+                try {
+                    Camera.Parameters params = instance.camera.getParameters();
+                    if (params.isZoomSupported()) {
+                        int targetZoomInt = (int) (zoom * 100);
+                        List<Integer> zoomRatios = params.getZoomRatios();
+                        int bestIndex = 0;
+                        int minDiff = Integer.MAX_VALUE;
+                        if (zoomRatios != null) {
+                            for (int i = 0; i < zoomRatios.size(); i++) {
+                                int diff = Math.abs(zoomRatios.get(i) - targetZoomInt);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    bestIndex = i;
+                                }
+                            }
+                            params.setZoom(bestIndex);
+                            instance.camera.setParameters(params);
+                            logToWeb("Live Zoom Update: " + (zoomRatios.get(bestIndex)/100f) + "x");
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error Live Zoom", e);
+                }
             }
         }
     }
-
     public static File getCurrentRecordingFile() {
         if (instance != null)
             return instance.currentFile;
@@ -693,7 +764,7 @@ public class SentinelService extends Service {
                 } catch (Exception e) {
                     // Si falla el re-enganche, logueamos pero seguimos intentando arrancar
                     Log.e(TAG, "Error re-hooking callback", e);
-                    logToWeb("Surface Error: " + e.toString());
+                    logToWeb("CRITICAL Surface Error (Re-hook failed): " + e.getMessage());
                 }
 
                 // 4. RELLENAR BUFFERS (Gasolina para el callback)

@@ -5,6 +5,24 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.18] - 2026-01-23 "Ice Age" ❄️
+### Added
+- **Hardware Zoom** ("La Lupa Fría"): Zoom gestionado por el driver de cámara (`params.setZoom()`) en lugar de escalado por software. Cero coste de CPU.
+- **Pintor Vago**: Modo deep sleep a 0.5 FPS cuando pantalla apagada y sin grabación (`processFrame` throttling).
+- **Interruptor de Luz**: Sincronización estricta `onResume/onPause` ↔ `setUiCallback(null)` para activar modo eco instantáneamente.
+- **Caza-Fantasmas**: Reset del `MotionDetector` tras cada grabación para eliminar falsos positivos por "salto temporal".
+- **Live Zoom**: Cambios de zoom desde la web se aplican en caliente sin reiniciar cámara.
+
+### Removed
+- `applyZoomLogic()` en MainActivity (zoom por software eliminado).
+- Manipulación de `LayoutParams` para escalado de View.
+- Broadcast `ACTION_ZOOM_UPDATED` (ya no es necesario).
+
+### Fixed
+- **Ghost Trigger [B005]**: Grabaciones fantasma encadenadas tras terminar una real.
+- **Thermal Regression [B004]**: Temperatura estable ~35°C en reposo vs. 42-44°C anterior.
+- **OOM Crashes**: Eliminados al no crear bitmaps escalados en memoria.
+
 ## [v3.9.5-dev.17] - 2026-01-23
 ### Added
 - **Debug**: Trazas adicionales en `MainActivity`:

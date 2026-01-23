@@ -12,7 +12,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.FrameLayout; // Ya no se usa para zoom, pero lo dejo por si acaso
 import android.util.Log;
 import android.widget.Toast;
 
@@ -28,17 +28,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             SentinelService.logToWeb("MainActivity: Broadcast -> " + intent.getAction());
             String action = intent.getAction();
             
-            if ("com.elojodelabuelo.ACTION_ZOOM_UPDATED".equals(action)) {
-                applyZoomLogic();
-            } 
-            else if ("com.elojodelabuelo.ACTION_REC_START".equals(action)) {
+            // ELIMINADO: Ya no reaccionamos a ZOOM_UPDATED aquí porque es Hardware.
+            
+            if ("com.elojodelabuelo.ACTION_REC_START".equals(action)) {
                 // ALARMA: El Servicio ha despertado el móvil.
-                // Nosotros ponemos el brillo al MÁXIMO para intimidar/ver.
                 setWindowBrightness(1.0f);
             } 
             else if ("com.elojodelabuelo.ACTION_REC_STOP".equals(action)) {
                 // CALMA: El servicio soltó el bloqueo.
-                // Forzamos apagado en 1 segundo (Modo Frío).
                 setTimeout(1000); 
                 setWindowBrightness(-1.0f); // Restaurar brillo automático
                 Toast.makeText(context, "Enfriando... (Apagado en 1s)", Toast.LENGTH_SHORT).show();
@@ -51,21 +48,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onCreate(savedInstanceState);
         SentinelService.logToWeb("MainActivity: CREATED");
         try {
-            // --- NUEVO: PASE VIP (Saltar bloqueo de pantalla) ---
-            // FLAG_DISMISS_KEYGUARD: Quita el candado si no hay contraseña.
-            // FLAG_SHOW_WHEN_LOCKED: Muestra la app aunque el móvil esté bloqueado.
-            // FLAG_TURN_SCREEN_ON: Asegura que se enciende (refuerzo al WakeLock del servicio).
+            // PASE VIP (Saltar bloqueo)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                                  WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                                  WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-            // ----------------------------------------------------
 
             setContentView(R.layout.activity_main);
             
             // 1. Guardar Timeout Original
             try {
                 originalTimeout = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT);
-            } catch (Exception e) { originalTimeout = 60000; } // Default 60s
+            } catch (Exception e) { originalTimeout = 60000; } 
 
             // 2. Setup Hardware
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.cameraPreview);
@@ -104,19 +97,32 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     protected void onResume() {
         super.onResume();
         SentinelService.logToWeb("MainActivity: RESUMED (Visible)");
-        applyZoomLogic();
         
-        // Al volver manual, restaurar timeout normal para poder usar el móvil
+        // 1. ELIMINADO: applyZoomLogic(); 
+        // ¡Ya no hacemos zoom por software! Dejamos la vista tranquila para no gastar CPU.
+        
+        // 2. RESTAURAR TIMEOUT
         if (originalTimeout > 0) setTimeout(originalTimeout);
         setWindowBrightness(-1.0f);
 
+        // 3. REGISTRAR RECEIVER
         try {
             IntentFilter filter = new IntentFilter();
-            filter.addAction("com.elojodelabuelo.ACTION_ZOOM_UPDATED");
             filter.addAction("com.elojodelabuelo.ACTION_REC_START");
             filter.addAction("com.elojodelabuelo.ACTION_REC_STOP");
             registerReceiver(systemReceiver, filter);
         } catch (Exception e) {}
+
+        // 4. [CRÍTICO] AVISAR AL PINTOR VAGO: "ESTOY VIVO" 💡🟢
+        // Le pasamos un callback (aunque esté vacío) para que uiPreviewCallback != null
+        // y el servicio sepa que estamos mirando.
+        SentinelService.setUiCallback(new SentinelService.UiPreviewCallback() {
+            @Override
+            public void onFrame(byte[] jpegData) {
+                // No hacemos nada con el JPEG porque el SurfaceView lo pinta por Hardware.
+                // Pero este callback mantiene al servicio despierto cuando la pantalla está ON.
+            }
+        });
     }
     
     @Override
@@ -124,6 +130,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onPause();
         SentinelService.logToWeb("MainActivity: PAUSED (Background)");
         try { unregisterReceiver(systemReceiver); } catch (Exception e) {}
+
+        // 5. [CRÍTICO] AVISAR AL PINTOR VAGO: "ME VOY A DORMIR" 💡🔴
+        // Esto pone uiPreviewCallback = null.
+        // Al ocurrir esto, el 'processFrame' del servicio entra en MODO 1 FPS (Enfriamiento).
+        if (SentinelService.instance != null) { // Check de seguridad (aunque instance es static)
+             SentinelService.setUiCallback(null);
+        }
     }
     
     @Override
@@ -150,38 +163,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (originalTimeout > 0) setTimeout(originalTimeout);
     }
 
-    // --- ZOOM LOGIC ---
-    private void applyZoomLogic() {
-        try {
-            SurfaceView surface = (SurfaceView) findViewById(R.id.cameraPreview);
-            if (surface == null) return;
-            android.content.SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
-            float zoom = prefs.getFloat("defaultZoom", 1.0f);
-            int panX = prefs.getInt("defaultPanX", 0);
-            int panY = prefs.getInt("defaultPanY", 0);
-
-            android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            int screenW = metrics.widthPixels;
-            int screenH = metrics.heightPixels;
-            FrameLayout.LayoutParams params;
-
-            if (zoom <= 1.01f) {
-                params = new FrameLayout.LayoutParams(-1, -1);
-            } else {
-                int targetW = (int) (screenW * zoom);
-                int targetH = (int) (screenH * zoom);
-                int baseLeft = (screenW - targetW) / 2;
-                int baseTop = (screenH - targetH) / 2;
-                params = new FrameLayout.LayoutParams(targetW, targetH);
-                params.leftMargin = baseLeft + panX;
-                params.topMargin = baseTop + panY;
-                params.gravity = android.view.Gravity.TOP | android.view.Gravity.LEFT; 
-            }
-            surface.setLayoutParams(params);
-            surface.requestLayout();
-        } catch (Exception e) { Log.e(TAG, "Error Zoom UI", e); }
-    }
+    // --- ZOOM LOGIC ELIMINADA ---
+    // Hemos quitado applyZoomLogic para evitar crashes de memoria y calor.
+    // El zoom ahora lo gestiona el Hardware de la cámara en SentinelService.
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) { SentinelService.setPreviewSurface(holder); }
