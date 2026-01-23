@@ -98,14 +98,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onResume();
         SentinelService.logToWeb("MainActivity: RESUMED (Visible)");
         
-        // 1. ELIMINADO: applyZoomLogic(); 
-        // ¡Ya no hacemos zoom por software! Dejamos la vista tranquila para no gastar CPU.
-        
-        // 2. RESTAURAR TIMEOUT
-        if (originalTimeout > 0) setTimeout(originalTimeout);
-        setWindowBrightness(-1.0f);
+        // 1. [NUEVO] FIX PANTALLA NEGRA ⬛ -> 📺
+        // Como quitamos el zoom antiguo, la vista se quedó sin tamaño definido.
+        // Aquí le ordenamos: "Ocupa toda la pantalla (MATCH_PARENT)".
+        try {
+            SurfaceView surface = (SurfaceView) findViewById(R.id.cameraPreview);
+            if (surface != null) {
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT, 
+                        FrameLayout.LayoutParams.MATCH_PARENT);
+                surface.setLayoutParams(params);
+            }
+        } catch (Exception e) {
+            SentinelService.logToWeb("Error UI Layout: " + e.getMessage());
+        }
 
-        // 3. REGISTRAR RECEIVER
+        // 2. RESTAURAR TIMEOUT ORIGINAL
+        if (originalTimeout > 0) setTimeout(originalTimeout);
+        setWindowBrightness(-1.0f); // Brillo automático
+
+        // 3. REGISTRAR EL RECEPTOR DE MENSAJES
         try {
             IntentFilter filter = new IntentFilter();
             filter.addAction("com.elojodelabuelo.ACTION_REC_START");
@@ -113,18 +125,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             registerReceiver(systemReceiver, filter);
         } catch (Exception e) {}
 
-        // 4. [CRÍTICO] AVISAR AL PINTOR VAGO: "ESTOY VIVO" 💡🟢
-        // Le pasamos un callback (aunque esté vacío) para que uiPreviewCallback != null
-        // y el servicio sepa que estamos mirando.
+        // 4. [CRÍTICO] AVISAR AL SERVICIO: "ESTOY MIRANDO" 👀
+        // Esto evita que el "Pintor Vago" reduzca los FPS mientras la pantalla está encendida.
         SentinelService.setUiCallback(new SentinelService.UiPreviewCallback() {
             @Override
             public void onFrame(byte[] jpegData) {
-                // No hacemos nada con el JPEG porque el SurfaceView lo pinta por Hardware.
-                // Pero este callback mantiene al servicio despierto cuando la pantalla está ON.
+                // No hacemos nada con la imagen (ya se pinta sola), 
+                // pero este callback le dice al servicio que la UI está viva.
             }
         });
     }
-    
     @Override
     protected void onPause() {
         super.onPause();

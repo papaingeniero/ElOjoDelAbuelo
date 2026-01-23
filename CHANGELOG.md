@@ -5,6 +5,14 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.19] - 2026-01-23
+### Fixed
+- **UI Rescue**: Restaurada visualización de cámara (`MATCH_PARENT`) tras eliminar zoom software.
+- **Traceability**: Nuevos logs en `onResume`/`onPause`.
+
+### Known Issues
+- ⚠️ **Frozen Frame**: La imagen en pantalla se congela en el primer fotograma (no hay vídeo fluido local).
+
 ## [v3.9.5-dev.18] - 2026-01-23 "Ice Age" ❄️
 ### Added
 - **Hardware Zoom** ("La Lupa Fría"): Zoom gestionado por el driver de cámara (`params.setZoom()`) en lugar de escalado por software. Cero coste de CPU.
