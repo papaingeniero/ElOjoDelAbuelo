@@ -1534,3 +1534,23 @@ Al abrir las ventanas modales (Reproductor de Video o Vista en Vivo), los indica
 **Verificación**:
 - Abrir "Ver Cámara en Vivo" y comprobar que el % de batería cambia al mismo tiempo que en la pantalla principal.
 
+
+### 🕵️ v3.9.6-dev.3: Auditoría de Resolución (Pixel Perfect)
+
+**El Objetivo**:
+Necesitamos certeza absoluta sobre qué resolución está negociando realmente el `SentinelService` con el hardware de la cámara en el arranque.
+
+**La Implementación**:
+Se ha inyectado una "Traza Forense" en `setupCameraParameters()` que calcula y loguea:
+1.  **Dimensiones Brutas**: Ancho x Alto (ej: 640x480).
+2.  **Ratio Matemático**: Floats de precisión (ej: 1.33).
+3.  **Veredicto Humano**: Clasificación automática (4:3, 16:9, CIF, etc.).
+
+**Código Inyectado**:
+```java
+logToWeb(">>> 🕵️ AUTORÍA RESOLUCIÓN: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT + ...);
+```
+
+**Por qué importa**:
+Si el hardware selecciona una resolución exótica (como CIF 352x288, ratio 1.22), esto explicaría deformaciones en la visualización web o problemas de alineación en el `SurfaceView`. Con este log, eliminamos la ambigüedad.
+

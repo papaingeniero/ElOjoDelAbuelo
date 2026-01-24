@@ -261,6 +261,16 @@ public class SentinelService extends Service {
         PREVIEW_WIDTH = bestSize.width;
         PREVIEW_HEIGHT = bestSize.height;
         params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
+        // --- TRAZA FORENSE INYECTADA (PARA DETECTAR EL RATIO) ---
+        float ratio = (float) PREVIEW_WIDTH / PREVIEW_HEIGHT;
+        String ratioName = (Math.abs(ratio - 1.3333) < 0.05) ? "4:3 (Perfecto)" : 
+                           (Math.abs(ratio - 1.7777) < 0.05) ? "16:9 (Panorámico)" : 
+                           (Math.abs(ratio - 1.2222) < 0.05) ? "CIF (Culpable probable)" : "Ratio Raro";
+        
+        logToWeb(">>> 🕵️ AUTORÍA RESOLUCIÓN: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT + 
+                 " | Ratio Numérico: " + String.format(Locale.US, "%.2f", ratio) + 
+                 " | Veredicto: " + ratioName + " <<<");
+        // --------------------------------------------------------
 
         // 2. Optimización Térmica FPS (Hardware Limit)
         try {
