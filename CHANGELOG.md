@@ -5,6 +5,17 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5] - 2026-01-24 "Ice Age Stable" 🧊
+### Added
+- **Hardware Zoom**: `SentinelService` ahora gestiona el zoom nativamente (GPU/Driver), eliminando la carga de escalado por software en CPU.
+- **Pintor Vago PRO**: Algoritmo de Deep Sleep que limita el procesado a **0.5 FPS** (1 frame cada 2000ms) cuando la pantalla está apagada y no hay grabación.
+- **Amnesia Fix**: Persistencia de la superficie de vídeo (`activeSurfaceHolder`) para soportar cambios de configuración (rotación) sin congelar la imagen.
+- **UI Rescue**: Inicialización robusta de `SurfaceView` (`MATCH_PARENT` en `onCreate`) para evitar condiciones de carrera con el driver gráfico antiguo.
+
+### Changed
+- **Optimización Térmica**: Reducción drástica de temperatura en reposo (~38°C vs 44°C).
+- **Limpieza**: Eliminado código experimental de "Ghost Hunter" tras descartar la necesidad de filtros forenses complejos.
+
 ## [v3.9.5-dev.27] - 2026-01-24
 ### Added
 - **Ghost Hunter Switch**: Variable `useGhostHunter` para activar/desactivar la protección anti-fantasmas.

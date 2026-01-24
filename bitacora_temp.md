@@ -1,20 +1,17 @@
 
-### 👻 v3.9.5-dev.26: "Ghost Hunter" (CSI 3.1) - Intento 4 (Umbral 1500)
+# 🧊 v3.9.5: Ice Age Stable - Estabilidad Térmica y Visual Definitiva
 
-**Estado**: ⏭️ **SALTADO**
+**Estado**: 🚀 **ÉXITO TOTAL**
 
-**Razón**:
-El usuario decidió implementar un control más granulado antes de seguir ajustando solo el umbral numérico. Se opta por introducir un interruptor maestro (`flag`) para habilitar/deshabilitar la lógica completa sin recompilar.
+**Verificación en Dispositivo Real**:
+- ✅ **Hot-Swap Rotation**: Cambio de rotación 0° ↔ 180° desde la web **OK**. La cámara se reinicia y recupera la imagen en pantalla sin congelarse gracias al `activeSurfaceHolder` persistente.
+- ✅ **Fluidez UI**: La Activity muestra la cámara vía Hardware (GPU) en la pantalla del teléfono. El zoom también es nativo, eliminando la carga de CPU. La vista es fluida inmediatamente tras despertar la pantalla.
+- ✅ **Temperatura**: Estable en **~38°C** en modo vigilancia (vs 42-44°C anteriores). El "Pintor Vago PRO" (0.5 FPS) funciona correctamente.
 
----
+**Resumen de la Solución (Arquitectura Ice Age)**:
+1. **Amnesia Fix**: Variable `static activeSurfaceHolder` en `SentinelService`. El servicio "recuerda" la pantalla física aunque el objeto Camera se destruya/recree.
+2. **Pintor Vago PRO**: Lógica estricta de tiempo (`if (now - lastLazyTime < 2000) return;`) que impone un límite físico de 0.5 FPS al procesado de frames cuando no hay ojos humanos mirando.
+3. **UI Rescue**: Configuración de `MATCH_PARENT` movida a `onCreate` para evitar confictos de carrera con el driver gráfico legacy.
 
-### 👻 v3.9.5-dev.27: "Ghost Hunter Switch" - Control Manual
-
-**Estado**: 🧪 **EN PRUEBAS (SNAPSHOT)**
-
-**Configuración Actual**:
-- `useGhostHunter = false` (Desactivado por defecto).
-- Lógica de disparo modificada a valores "imposibles" (`delta < 0`, `score > 5500`) para garantizar que NO actúe a menos que se cambie el código o se inyecte la configuración.
-
-**Objetivo**:
-Tener una versión base donde el sistema anti-fantasmas está presente pero inactivo, permitiendo activarlo a demanda para pruebas A/B de comportamiento del sensor.
+**Nota sobre Ghost Hunter**:
+Se ha **eliminado** la lógica forense compleja (CSI) y los filtros de score artificiales. La investigación determinó que con la estabilidad actual, no son necesarios en producción, manteniendo el código limpio y ligero. Las herramientas forenses quedan archivadas en el historial de git (versiones dev).

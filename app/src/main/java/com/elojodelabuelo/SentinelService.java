@@ -70,8 +70,6 @@ public class SentinelService extends Service {
 
     private boolean isRecording = false;
     private long lastMotionTime = 0;
-    // [AÑADIR ESTO] Variable que falta para que compile el modo CSI:
-    private long lastRecordingEndTime = 0;
     private File currentFile;
     private FileOutputStream fileOutputStream;
     private FileOutputStream previewOutputStream; // For mini-mjpeg
@@ -86,8 +84,6 @@ public class SentinelService extends Service {
 
     // Configurable Settings (Version 2.0)
     public static int motionSensitivity = 90;
-    // [INTERRUPTOR MAESTRO] ¿Queremos usar la trampa anti-fantasmas?
-    public static boolean useGhostHunter = false;
     public static int recordingTimeout = 10; // seconds
     public static volatile boolean isDetectorActive = true;
     public static int cameraRotation = 0; // 0 or 180
@@ -367,37 +363,17 @@ public class SentinelService extends Service {
             } else {
                 int score = motionDetector.getMotionScore(processedData, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-                // [NUEVO] LÓGICA ANTI-FANTASMA (SOLUCIÓN DAVID) 🧠✨
-                long delta = System.currentTimeMillis() - lastRecordingEndTime;
-
-                // Filtro inteligente basado en tus logs: 
-                // Si han pasado menos de 30s y el score es BRUTAL (> 2500), es un error de sensor/luz.
-                // Tu hijo (Score 730) entrará directo. El fantasma (Score 3045) será capturado.
-                boolean isFlashSpike = (delta < 00000 && score > 5500);
-
                 if (score > currentThreshold) {
-                    
-                    if (useGhostHunter && isFlashSpike) {
-                        // --- CASO FANTASMA: Bloquear y Guardar Prueba ---
-                        logToWeb("⛔ GHOST BLOCKED! Delta: " + delta + "ms | Score: " + score);
-                        // Capturamos el frame exactO que ha dado ese score de 3045 📸
-                        // Aquí veremos si es ruido, un frame verde o un cambio de brillo.
-                        saveDebugImage(processedData, "GHOST_Flash_" + delta + "ms_score" + score);
-                        
-                    } else {
-                        // --- ES REAL (Score humano/normal) ---
-                        // No hay ceguera: si es un score normal, grabamos al instante.
-                        lastMotionTime = System.currentTimeMillis();
-                        if (!isRecording) {
-                            openNewRecordingFile();
-                            isRecording = true;
-                            isRecordingPublic = true;
-                            if (screenLock != null) { screenLock.acquire(); }
-                            try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch (Exception e) {}
-                            synchronized (statusLock) { statusLock.notifyAll(); }
-                            updateNotification(true);
-                            logToWeb("MOTION DETECTED! Rec Started. Score: " + score + " (Delta: " + delta + "ms)");
-                        }
+                    lastMotionTime = System.currentTimeMillis();
+                    if (!isRecording) {
+                        openNewRecordingFile();
+                        isRecording = true;
+                        isRecordingPublic = true;
+                        if (screenLock != null) { screenLock.acquire(); }
+                        try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch (Exception e) {}
+                        synchronized (statusLock) { statusLock.notifyAll(); }
+                        updateNotification(true);
+                        logToWeb("MOTION DETECTED! Rec Started. Score: " + score);
                     }
                 }
 
@@ -416,7 +392,7 @@ public class SentinelService extends Service {
                 if (isRecording && (System.currentTimeMillis() - lastMotionTime > (recordingTimeout * 1000L))) {
                     isRecording = false;
                     isRecordingPublic = false;
-                    closeRecordingFile(); // Esto actualizará lastRecordingEndTime
+                    closeRecordingFile();
                     synchronized (statusLock) { statusLock.notifyAll(); }
                     updateNotification(false);
                     logToWeb("Rec Stopped (Timeout)");
@@ -434,23 +410,6 @@ public class SentinelService extends Service {
             });
         }
     };
-
-    // --- AÑADE ESTE MÉTODO EN TU CLASE SentinelService PARA GUARDAR LA FOTO ---
-    private void saveDebugImage(byte[] data, String name) {
-        try {
-            File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo/DebugGhost");
-            if (!dir.exists()) dir.mkdirs();
-            
-            File file = new File(dir, name + ".jpg");
-            YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
-            FileOutputStream fos = new FileOutputStream(file);
-            yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 90, fos);
-            fos.close();
-            logToWeb("📸 Debug Evidence Saved: " + file.getName());
-        } catch (Exception e) {
-            logToWeb("Error saving debug image: " + e.getMessage());
-        }
-    }
 
     private byte[] rotateNV21Degree180(byte[] data, int width, int height) {
         int size = width * height * 3 / 2;
@@ -621,8 +580,6 @@ public class SentinelService extends Service {
         // [NUEVO] FIX GHOST TRIGGER: RESET DEL CEREBRO 🧠✨
         // Borramos la memoria del detector para evitar el "salto temporal"
         motionDetector = new MotionDetector();
-        // [FALTA ESTA LÍNEA] ACTIVAR EL CRONÓMETRO ⏱️🚨
-        lastRecordingEndTime = System.currentTimeMillis();
     }
 
     private void manageStorage() {

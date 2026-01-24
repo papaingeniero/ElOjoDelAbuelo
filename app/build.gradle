@@ -11,7 +11,7 @@ android {
         minSdk 19
         targetSdk 35
         versionCode 1
-        versionName "v3.9.5-dev.27"
+        versionName "v3.9.5"
     }
 
     buildTypes {
