@@ -1519,3 +1519,18 @@ Se añadió explícitamente `transform-origin: 0 0;` al estilo inline CSS del el
 **Verificación**:
 - Se espera que el video ocupe el contenedor correctamente y responda al zoom/pan de la misma manera que los videos grabados.
 
+
+### 🐛 v3.9.6-dev.2: Singleton Stats Fix (ID vs Class)
+
+**El Problema**:
+Al abrir las ventanas modales (Reproductor de Video o Vista en Vivo), los indicadores de batería, temperatura y estado permanecían estáticos con valores viejos, mientras que en la pantalla principal sí se actualizaban.
+**Diagnóstico**: El bloque HTML común de estadísticas (`commonHeader`) se inyectaba 3 veces en el DOM. Al usar `id="stat-bat"`, violábamos la regla de unicidad de IDs en HTML. El código JS `document.getElementById('stat-bat')` solo encontraba y actualizaba la *primera* ocurrencia (la del fondo), ignorando las copias visibles en los modales.
+
+**La Solución**:
+- Se ha refactorizado el script de actualización en `NanoHttpServer.java`.
+- Reemplazo de `document.getElementById(...)` por `document.querySelectorAll(...)`.
+- Iteración sobre todos los elementos con la clase `.stat-x` (ej: `.stat-bat`) para actualizar todas las instancias simultáneamente.
+
+**Verificación**:
+- Abrir "Ver Cámara en Vivo" y comprobar que el % de batería cambia al mismo tiempo que en la pantalla principal.
+

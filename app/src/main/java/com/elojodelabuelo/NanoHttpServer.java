@@ -1062,21 +1062,25 @@ public class NanoHttpServer {
                 "  setInterval(function() {\n" +
                 "    fetch('/stats').then(r => r.json()).then(data => {\n" +
                 "      var batIcon = data.charging ? '⚡' : (data.bat > 20 ? '🔋' : '🪫');\n" +
-                "      document.getElementById('stat-bat').innerText = batIcon + ' ' + data.bat + '%';\n" +
+                "      \n" +
+                "      // FIX: Usamos querySelectorAll para actualizar TODAS las copias de los stats (Main y Modales)\n" +
+                "      document.querySelectorAll('.stat-bat').forEach(function(el) { el.innerText = batIcon + ' ' + data.bat + '%'; });\n" +
+                "      \n" +
                 "      if (lastTemp === null) lastTemp = data.temp;\n" +
-                "      if (data.temp > lastTemp) lastTrend = ' <span style=\"color:#ff4444; font-size:0.8em;\">▲</span>';\n"
-                +
-                "      else if (data.temp < lastTemp) lastTrend = ' <span style=\"color:#66ff66; font-size:0.8em;\">▼</span>';\n"
-                +
+                "      if (data.temp > lastTemp) lastTrend = ' <span style=\"color:#ff4444; font-size:0.8em;\">▲</span>';\n" +
+                "      else if (data.temp < lastTemp) lastTrend = ' <span style=\"color:#66ff66; font-size:0.8em;\">▼</span>';\n" +
                 "      lastTemp = data.temp;\n" +
                 "      var tempIcon = data.temp > 40 ? '🔥' : '🌡️';\n" +
-                "      document.getElementById('stat-temp').innerHTML = tempIcon + ' ' + data.temp + '°C' + lastTrend;\n"
-                +
-                "      document.getElementById('stat-storage').innerText = '💾 ' + data.storage;\n" +
-                "      document.getElementById('stat-status').innerText = data.recording ? '🔴 GRABANDO' : '⏺️ VIGILANDO';\n"
-                +
-                "      document.getElementById('stat-status').style.color = data.recording ? '#ff4444' : '#ffffff';\n"
-                +
+                "      \n" +
+                "      document.querySelectorAll('.stat-temp').forEach(function(el) { el.innerHTML = tempIcon + ' ' + data.temp + '°C' + lastTrend; });\n" +
+                "      document.querySelectorAll('.stat-storage').forEach(function(el) { el.innerText = '💾 ' + data.storage; });\n" +
+                "      \n" +
+                "      // Status update (color logic)\n" +
+                "      document.querySelectorAll('.stat-status').forEach(function(el) {\n" +
+                "          el.innerText = data.recording ? '🔴 GRABANDO' : '⏺️ VIGILANDO';\n" +
+                "          el.style.color = data.recording ? '#ff4444' : '#ffffff';\n" +
+                "      });\n" +
+                "      \n" +
                 "    }).catch(e => console.log('Stats error', e));\n" +
                 "  }, 5000);\n" +
                 "}\n" +
