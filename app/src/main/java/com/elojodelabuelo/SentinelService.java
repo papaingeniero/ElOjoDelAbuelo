@@ -86,6 +86,8 @@ public class SentinelService extends Service {
 
     // Configurable Settings (Version 2.0)
     public static int motionSensitivity = 90;
+    // [INTERRUPTOR MAESTRO] ¿Queremos usar la trampa anti-fantasmas?
+    public static boolean useGhostHunter = false;
     public static int recordingTimeout = 10; // seconds
     public static volatile boolean isDetectorActive = true;
     public static int cameraRotation = 0; // 0 or 180
@@ -371,11 +373,11 @@ public class SentinelService extends Service {
                 // Filtro inteligente basado en tus logs: 
                 // Si han pasado menos de 30s y el score es BRUTAL (> 2500), es un error de sensor/luz.
                 // Tu hijo (Score 730) entrará directo. El fantasma (Score 3045) será capturado.
-                boolean isFlashSpike = (delta < 30000 && score > 2500);
+                boolean isFlashSpike = (delta < 00000 && score > 5500);
 
                 if (score > currentThreshold) {
                     
-                    if (isFlashSpike) {
+                    if (useGhostHunter && isFlashSpike) {
                         // --- CASO FANTASMA: Bloquear y Guardar Prueba ---
                         logToWeb("⛔ GHOST BLOCKED! Delta: " + delta + "ms | Score: " + score);
                         // Capturamos el frame exactO que ha dado ese score de 3045 📸
