@@ -77,6 +77,16 @@ public class SentinelService extends Service {
     // [NUEVO] Contador para el Throttling Dinámico (Modo Eco)
     private int frameSkipCounter = 0;
 
+    // Stats Counters
+    private int statsFrameProcessed = 0;
+    private int statsFrameSkipped = 0;
+    private Handler statsHandler;
+    private Runnable statsRunnable;
+
+    // Añade esta línea:
+    private boolean lastOverheatState = false; // Memoria de estado térmico
+    // --------------------------------
+
 // [NUEVO] Para el Cronómetro Estricto del Pintor Vago
     private long lastLazyTime = 0;
     // Phase 9.2: Optimization
@@ -166,6 +176,33 @@ public class SentinelService extends Service {
 
         // 5. Camera
         startCamera();
+        // --- INICIO HEARTBEAT (60s) ---
+        statsHandler = new Handler();
+        statsRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // 1. Memoria
+                long freeMem = Runtime.getRuntime().freeMemory() / 1024 / 1024;
+                long totalMem = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+                
+                // 2. Temperatura (Usamos el contexto de la aplicación)
+                int temp = ThermalGuardian.getBatteryTemperature(getApplicationContext());
+                
+                // 3. Log Resumen
+                logToWeb("📊 HEARTBEAT (60s): Temp: " + temp + "°C | Mem: " + freeMem + "MB / " + totalMem + "MB | Frames: " + statsFrameProcessed + " OK / " + statsFrameSkipped + " Skip");
+                
+                // Reset contadores parciales
+                statsFrameProcessed = 0;
+                statsFrameSkipped = 0;
+                
+                // Programar siguiente
+                statsHandler.postDelayed(this, 60000);
+            }
+        };
+        statsHandler.postDelayed(statsRunnable, 60000);
+        // --- FIN HEARTBEAT ---
+
+        
     }
 
     private void updateNotification(boolean recording) {
@@ -345,15 +382,34 @@ public class SentinelService extends Service {
             int skipTarget = isRecording ? 2 : 5; 
 
             if (frameSkipCounter % skipTarget != 0) {
+                statsFrameSkipped++; // <--- ¡AÑADE ESTO! (Contamos frame saltado)
                 camera.addCallbackBuffer(data); 
                 return;
             }
+            statsFrameProcessed++; // <--- ¡AÑADE ESTO! (Contamos frame procesado)
+            
             if (frameSkipCounter > 1000) frameSkipCounter = 0;
 
-            if (thermalGuardian.isOverheating()) {
+            // --- DETECCIÓN DE CAMBIO TÉRMICO ---
+            boolean isNowOverheating = thermalGuardian.isOverheating();
+
+            // Si antes estaba bien y ahora NO -> ALERTA DE CALOR
+            if (isNowOverheating && !lastOverheatState) {
+                logToWeb("🔥 THERMAL: ¡SOBRECALENTAMIENTO! (Overheat TRIGGERED) - Pausando visión.");
+            } 
+            // Si antes estaba mal y ahora SÍ -> ALERTA DE ENFRIAMIENTO
+            else if (!isNowOverheating && lastOverheatState) {
+                logToWeb("❄️ THERMAL: Temperatura normalizada (Overheat CLEARED) - Reanudando visión.");
+            }
+            
+            lastOverheatState = isNowOverheating; // Actualizamos la memoria
+
+            // Si está caliente, abortamos frame (como antes)
+            if (isNowOverheating) {
                 camera.addCallbackBuffer(data);
                 return;
             }
+            // -----------------------------------
 
             // Software Rotation
             byte[] processedData = data;
@@ -469,7 +525,16 @@ public class SentinelService extends Service {
             // --- AQUI EMPIEZA EL GASTO DE CPU ---
             YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            long startEncode = System.currentTimeMillis(); // ⏱️ Inicio Crono
             yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 60, out);
+            long duration = System.currentTimeMillis() - startEncode; // ⏱️ Fin Crono
+
+            // Si tarda más de 100ms, es una alerta amarilla de CPU
+            if (duration > 100) {
+                logToWeb("⚠️ CPU SLOW: JPEG Encode tardó " + duration + "ms");
+            }
+
             byte[] jpeg = out.toByteArray();
 
             // 1. Record

@@ -1573,3 +1573,55 @@ Ahora la imagen llena verticalmente el contenedor.
 *   **Coste**: Se recorta ligeramente la información de los laterales (si la pantalla es más estrecha que el video) o de arriba/abajo (si es más ancha).
 *   *Nota*: Dado que es una cámara de seguridad, lo crítico suele estar en el centro. El usuario prefiere perder márgenes laterales a cambio de ver la imagen más grande y sin bandas.
 
+
+### 🕵️ v3.9.6-dev.5: Sistema de Monitorización SRE (El Chivato Profesional)
+
+**La Motivación**:
+Necesitamos saber qué ocurre dentro del "Abuelo" sin tener que estar mirando la pantalla constantemente o conectando el cable USB. Queremos trazas que nos hablen vía Web Log.
+
+**Cambios Implementados**:
+
+1.  **Monitorización de Actividad Web (NanoHttpServer)**:
+    - Se han instrumentado todos los endpoints clave (, , , ) para dejar constancia en el log de quién entra y qué hace.
+    - *Ejemplo*: 
+
+2.  **Heartbeat del Sistema (60s)**:
+    - Nuevo  en  que despierta cada minuto.
+    - Reporta: Temperatura, Memoria RAM (Libre/Total) y Estadísticas de Frames (Procesados vs Saltados por Eco Mode).
+    - *Objetivo*: Detectar fugas de memoria o calentamientos graduales.
+
+3.  **Alertas Térmicas de Cambio de Estado**:
+    - Antes el log spameaba "Overheating" en cada frame. Ahora solo avisa en las transiciones:
+    - : Entra en zona de peligro.
+    - : Vuelve a zona segura.
+
+4.  **Watchdog de Rendimiento JPEG**:
+    - Cronómetro alrededor de .
+    - Si tarda > 100ms, emite un warning . Esto nos indicará si el procesador se está ahogando.
+
+
+### 🕵️ v3.9.6-dev.5: Sistema de Monitorización SRE (El Chivato Profesional)
+
+**La Motivación**:
+Necesitamos saber qué ocurre dentro del "Abuelo" sin tener que estar mirando la pantalla constantemente o conectando el cable USB. Queremos trazas que nos hablen vía Web Log.
+
+**Cambios Implementados**:
+
+1.  **Monitorización de Actividad Web (NanoHttpServer)**:
+    - Se han instrumentado todos los endpoints clave (`/stream`, `/video`, `/stats`, `/api/...`) para dejar constancia en el log de quién entra y qué hace.
+    - *Ejemplo*: `📹 STREAM: Cliente conectado (IP: 192.168.1.XX)`
+
+2.  **Heartbeat del Sistema (60s)**:
+    - Nuevo `dæmon` en `SentinelService` que despierta cada minuto.
+    - Reporta: Temperatura, Memoria RAM (Libre/Total) y Estadísticas de Frames (Procesados vs Saltados por Eco Mode).
+    - *Objetivo*: Detectar fugas de memoria o calentamientos graduales.
+
+3.  **Alertas Térmicas de Cambio de Estado**:
+    - Antes el log spameaba "Overheating" en cada frame. Ahora solo avisa en las transiciones:
+    - `🔥 OVERHEAT TRIGGERED`: Entra en zona de peligro.
+    - `❄️ OVERHEAT CLEARED`: Vuelve a zona segura.
+
+4.  **Watchdog de Rendimiento JPEG**:
+    - Cronómetro alrededor de `yuv.compressToJpeg(...)`.
+    - Si tarda > 100ms, emite un warning `⚠️ CPU SLOW`. Esto nos indicará si el procesador se está ahogando.
+

@@ -144,10 +144,17 @@ public class NanoHttpServer {
 
                 // 2. Route Request
                 if (uri.equals("/stream")) {
-                    serveLiveStream(os); // Blocks thread while streaming
+                    SentinelService.logToWeb("📹 STREAM: Cliente conectado (IP: " + socket.getInetAddress() + ")");
+                    serveLiveStream(os); // Bloquea el hilo mientras transmite
+                    SentinelService.logToWeb("📹 STREAM: Cliente desconectado");
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
-                    serveVideoFile(os, uri.substring(1), method); // Remove leading slash & pass method
+                    // Solo logueamos si es video real, no previews, para no saturar
+                    if(uri.startsWith("/video_")) {
+                        SentinelService.logToWeb("📺 VIDEO: Reproduciendo " + uri);
+                    }
+                    serveVideoFile(os, uri.substring(1), method);
                 } else if (uri.startsWith("/thumbnails/")) {
+                    SentinelService.logToWeb("📺 THUMBNAIL: Enviando " + uri);
                     serveThumbnail(os, uri.substring(12)); // Remove "/thumbnails/"
                 } else if (uri.equals("/stats")) {
                     serveStats(os);
@@ -155,6 +162,7 @@ public class NanoHttpServer {
                     serveSettings(os);
                 } else if (uri.equals("/api/delete_all_videos") && method.equals("POST")) {
                     // Phase 19: Delete All Handling
+                    SentinelService.logToWeb("🗑️ STORAGE: ¡Borrado masivo ejecutado desde Web!");
                     File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
                     if (dir.exists() && dir.isDirectory()) {
                         File[] files = dir.listFiles();
@@ -172,6 +180,7 @@ public class NanoHttpServer {
                     os.write("Deleted".getBytes());
 
                 } else if (uri.startsWith("/api/save_settings")) {
+                    SentinelService.logToWeb("💾 CONFIG: Guardando ajustes desde Web");
                     serveSaveSettings(os, uri);
                 } else if (uri.equals("/api/latest_video_meta")) {
                     serveLatestVideoMeta(os);
@@ -190,6 +199,7 @@ public class NanoHttpServer {
                     String response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n" + sb.toString();
                     os.write(response.getBytes());
                 } else {
+                    SentinelService.logToWeb("🌐 WEB: Dashboard cargado");
                     serveDashboard(os);
                 }
 
