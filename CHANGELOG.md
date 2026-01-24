@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.5-dev.25] - 2026-01-24
+### Fixed
+- **Ghost Hunter (CSI 3.0)**: Filtro Inteligente de "Score" (Discriminación por Intensidad).
+  - Umbral de seguridad dinámico: Bloquea picos > 2500 de Score durante 30s tras grabar.
+  - Elimina la "ceguera global": Permite grabar movimiento humano normal (~700 Score) inmediatamente.
+  - Captura forense: Guarda el frame culpable en `/DebugGhost` con prefijo `GHOST_Flash_`.
+
 ## [v3.9.5-dev.24] - 2026-01-24
 ### Fixed
 - **Ghost Hunter (CSI 2.1)**: Ampliada zona de peligro a **8000ms**.

@@ -1,12 +1,18 @@
 
-### 👻 v3.9.5-dev.24: "Ghost Hunter" (CSI 2.1) - Intento 3 (8000ms)
+### 👻 v3.9.5-dev.25: "Ghost Hunter" (CSI 3.0) - Filtro Inteligente de Score
 
-**Estado**: ❌ **FALLIDO**
+**Estado**: 🧪 **EN PRUEBAS (SNAPSHOT)**
 
-**Resultado Real**:
-- El "fantasma" reapareció, pero **respetó la ventana de 8 segundos** y saltó después (lo que confirma que el disparador persiste en el tiempo o se regenera).
-- Esto es crucial: No es solo un "latigazo" momentáneo de luz al cerrar archivo. Parece algo más profundo en el estado de la cámara o del detector.
+**Nueva Estrategia (La Solución David)**:
+Abandonamos la idea de "tiempos muertos" (ceguera) y pasamos a **inteligencia de señal**.
 
-**Acciones Pendientes**:
-- El usuario aplicará lógica avanzada basada en **Score** (Discriminar movimiento humano ~700 vs Ruido masivo ~3000) en la próxima iteración.
+**Lógica Implementada**:
+- **Ventana de Vigilancia**: 30 segundos tras cada grabación (`delta < 30000`).
+- **Discriminador**: Si `score > 2500` (cebollazo masivo) → **BLOQUEO Y FOTO**.
+- **Paso Libre**: Si `score <= 2500` (movimiento humano normal ~700) → **GRABAR SIEMPRE**, incluso si han pasado 0.1 segundos.
 
+**Hipótesis**:
+El "fantasma" es un pico de ruido masivo (>3000) provocado por el reajuste del sensor. El movimiento humano real es mucho más sutil. Este filtro debería matar al fantasma sin dejar ciego al Abuelo ante un intruso real rápido.
+
+**Evidencia Forense**:
+Los bloqueos guardarán una foto en `/sdcard/ElOjoDelAbuelo/DebugGhost/GHOST_Flash_...jpg` para confirmar visualmente qué es el "cebollazo".
