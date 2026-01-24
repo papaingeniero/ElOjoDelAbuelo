@@ -1418,7 +1418,7 @@ public class NanoHttpServer {
                 "        \n" +
                 "    }).catch(function(err) {\n" +
                 "        console.error(\"Error finalizing card:\", err);\n" +
-                "        location.reload();\n" +
+                "        // location.reload(); // ANULADO: No recargues, solo quéjate en consola." +
                 "    });\n" +
                 "}\n" +
                 "\n" +
@@ -1432,9 +1432,9 @@ public class NanoHttpServer {
                 "                finalizeRecordingCard(meta.filename); \n" +
                 "            } else {\n" +
                 "                console.error(\"No filename found after finalization\");\n" +
-                "                location.reload();\n" +
+                "                // location.reload(); //ANULADO \n" +
                 "            }\n" +
-                "       }).catch(e => location.reload());\n" +
+                "       }).catch(e => console.log('Soft error cleanup', e)); // ANULADO el reload \n" +
                 "   }, 1500);\n" +
                 "}\n" +
 

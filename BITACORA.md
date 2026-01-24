@@ -1625,3 +1625,16 @@ Necesitamos saber qué ocurre dentro del "Abuelo" sin tener que estar mirando la
     - Cronómetro alrededor de `yuv.compressToJpeg(...)`.
     - Si tarda > 100ms, emite un warning `⚠️ CPU SLOW`. Esto nos indicará si el procesador se está ahogando.
 
+
+### 🔇 v3.9.6-dev.6: No More Cebollazos (Silent Fail)
+
+**El Problema**:
+Teníamos una lógica defensiva demasiado agresiva en el Javascript: si una petición AJAX para finalizar una tarjeta fallaba (ej: el archivo aún no estaba listo o el servidor tardaba en responder), invocábamos `location.reload()`.
+Esto provocaba que, por un error menor de red/timing, la página entera se pusiera en blanco y se recargara, rompiendo la experiencia "Single Page" y dando un "cebollazo" visual al usuario.
+
+**La Solución**:
+- Hemos eliminado/comentado todos los `location.reload()` en los bloques `catch` de la finalización de tarjetas.
+- **Antes**: Error -> Recarga Total (Nuclear).
+- **Ahora**: Error -> `console.error` (Silencioso).
+- *Efecto*: Si falla la carga de una miniatura específica, se queda con la tarjeta roja o el placeholder, pero el resto de la interfaz sigue viva y funcional. El usuario no sufre interrupciones.
+
