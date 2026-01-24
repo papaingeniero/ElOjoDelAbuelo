@@ -365,24 +365,26 @@ public class SentinelService extends Service {
             } else {
                 int score = motionDetector.getMotionScore(processedData, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-                // [MODIFICADO] TRAMPA FORENSE GHOST (CSI EL ABUELO) 🕵️‍♂️📸
-                // 1. Calculamos tiempo desde el último cierre
-                long timeSinceStop = System.currentTimeMillis() - lastRecordingEndTime;
-                // 2. Definimos Zona de Peligro (AHORA 5 SEGUNDOS)
-                boolean isDangerZone = (timeSinceStop < 8000); 
+                // [NUEVO] LÓGICA ANTI-FANTASMA (SOLUCIÓN DAVID) 🧠✨
+                long delta = System.currentTimeMillis() - lastRecordingEndTime;
+
+                // Filtro inteligente basado en tus logs: 
+                // Si han pasado menos de 30s y el score es BRUTAL (> 2500), es un error de sensor/luz.
+                // Tu hijo (Score 730) entrará directo. El fantasma (Score 3045) será capturado.
+                boolean isFlashSpike = (delta < 30000 && score > 2500);
 
                 if (score > currentThreshold) {
                     
-                    if (isDangerZone) {
+                    if (isFlashSpike) {
                         // --- CASO FANTASMA: Bloquear y Guardar Prueba ---
-                        logToWeb("⛔ GHOST BLOCKED! Time: " + timeSinceStop + "ms | Score: " + score);
-                        saveDebugImage(processedData, "GHOST_" + timeSinceStop + "ms_score" + score);
-                        // ¡IMPORTANTE! No actualizamos lastMotionTime ni iniciamos grabación
+                        logToWeb("⛔ GHOST BLOCKED! Delta: " + delta + "ms | Score: " + score);
+                        // Capturamos el frame exactO que ha dado ese score de 3045 📸
+                        // Aquí veremos si es ruido, un frame verde o un cambio de brillo.
+                        saveDebugImage(processedData, "GHOST_Flash_" + delta + "ms_score" + score);
                         
                     } else {
-                        // --- CASO REAL: Actuar normalmente ---
-                        // [EXTRA] Logueamos el delta para confirmar que han pasado más de 8s
-                        logToWeb("MOTION DETECTED! Rec Started. Score: " + score + " (Delta: " + timeSinceStop + "ms)");
+                        // --- ES REAL (Score humano/normal) ---
+                        // No hay ceguera: si es un score normal, grabamos al instante.
                         lastMotionTime = System.currentTimeMillis();
                         if (!isRecording) {
                             openNewRecordingFile();
@@ -392,8 +394,7 @@ public class SentinelService extends Service {
                             try { sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START")); } catch (Exception e) {}
                             synchronized (statusLock) { statusLock.notifyAll(); }
                             updateNotification(true);
-                            // Logueamos el delta temporal para ajustar la trampa si hace falta
-                            logToWeb("MOTION DETECTED! Rec Started. Score: " + score + " (Delta: " + timeSinceStop + "ms)");
+                            logToWeb("MOTION DETECTED! Rec Started. Score: " + score + " (Delta: " + delta + "ms)");
                         }
                     }
                 }
