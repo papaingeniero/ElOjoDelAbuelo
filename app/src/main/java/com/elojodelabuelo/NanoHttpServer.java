@@ -655,7 +655,7 @@ public class NanoHttpServer {
                 +
                 "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; background-color: #000; width: 100%; height: auto; touch-action: none; }\n"
                 +
-                "img#video-player { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; transform-origin: 0 0; -webkit-transform-origin: 0 0; }\n"
+                "img#video-player, img#live-stream-img { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; transform-origin: 0 0; -webkit-transform-origin: 0 0; }\n"
                 +
                 ".controls { padding: 20px; background: rgba(20,20,20,0.9); display: flex; align-items: center; gap: 10px; }\n"
                 +

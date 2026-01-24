@@ -1507,3 +1507,15 @@ Tener una versión base donde el sistema anti-fantasmas está presente pero inac
 
 **Nota sobre Ghost Hunter**:
 Se ha **eliminado** la lógica forense compleja (CSI) y los filtros de score artificiales. La investigación determinó que con la estabilidad actual, no son necesarios en producción, manteniendo el código limpio y ligero. Las herramientas forenses quedan archivadas en el historial de git (versiones dev).
+
+### 🐛 v3.9.6-dev.1: CSS Fix - Live Stream Transform
+
+**El Problema**:
+El usuario reportó que el stream de video en vivo ("Ver Cámara en Vivo") se visualizaba fuera de la pantalla o desplazado incorrectamente en el dashboard web. Esto ocurría porque, a diferencia del reproductor de grabaciones, la imagen del stream en vivo carecía de la propiedad CSS `transform-origin: 0 0`. Al aplicar transformaciones de escala (zoom) o posición vía JS/CSS, el punto de origen por defecto (centro) causaba que la imagen se desplazara erráticamente.
+
+**La Solución**:
+Se añadió explícitamente `transform-origin: 0 0;` al estilo inline CSS del elemento `img#video-player, img#live-stream-img` en `NanoHttpServer.java`. Esto alinea el comportamiento visual del stream en vivo con el de las grabaciones y miniaturas, asegurando que las coordenadas de pan/zoom sean consistentes (esquina superior izquierda).
+
+**Verificación**:
+- Se espera que el video ocupe el contenedor correctamente y responda al zoom/pan de la misma manera que los videos grabados.
+
