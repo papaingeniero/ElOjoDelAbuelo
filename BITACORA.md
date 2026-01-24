@@ -1554,3 +1554,22 @@ logToWeb(">>> 🕵️ AUTORÍA RESOLUCIÓN: " + PREVIEW_WIDTH + "x" + PREVIEW_HE
 **Por qué importa**:
 Si el hardware selecciona una resolución exótica (como CIF 352x288, ratio 1.22), esto explicaría deformaciones en la visualización web o problemas de alineación en el `SurfaceView`. Con este log, eliminamos la ambigüedad.
 
+
+### 🎨 v3.9.6-dev.4: Full Bleed Video (No more black bars)
+
+**El Problema**:
+La visualización en modo `contain` (por defecto) garantizaba ver el 100% de la imagen, pero generaba bandas negras horizontales ("Letterboxing") cuando el aspect ratio de la cámara (4:3) no coincidía con el de la pantalla moderna (16:9 o más alta). Esto hacía que la imagen pareciera más pequeña y desperdiciaba "real estate" de la pantalla.
+
+**La Solución**:
+- Se ha cambiado globalmente el CSS a `object-fit: cover` para:
+    1.  Reproductor Principal (`#video-player`)
+    2.  Live Stream (`#live-stream-img`)
+    3.  Miniaturas estáticas (`.thumb`)
+    4.  Miniaturas animadas (`.mini-canvas`)
+
+**El Trade-off**:
+Ahora la imagen llena verticalmente el contenedor.
+*   **Ventaja**: Inmersión total, se aprovecha cada píxel de la pantalla.
+*   **Coste**: Se recorta ligeramente la información de los laterales (si la pantalla es más estrecha que el video) o de arriba/abajo (si es más ancha).
+*   *Nota*: Dado que es una cámara de seguridad, lo crítico suele estar en el centro. El usuario prefiere perder márgenes laterales a cambio de ver la imagen más grande y sin bandas.
+

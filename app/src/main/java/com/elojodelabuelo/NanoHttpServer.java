@@ -645,9 +645,9 @@ public class NanoHttpServer {
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
                 ".thumb-container { position: relative; width: 80px; height: 60px; margin-right: 15px; border-radius: 8px; overflow: hidden; background: #000; }\n"
                 +
-                ".thumb { width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; transform-origin: 0 0; }\n"
+                ".thumb { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; transform-origin: 0 0; }\n"
                 +
-                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: contain; }\n"
+                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: cover; }\n"
                 +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +
                 "/* Modal Player */\n" +
@@ -655,7 +655,7 @@ public class NanoHttpServer {
                 +
                 "#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; background-color: #000; width: 100%; height: auto; touch-action: none; }\n"
                 +
-                "img#video-player, img#live-stream-img { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; transform-origin: 0 0; -webkit-transform-origin: 0 0; }\n"
+                "img#video-player, img#live-stream-img { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: 0 0; -webkit-transform-origin: 0 0; }\n"
                 +
                 ".controls { padding: 20px; background: rgba(20,20,20,0.9); display: flex; align-items: center; gap: 10px; }\n"
                 +
