@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.5] - 2026-01-25
+### Changed
+- **Web Dashboard (JS)**: Corrección de coherencia visual en miniatura "Parásito" (grabación en curso).
+    - Añadida clase `.mini-canvas` al canvas inyectado dinámicamente y llamada inmediata a `updateWebTransformFromInputs()`.
+    - *Resultado*: La tarjeta de grabación activa ahora respeta el Zoom/Pan digital configurado, igual que el resto de la galería.
+
 ## [v3.9.7-dev.4] - 2026-01-25
 ### Fixed
 - **Web Dashboard (AJAX)**: Eliminada etiqueta `<img>` redundante que cubría el canvas de animación en las nuevas tarjetas generadas dinámicamente (`finalizeRecordingCard`).

@@ -1892,3 +1892,17 @@ Esa imagen sobraba. Funcionaba "de casualidad" porque la URL generada estaba mal
 **La Limpieza**:
 Hemos eliminado la etiqueta `<img>` del código inyectado en `finalizeRecordingCard`. Ahora solo existe el Canvas, puro y directo. Menos DOM, menos peticiones fallidas, más limpieza.
 
+
+### 🦟 v3.9.7-dev.5: The "Parasite" Visual Consistency Fix
+
+**El Síntoma**:
+Al iniciar una grabación, la tarjeta temporal (el "Parásito") mostraba la imagen plana, ignorando el Zoom/Pan digital que el usuario había configurado en el resto de la interfaz. Esto creaba un "salto" visual molesto.
+
+**La Cura (Ingeniería de Herencia)**:
+El canvas inyectado no tenía la clase `.mini-canvas`, por lo que el sistema de transformación global lo ignoraba.
+1.  **Tagging**: Añadida la clase `.mini-canvas` al HTML dinámico.
+2.  **Sync**: Llamada explícita a `updateWebTransformFromInputs()` justo al nacer el elemento.
+
+**Resultado**:
+Coherencia visual total. El parásito nace ya transformado y alineado con sus hermanos.
+
