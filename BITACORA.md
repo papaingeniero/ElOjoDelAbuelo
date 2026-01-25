@@ -1718,3 +1718,19 @@ Preferimos un sistema robusto que funcione a 30 FPS y 41°C (estable), a uno que
 - Ahora solicitamos `getSupportedPreviewFpsRange()` y elegimos educadamente el primer rango válido que el teléfono nos ofrezca (probablemente `[15-30]`).
 - Aceptamos la derrota térmica en el hardware en pos de la fiabilidad del software.
 
+
+### 🐛 v3.9.6-dev.11: The "Comment Eater" Bug (JS Syntax Fix)
+
+**El Problema**:
+Tras desactivar el `location.reload()` comentándolo en el Java string (`// location ...`), olvidamos añadir el carácter de nueva línea (`\n`) al final de la cadena Java.
+**Efecto**:
+El Javascript generado concatenaba la siguiente línea (el cierre de la promesa `});`) *dentro* del comentario.
+Resultado: `Uncaught SyntaxError: missing ) after argument list`. El navegador dejaba de ejecutar scripts y los videos no cargaban.
+
+**La Corrección**:
+Añadir explícitamente `\n` al string en Java.
+`"// comentario... " + "\n" + "});"`
+
+**Lección**:
+Cuidado extremo al inyectar código en strings. Los comentarios de línea (`//`) son peligrosos si nos comemos el salto de línea.
+

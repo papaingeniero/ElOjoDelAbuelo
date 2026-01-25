@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6-dev.11] - 2026-01-25
+### Fixed
+- **Web Dashboard**: Corregido error de sintaxis en JavaScript inyectado (`NanoHttpServer`).
+    - Faltaba un salto de línea (`\n`) tras un comentario `//`, lo que comentaba accidentalmente el cierre de la función `});` y rompía la carga de scripts.
+
 ## [v3.9.6-dev.10] - 2026-01-25
 ### Reverted
 - **SentinelService**: Retirada la estrategia "Kamikaze" de FPS que causaba `RuntimeException`.

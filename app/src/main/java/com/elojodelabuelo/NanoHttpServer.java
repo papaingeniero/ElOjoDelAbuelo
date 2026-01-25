@@ -1418,7 +1418,7 @@ public class NanoHttpServer {
                 "        \n" +
                 "    }).catch(function(err) {\n" +
                 "        console.error(\"Error finalizing card:\", err);\n" +
-                "        // location.reload(); // ANULADO: No recargues, solo quéjate en consola." +
+                "       // location.reload(); // ANULADO: No recargues, solo quéjate en consola.\n" +
                 "    });\n" +
                 "}\n" +
                 "\n" +
