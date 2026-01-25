@@ -1764,3 +1764,19 @@ Esto **obliga** al motor de renderizado a abortar la carga anterior (el stream i
 **El Problema**: El navegador cacheaba `/api/settings`, mostrando que el zoom estaba a 2.4x cuando realmente había bajado a 1x.
 **La Solución**: Cabecera `Cache-Control: no-cache` obligatoria en la respuesta.
 
+
+### 🔨 v3.9.6-dev.14: The Imperative Zoom Fix (Anti-Amnesia Pro)
+
+**El Diagnóstico**:
+Tras un ciclo de gestión de memoria (apagado de pantalla), el driver antiguo del Galaxy S reseteaba el zoom óptico a 1.0x, pero el objeto Java `Camera.Parameters` mantenía "en caché" el valor anterior (ej: 2.5x).
+Nuestra lógica anterior decía: "¿El zoom ya es 2.5x? Sí -> No hago nada".
+Resultado: La app creía tener zoom, pero el usuario veía 1x.
+
+**La Solución (Imperativa)**:
+Hemos eliminado la comprobación condicional.
+Ahora, al recuperar la superficie (`setPreviewSurface`), **martilleamos** la configuración de zoom contra el hardware sin preguntar qué cree tener puesto.
+`params.setZoom(bestIndex); camera.setParameters(params);` (Siempre, sin condiciones).
+
+**Efecto**:
+Sincronización forzosa. El driver despierta y aplica el zoom real guardado en preferencias.
+

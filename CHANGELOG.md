@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6-dev.14] - 2026-01-25
+### Changed
+- **SentinelService**: Modificación en `enforceSavedHardwareZoom()` para aplicar el zoom **siempre** (Imperativo), eliminando la comprobación de estado previo que fallaba por caché falsa.
+    - *Objetivo*: Corregir amnesia del driver que reportaba zoom aplicado cuando visualmente estaba a 1x.
+
 ## [v3.9.6-dev.13] - 2026-01-25
 ### Added
 - **Watchdog (Interruptor de Hombre Muerto)**:

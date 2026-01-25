@@ -386,11 +386,15 @@ public class SentinelService extends Service {
                             bestIndex = i;
                         }
                     }
-                    // Solo aplicamos si el driver se ha "olvidado" (es diferente)
-                    if (params.getZoom() != bestIndex) {
-                        params.setZoom(bestIndex);
-                        camera.setParameters(params);
-                        logToWeb("🔄 ZOOM RE-APLICADO tras reinicio de surface: " + (zoomRatios.get(bestIndex)/100f) + "x");
+                    
+                    // --- APLICAMOS SIEMPRE (SIN PREGUNTAR) ---
+                    // Esto despierta al driver aunque él crea que ya tiene el zoom puesto
+                    params.setZoom(bestIndex);
+                    camera.setParameters(params);
+                    
+                    // Solo logueamos si realmente hay zoom (> 1.0x) para confirmar
+                    if (bestIndex > 0) {
+                        logToWeb("🔨 ZOOM FORZADO (Anti-Amnesia): " + (zoomRatios.get(bestIndex)/100f) + "x");
                     }
                 }
             }
