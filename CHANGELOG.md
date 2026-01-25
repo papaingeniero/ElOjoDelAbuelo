@@ -5,6 +5,14 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6-dev.9] - 2026-01-25
+### Changed
+- **SentinelService**: Estrategia "Kamikaze" para FPS.
+    - Se ignora la lista de tasas soportadas (que miente diciendo solo 30 FPS).
+    - Se fuerza `setPreviewFrameRate(15)` esperando que el hardware responda.
+    - Se intenta estrangular el rango a `[15000, 15000]` como segunda medida.
+    - *Objetivo*: Romper la barrera de los 30 FPS a la fuerza bruta.
+
 ## [v3.9.6-dev.8] - 2026-01-25
 ### Changed
 - **SentinelService**: Implementación de estrategia "Old School" para limitar FPS.

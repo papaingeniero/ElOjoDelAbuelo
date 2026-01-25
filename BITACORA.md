@@ -1680,3 +1680,24 @@ Aunque está *deprecated*, es la herramienta perfecta para estos dispositivos le
 
 *Esperanza*: Ver el Heartbeat bajar a ~900 frames/min (15 FPS) y la temperatura descender de los 40°C.
 
+
+### 🥊 v3.9.6-dev.9: "Kamikaze Mode" (Brute Force FPS)
+
+**El Muro de los 30 FPS**:
+La versión dev.8 confirmó nuestras sospechas: el driver miente de forma descarada.
+- `getSupportedPreviewFrameRates()` devuelve SOLO `[30]`.
+- Heartbeat confirma: 30 FPS clavados.
+- Temperatura: Estancada en 39-40°C.
+
+**La Estrategia Kamikaze**:
+Si la API "educada" falla, usamos fuerza bruta.
+En Android Gingerbread, es común que el hardware soporte modos no listados.
+Vamos a ignorar la lista de capacidades y enviar la orden directa:
+1.  `setPreviewFrameRate(15)`: "No me importa lo que digas, ponte a 15".
+2.  `setPreviewFpsRange(15000, 15000)`: Estrangulamiento del rango min/max.
+
+**Riesgos**:
+- **Crash**: Pantalla negra o reinicio del driver.
+- **Ignorado**: El driver se ríe y sigue a 30 FPS.
+- **Éxito**: Bajamos a 15 FPS reales y la temperatura cae.
+

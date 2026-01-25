@@ -309,39 +309,38 @@ public class SentinelService extends Service {
                  " | Veredicto: " + ratioName + " <<<");
         // --------------------------------------------------------
 
-        // 2. FRENADO DE HARDWARE (MÉTODO OLD SCHOOL) 🛑
+        // 2. FRENADO DE HARDWARE (MODO KAMIKAZE / FUERZA BRUTA) 🥊
         try {
-             // Primero intentamos la API antigua (Fixed Rate) que es más agresiva en Gingerbread
-             List<Integer> supportedRates = params.getSupportedPreviewFrameRates();
-             if (supportedRates != null) {
-                 StringBuilder sb = new StringBuilder("Tasas fijas disponibles: ");
-                 int minRate = Integer.MAX_VALUE;
-                 
-                 for (Integer rate : supportedRates) {
-                     sb.append(rate).append(" ");
-                     if (rate < minRate && rate >= 10) { // No bajar de 10 fps para que el video no sea un pase de diapositivas
-                         minRate = rate;
+             // INTENTO 1: Forzar 15 FPS fijos (Ignorando si dice que soporta o no)
+             logToWeb("❄️ INTENTO 1: Forzando setPreviewFrameRate(15)...");
+             params.setPreviewFrameRate(15);
+             
+             // INTENTO 2: Manipular los rangos para estrangular el máximo
+             // Le decimos: "Mínimo 10, Máximo 15". Si el driver obedece, bajará las revoluciones.
+             List<int[]> supportedRanges = params.getSupportedPreviewFpsRange();
+             if (supportedRanges != null) {
+                 int[] bestRange = null;
+                 for (int[] range : supportedRanges) {
+                     // Buscamos cualquier rango que permita bajar a 15
+                     if (range[0] <= 15000 && range[1] >= 15000) {
+                         bestRange = range;
+                         // Si encontramos uno que TOCA el 15 por arriba, ese es el ideal
+                         if (range[1] <= 20000) break; 
                      }
                  }
-                 logToWeb("🚀 " + sb.toString());
-                 
-                 if (minRate < 30) {
-                     params.setPreviewFrameRate(minRate);
-                     logToWeb("❄️ ENFRIAMIENTO: Forzando Hardware a " + minRate + " FPS (Old API)");
-                 }
-             } else {
-                 // Si falla, fallback a rangos (lo que teníamos antes)
-                 logToWeb("⚠️ No hay tasas fijas, probando rangos...");
-                 List<int[]> ranges = params.getSupportedPreviewFpsRange();
-                 for (int[] range : ranges) {
-                     if (range[0] >= 10000 && range[1] <= 15000) {
-                         params.setPreviewFpsRange(range[0], range[1]);
-                         logToWeb("❄️ Rango Eco aplicado: " + range[0] + "-" + range[1]);
-                         break;
-                     }
+                 if (bestRange != null) {
+                     // TRUCO: A veces setPreviewFpsRange(15000, 15000) funciona aunque no esté listado
+                     logToWeb("❄️ INTENTO 2: Estrangulando Rango a 15-15 FPS...");
+                     params.setPreviewFpsRange(15000, 15000); 
                  }
              }
-        } catch (Exception e) { logToWeb("Error setting FPS: " + e.getMessage()); }
+        } catch (Exception e) { 
+            logToWeb("⚠️ El Abuelo resistió el frenado: " + e.getMessage());
+            // Si falla el forzado bruto, volvemos a rango seguro para que no crashee
+            try {
+                params.setPreviewFpsRange(15000, 30000);
+            } catch(Exception ex) {}
+        }
 
         // 3. [NUEVO] APLICAR ZOOM POR HARDWARE (La Lupa Fría 🔍❄️)
         if (params.isZoomSupported()) {
