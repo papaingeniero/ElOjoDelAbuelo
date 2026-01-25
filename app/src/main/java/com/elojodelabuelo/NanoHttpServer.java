@@ -935,7 +935,9 @@ public class NanoHttpServer {
                 "function playVideo(file) {\n" +
                 "  var items = document.getElementsByClassName('video-item');\n" +
                 "  for(var i=0; i<items.length; i++) {\n" +
-                "      if(items[i].getAttribute('onclick').indexOf(file) !== -1) {\n" +
+                "      var clickAttr = items[i].getAttribute('onclick');\n" +
+                // --- EL SEGURO DE VIDA: Comprobamos que clickAttr exista antes del indexOf ---
+                "      if(clickAttr && typeof clickAttr === 'string' && clickAttr.indexOf(file) !== -1) {\n" +
                 "          items[i].classList.add('watched');\n" +
                 "          break;\n" +
                 "      }\n" +

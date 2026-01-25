@@ -1921,3 +1921,15 @@ Programación defensiva básica: "Mira antes de tocar".
 `var clickAttr = el.getAttribute(...); if (clickAttr) ...`
 Ahora el iterador salta grácilmente sobre la tarjeta parásito sin inmutarse.
 
+
+### 👮 v3.9.7-dev.7: Strict Type Checking (The Parsing Police)
+
+**El Rebote**:
+El fix anterior (dev.6) falló. ¿Por qué?
+A veces `getAttribute` devuelve un valor que, aunque no es `null`, el intérprete JS de algunos navegadores móviles antiguos (o implementaciones raras de WebView) no trata inmediatamente como String puro, o quizas el valor era una cadena vacía "" que pasaba el check `if(clickAttr)` en algunos contextos pero fallaba luego.
+
+**La Ley Marcial**:
+Hemos añadido Validación de Tipos Estricta:
+`if(clickAttr && typeof clickAttr === 'string' && ...)`
+Ahora no solo exigimos que "exista algo", sino que exigimos explícitamente que ese algo sea TEXTO antes de intentar buscar subcadenas en él.
+

@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.7] - 2026-01-25
+### Fixed
+- **Web Dashboard (JS)**: Corrección definitiva del crash de `onclick` con validación estricta de tipos.
+    - *Causa*: `getAttribute` puede devolver objetos no string en ciertos contextos de DOM antiguos/raros, o valores vacíos que evaluaban falsos positivos.
+    - *Fix*: Añadido `typeof clickAttr === 'string'` para blindar la llamada a `.indexOf()`.
+
 ## [v3.9.7-dev.6] - 2026-01-25
 ### Fixed
 - **Web Dashboard (JS)**: Corrección de error `NullPointerException` en Javascript al intentar marcar un vídeo como visto mientras hay una grabación en curso.
