@@ -1638,3 +1638,24 @@ Esto provocaba que, por un error menor de red/timing, la página entera se pusie
 - **Ahora**: Error -> `console.error` (Silencioso).
 - *Efecto*: Si falla la carga de una miniatura específica, se queda con la tarjeta roja o el placeholder, pero el resto de la interfaz sigue viva y funcional. El usuario no sufre interrupciones.
 
+
+### ❄️ v3.9.6-dev.7: "The Hardware Brake" (15 FPS Limit)
+
+**El Diagnóstico Matemático**:
+Gracias al nuevo Heartbeat SRE (v3.9.6-dev.5), hemos descubierto un dato alarmante:
+`Frames: 359 OK / 1439 Skip`
+Esto suma **1798 frames por minuto**, es decir, **29.96 FPS**.
+
+Aunque nuestro software ("El Pintor Vago") descarte la mayoría de imágenes, el hardware de la cámara sigue entregando y transfiriendo a RAM 30 fotos de 150KB cada segundo. Este tráfico constante en el bus de memoria (Memory Bus) es lo que mantiene la temperatura base anclada en **41°C**.
+
+**La Solución (El Freno de Mano)**:
+Reducir la cadencia de disparo en el origen (Driver) y no en el destino (Software).
+Si bajamos de 30 FPS a **15 FPS**, reducimos el calor generado por el sensor y el bus a la mitad, sin perder capacidad de vigilancia real.
+
+**Implementación**:
+1.  **Auditoría**: Listamos en el log todos los rangos soportados por el hardware (ej: `[7-30]`, `[15-15]`).
+2.  **Enforcement**: Buscamos activamente un rango cuyo extremo superior sea **<= 15000** (15 FPS) y lo aplicamos con `params.setPreviewFpsRange`.
+
+**Verificación**:
+Esperamos ver en el próximo Heartbeat un total de frames cercano a **900** (15 FPS * 60s) en lugar de 1800.
+

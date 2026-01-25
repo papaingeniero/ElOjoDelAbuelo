@@ -309,18 +309,22 @@ public class SentinelService extends Service {
                  " | Veredicto: " + ratioName + " <<<");
         // --------------------------------------------------------
 
-        // 2. Optimización Térmica FPS (Hardware Limit)
+        // 2. Optimización Térmica FPS (AUDITORÍA)
         try {
              java.util.List<int[]> ranges = params.getSupportedPreviewFpsRange();
              if (ranges != null) {
+                 StringBuilder sb = new StringBuilder("FPS Ranges disponibles: ");
                  for (int[] range : ranges) {
-                     if (range[1] <= 20000) {
+                     sb.append("[").append(range[0]/1000).append("-").append(range[1]/1000).append("] ");
+                     // INTENTO DE FORZAR MÁXIMO 15 FPS (Si existe)
+                     // Buscamos un rango donde el MÁXIMO sea <= 15000 (15fps)
+                     if (range[1] <= 15000) {
                          params.setPreviewFpsRange(range[0], range[1]);
-                         break;
                      }
                  }
+                 logToWeb("🚀 " + sb.toString());
              }
-        } catch (Exception e) {}
+        } catch (Exception e) { logToWeb("Error setting FPS: " + e.getMessage()); }
 
         // 3. [NUEVO] APLICAR ZOOM POR HARDWARE (La Lupa Fría 🔍❄️)
         if (params.isZoomSupported()) {
