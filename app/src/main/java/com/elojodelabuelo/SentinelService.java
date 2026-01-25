@@ -363,6 +363,42 @@ public class SentinelService extends Service {
         camera.setParameters(params);
     }
 
+    // --- NUEVO: MÉTODO ANTI-AMNESIA DEL ZOOM (Para cuando la pantalla parpadea) ---
+    private void enforceSavedHardwareZoom() {
+        if (camera == null) return;
+        try {
+            Camera.Parameters params = camera.getParameters();
+            if (params.isZoomSupported()) {
+                // Leemos directamente del disco para estar seguros (nada de RAM volátil)
+                SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
+                float targetZoomValue = prefs.getFloat("defaultZoom", 1.0f); // Usamos la clave que ya existe
+                
+                int targetZoomInt = (int) (targetZoomValue * 100);
+                java.util.List<Integer> zoomRatios = params.getZoomRatios();
+                
+                int bestIndex = 0;
+                int minDiff = Integer.MAX_VALUE;
+                if (zoomRatios != null) {
+                    for (int i = 0; i < zoomRatios.size(); i++) {
+                        int diff = Math.abs(zoomRatios.get(i) - targetZoomInt);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            bestIndex = i;
+                        }
+                    }
+                    // Solo aplicamos si el driver se ha "olvidado" (es diferente)
+                    if (params.getZoom() != bestIndex) {
+                        params.setZoom(bestIndex);
+                        camera.setParameters(params);
+                        logToWeb("🔄 ZOOM RE-APLICADO tras reinicio de surface: " + (zoomRatios.get(bestIndex)/100f) + "x");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logToWeb("Error re-applying zoom: " + e.getMessage());
+        }
+    }
+
 
     private void writeCameraInfoToFile(Camera.Parameters params) {
         File logFile = new File(Environment.getExternalStorageDirectory(), "camera_info.txt");
@@ -876,8 +912,13 @@ public class SentinelService extends Service {
 
                 // 6. FIX ROTACIÓN y ARRANQUE
                 instance.camera.setDisplayOrientation(180);
+                
+                // [NUEVO] Antes de arrancar, le obligamos a recordar el Zoom
+                if (instance != null) {
+                    instance.enforceSavedHardwareZoom();
+                }
+                
                 instance.camera.startPreview();
-
             } catch (Exception e) {
                 e.printStackTrace();
             }

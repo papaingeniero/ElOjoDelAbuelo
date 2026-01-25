@@ -37,7 +37,8 @@ public class NanoHttpServer {
     private static final int PORT = 8080;
     private static final String BOUNDARY = "ElOjoDelAbueloBoundary";
     private static final File STORAGE_DIR = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
-
+    // Variable para el Watchdog (Interruptor del Hombre Muerto)
+    private static volatile long lastHeartbeatTime = 0;
     private static String lastError = "None";
 
     public static void setLastError(String error) {
@@ -147,6 +148,10 @@ public class NanoHttpServer {
                     SentinelService.logToWeb("📹 STREAM: Cliente conectado (IP: " + socket.getInetAddress() + ")");
                     serveLiveStream(os); // Bloquea el hilo mientras transmite
                     SentinelService.logToWeb("📹 STREAM: Cliente desconectado");
+                } else if (uri.equals("/api/keepalive")) {
+                    // ❤️ EL LATIDO: Cliente dice "sigo vivo"
+                    lastHeartbeatTime = System.currentTimeMillis();
+                    os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
                     // Solo logueamos si es video real, no previews, para no saturar
                     if(uri.startsWith("/video_")) {
@@ -216,6 +221,9 @@ public class NanoHttpServer {
         }
 
         private void serveLiveStream(OutputStream os) throws IOException {
+            // Inicializamos el reloj al entrar para dar margen inicial
+            lastHeartbeatTime = System.currentTimeMillis(); 
+            
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write(("Content-Type: multipart/x-mixed-replace; boundary=" + BOUNDARY + "\r\n").getBytes());
             os.write("Connection: keep-alive\r\n".getBytes());
@@ -223,13 +231,21 @@ public class NanoHttpServer {
             os.flush();
             liveStreamClients.add(os);
 
-            // Keep thread alive to prevent socket closure
+            // BUCLE DEAD MAN'S SWITCH 💀⏱️
             try {
                 while (liveStreamClients.contains(os)) {
-                    Thread.sleep(1000);
+                    // Si el cliente no respira en 5000ms (5s), cortamos
+                    long silence = System.currentTimeMillis() - lastHeartbeatTime;
+                    if (silence > 5000) {
+                        SentinelService.logToWeb("💀 WATCHDOG: Cliente mudo (" + silence + "ms). Cortando stream.");
+                        break; // Rompe el bucle y cierra el socket en el finally
+                    }
+                    Thread.sleep(1000); // Revisamos cada segundo
                 }
             } catch (InterruptedException e) {
                 // End
+            } finally {
+                liveStreamClients.remove(os);
             }
         }
 
@@ -409,6 +425,8 @@ public class NanoHttpServer {
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: text/plain\r\n".getBytes());
+            // 👇 PEGA ESTA LÍNEA AQUÍ 👇
+            os.write("Cache-Control: no-cache, no-store, must-revalidate\r\n".getBytes());
             os.write("\r\n".getBytes());
             os.write("OK".getBytes());
         }
@@ -860,6 +878,32 @@ public class NanoHttpServer {
                 "var currentObjectUrl = null;\n" +
                 "var gWebZoom = 1.0; var gWebPanX = 0; var gWebPanY = 0;\n" +
                 "\n" +
+                "// --- HEARTBEAT SYSTEM (SISTEMA DE LATIDOS) ---\n" +
+                "var heartbeatInterval = null;\n" +
+                "\n" +
+                "function sendHeartbeat() {\n" +
+                "    fetch('/api/keepalive').catch(e => {});\n" +
+                "}\n" +
+                "\n" +
+                "function startHeartbeat() {\n" +
+                "    // Solo arrancamos si no hay uno ya corriendo\n" +
+                "    if (heartbeatInterval) return;\n" +
+                "    sendHeartbeat(); // El primero inmediato\n" +
+                "    heartbeatInterval = setInterval(sendHeartbeat, 2000); // Latido cada 2s\n" +
+                "}\n" +
+                "\n" +
+                "function stopHeartbeat() {\n" +
+                "    // Solo paramos si no hay NINGÚN consumidor activo (ni modal ni parásito)\n" +
+                "    var modalOpen = document.getElementById('live-view-modal').style.display === 'flex';\n" +
+                "    var parasiteActive = (document.getElementById('hidden-stream-source') !== null);\n" +
+                "    \n" +
+                "    if (!modalOpen && !parasiteActive) {\n" +
+                "        if (heartbeatInterval) {\n" +
+                "            clearInterval(heartbeatInterval);\n" +
+                "            heartbeatInterval = null;\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n" +
                 // --- ZOOM / TRANSFORM LOGIC (INJECTED) ---
                 "function updateWebTransform(z, x, y) {\n" +
                 "  document.getElementById('web-zoom-val').textContent = z + 'x';\n" +
@@ -1095,15 +1139,31 @@ public class NanoHttpServer {
                 "  }, 5000);\n" +
                 "}\n" +
                 "function openLiveView() {\n" +
-                "   document.getElementById('live-view-modal').style.display = 'flex';\n" +
-                "   document.getElementById('live-stream-img').src = '/stream';\n" +
-                "   history.pushState(null, null, location.href);\n" +
-                "}\n" +
+                "    document.getElementById('live-view-modal').style.display = 'flex';\n" +
+                "    document.getElementById('live-stream-img').src = '/stream';\n" +
+                "    history.pushState(null, null, location.href);\n" +
+                "    startHeartbeat();\n" + // <--- AÑADIDO
+                "}\n" +                
                 "function closeLiveView() {\n" +
                 "    document.getElementById('live-view-modal').style.display = 'none';\n" +
-                "    var img = document.getElementById('live-stream-img');\n" +
-                "    // TRUCO: Cargar un pixel transparente corta el socket MJPEG inmediatamente\n" +
-                "    img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';\n" +
+                "    // Limpieza agresiva del DOM\n" +
+                "    var container = document.getElementById('live-view-modal').querySelector('div[style*=\"overflow:hidden\"]');\n" +
+                "    var oldImg = document.getElementById('live-stream-img');\n" +
+                "    if(oldImg) { oldImg.src = ''; oldImg.remove(); }\n" +
+                "    \n" +
+                "    var newImg = document.createElement('img');\n" +
+                "    newImg.id = 'live-stream-img';\n" +
+                "    newImg.style.maxWidth = '100%';\n" +
+                "    newImg.style.maxHeight = '100%';\n" +
+                "    newImg.style.objectFit = 'cover';\n" +
+                "    newImg.style.display = 'block';\n" +
+                "    if(typeof gWebZoom !== 'undefined') updateWebTransform(gWebZoom, gWebPanX, gWebPanY);\n" +
+                "    container.appendChild(newImg);\n" +
+                "    \n" +
+                "    // Backup: Enviar señal de muerte inmediata\n" +
+                "    fetch('/api/kill_stream').catch(e => {});\n" +
+                "    // Parar latido (Si no hay grabación de fondo)\n" +
+                "    stopHeartbeat();\n" + 
                 "}\n" +
                 "function openSettings() {\n" +
                 "   document.getElementById('settings-modal').style.display = 'flex';\n" +
@@ -1365,6 +1425,7 @@ public class NanoHttpServer {
                 "       };\n" +
                 "       pLoop();\n" +
                 "   }\n" +
+                "   startHeartbeat();\n" + // <--- AÑADIDO
                 "}\n" +
                 "function parseDateFromFilename(f) {\n" +
                 "    var parts = f.match(/video_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})/);\n" +
@@ -1374,7 +1435,7 @@ public class NanoHttpServer {
                 "        time: \"⏰ \" + parts[4]+\":\"+parts[5]+\":\"+parts[6]\n" +
                 "    };\n" +
                 "}\n" +
-"function finalizeRecordingCard(filename) {\n" +
+                "function finalizeRecordingCard(filename) {\n" +
                 "    var durationSec = Math.round((Date.now() - gRecStartTime) / 1000);\n" +
                 "    var durationStr = durationSec + \"s\";\n" +
                 "    var videoUrl = '/' + filename;\n" +
@@ -1426,8 +1487,8 @@ public class NanoHttpServer {
                 "\n" +
                 "function cleanupLivePreview() {\n" +
                 "   if(parasiteInterval) clearInterval(parasiteInterval);\n" +
-                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n"
-                +
+                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n" +
+                "    stopHeartbeat();\n" + // <--- AÑADIDO
                 "   setTimeout(function() { \n" +
                 "       fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
                 "            if(meta.filename) {\n" +

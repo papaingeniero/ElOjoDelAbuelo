@@ -1746,3 +1746,21 @@ En lugar de vaciar el src, lo reemplazamos por un píxel válido pero minúsculo
 `img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';`
 Esto **obliga** al motor de renderizado a abortar la carga anterior (el stream infinito) para pintar la nueva imagen estática. El cierre del socket es inmediato. 🔪🔌
 
+
+### 🛡️ v3.9.6-dev.13: Operation "Fail-Safe Bunker" (Watchdog & Zoom Amnesia)
+
+**1. 💀 El Interruptor del Hombre Muerto (Watchdog)**
+**El Problema**: Los "Streams Zombies". Cerrar la pestaña o apagar la pantalla del móvil cliente no siempre cortaba la conexión TCP inmediatamente, dejando al servidor (el Abuelo) codificando video para nadie (= Calor 🔥).
+**La Solución**:
+- **Protocolo de Latido**: El cliente web envía un `GET /api/keepalive` cada 2 segundos.
+- **La Guadaña**: Si el servidor no recibe un latido en 5 segundos, corta el socket MJPEG unilateralmente.
+- *Bonus*: El "Parásito" (la tarjeta de grabación) está exento para asegurar que la miniatura se genera siempre.
+
+**2. 🧠 La Cura para la Amnesia del Zoom**
+**El Problema**: Android recicla la `SurfaceView` por la noche. Al volver, el driver de cámara (resetado) volvía a Zoom 1x, ignorando la preferencia de usuario (2.4x).
+**La Solución**: Implementado `enforceSavedHardwareZoom()` en `SentinelService`. Ahora, el evento `surfaceChanged` dispara una re-aplicación forzosa de la configuración guardada.
+
+**3. 🎭 La Web Mentirosa (Anti-Caché)**
+**El Problema**: El navegador cacheaba `/api/settings`, mostrando que el zoom estaba a 2.4x cuando realmente había bajado a 1x.
+**La Solución**: Cabecera `Cache-Control: no-cache` obligatoria en la respuesta.
+

@@ -5,6 +5,18 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6-dev.13] - 2026-01-25
+### Added
+- **Watchdog (Interruptor de Hombre Muerto)**:
+    - **Servidor**: Temporizador de 5s que corta el stream MJPEG si no recibe "latidos".
+    - **Cliente (Web)**: Endopoint `/api/keepalive` llamado cada 2s mientras el visor está activo.
+    - *Objetivo*: Eliminar conexiones "zombies" que calientan la CPU.
+- **Hardware Zoom Persistence**:
+    - Nuevo método `enforceSavedHardwareZoom()` en `SentinelService`.
+    - Se restaura el zoom guardado automáticamente cuando Android recicla la `SurfaceView`.
+### Fixed
+- **API Settings**: Cabecera `Cache-Control: no-cache` añadida para evitar que el navegador mienta sobre el estado real del zoom.
+
 ## [v3.9.6-dev.12] - 2026-01-25
 ### Fixed
 - **Web Dashboard**: Implementada "La Guillotina de Conexión".
