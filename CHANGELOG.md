@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6-dev.8] - 2026-01-25
+### Changed
+- **SentinelService**: Implementación de estrategia "Old School" para limitar FPS.
+    - Se usa la API deprecada `setPreviewFrameRate()` para forzar tasas fijas (ej: 15 FPS) en hardware antiguo.
+    - Fallback a `setPreviewFpsRange` si la API antigua falla.
+    - *Objetivo*: Evitar que el driver escale a 30 FPS automáticamente cuando el rango es [15-30].
+
 ## [v3.9.6-dev.7] - 2026-01-25
 ### Changed
 - **SentinelService**: Auditoría y limitación de FPS por Hardware.

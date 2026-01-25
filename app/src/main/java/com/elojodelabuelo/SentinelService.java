@@ -309,20 +309,37 @@ public class SentinelService extends Service {
                  " | Veredicto: " + ratioName + " <<<");
         // --------------------------------------------------------
 
-        // 2. Optimización Térmica FPS (AUDITORÍA)
+        // 2. FRENADO DE HARDWARE (MÉTODO OLD SCHOOL) 🛑
         try {
-             java.util.List<int[]> ranges = params.getSupportedPreviewFpsRange();
-             if (ranges != null) {
-                 StringBuilder sb = new StringBuilder("FPS Ranges disponibles: ");
-                 for (int[] range : ranges) {
-                     sb.append("[").append(range[0]/1000).append("-").append(range[1]/1000).append("] ");
-                     // INTENTO DE FORZAR MÁXIMO 15 FPS (Si existe)
-                     // Buscamos un rango donde el MÁXIMO sea <= 15000 (15fps)
-                     if (range[1] <= 15000) {
-                         params.setPreviewFpsRange(range[0], range[1]);
+             // Primero intentamos la API antigua (Fixed Rate) que es más agresiva en Gingerbread
+             List<Integer> supportedRates = params.getSupportedPreviewFrameRates();
+             if (supportedRates != null) {
+                 StringBuilder sb = new StringBuilder("Tasas fijas disponibles: ");
+                 int minRate = Integer.MAX_VALUE;
+                 
+                 for (Integer rate : supportedRates) {
+                     sb.append(rate).append(" ");
+                     if (rate < minRate && rate >= 10) { // No bajar de 10 fps para que el video no sea un pase de diapositivas
+                         minRate = rate;
                      }
                  }
                  logToWeb("🚀 " + sb.toString());
+                 
+                 if (minRate < 30) {
+                     params.setPreviewFrameRate(minRate);
+                     logToWeb("❄️ ENFRIAMIENTO: Forzando Hardware a " + minRate + " FPS (Old API)");
+                 }
+             } else {
+                 // Si falla, fallback a rangos (lo que teníamos antes)
+                 logToWeb("⚠️ No hay tasas fijas, probando rangos...");
+                 List<int[]> ranges = params.getSupportedPreviewFpsRange();
+                 for (int[] range : ranges) {
+                     if (range[0] >= 10000 && range[1] <= 15000) {
+                         params.setPreviewFpsRange(range[0], range[1]);
+                         logToWeb("❄️ Rango Eco aplicado: " + range[0] + "-" + range[1]);
+                         break;
+                     }
+                 }
              }
         } catch (Exception e) { logToWeb("Error setting FPS: " + e.getMessage()); }
 

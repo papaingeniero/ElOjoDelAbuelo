@@ -1659,3 +1659,24 @@ Si bajamos de 30 FPS a **15 FPS**, reducimos el calor generado por el sensor y e
 **Verificación**:
 Esperamos ver en el próximo Heartbeat un total de frames cercano a **900** (15 FPS * 60s) en lugar de 1800.
 
+
+### 🦕 v3.9.6-dev.8: "Old School Brake" (Deprecated API Rescue)
+
+**El Crimen Térmico**:
+Descubrimos que aunque el hardware soporta `[15-30]` FPS, el driver de Samsung es "optimista" y siempre corre a 30 FPS si no se le obliga a lo contrario.
+Esto explica el log: `FPS Ranges disponibles: [15-30]` pero Heartbeat mostrando ~1800 frames/min (30 FPS).
+El abuelo estaba corriendo un sprint cuando solo le pedíamos pasear.
+
+**La Solución Arqueológica**:
+Los métodos modernos (`setPreviewFpsRange`) son "sugerencias" para el driver.
+En la era Gingerbread, existía un método autoritario: `setPreviewFrameRate(int)`.
+Aunque está *deprecated*, es la herramienta perfecta para estos dispositivos legacy.
+
+**Implementación**:
+1.  Consultamos `getSupportedPreviewFrameRates()` (Lista de enteros fijos).
+2.  Elegimos el menor valor viable (>= 10 FPS).
+3.  Imponemos esa tasa con `setPreviewFrameRate()`.
+4.  Si falla, volvemos a intentar con rangos.
+
+*Esperanza*: Ver el Heartbeat bajar a ~900 frames/min (15 FPS) y la temperatura descender de los 40°C.
+
