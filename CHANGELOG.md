@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.1] - 2026-01-25
+### Changed
+- **SentinelService**: Activado modo "Ultra Vago" (Ultra Lazy).
+    - Se reduce el muestreo de vigilancia de `skipTarget=5` (~6 FPS) a `skipTarget=10` (~3 FPS) cuando no se está grabando.
+    - *Objetivo*: Reducir aún más la carga de CPU en reposo para combatir picos de 43°C.
+
 ## [v3.9.6] - 2026-01-25 "The Bunker" 🏯
 ### Added (Stability & Cool Down)
 - **Watchdog (Interruptor de Hombre Muerto)**: Sistema Dual (Cliente/Servidor) que corta el stream si no hay latidos cada 5s. Elimina "Conexiones Zombie".

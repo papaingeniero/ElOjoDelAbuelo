@@ -1819,3 +1819,16 @@ Descubrimos que el driver de Samsung es "entusiasta" y corre a 30 FPS aunque no 
 **Estado Final**:
 Un sistema que puede ser abandonado en un cajón durante días sin calentarse por conexiones fantasma ni perder su configuración al dormir.
 
+
+### 🦥 v3.9.7-dev.1: "Ultra Lazy Mode" (3 FPS Surveillance)
+
+**La Lucha Térmica Continúa**:
+A pesar del "Bunker" (v3.9.6), observamos que el dispositivo mantiene una temperatura residual difícil de bajar (picos de 43°C), incluso "haciendo nada".
+Diagnóstico: Analizar 6 imágenes por segundo (Modo Vago actual) sigue siendo demasiado trabajo para este procesador Single Core si queremos enfriamiento pasivo real.
+
+**La Solución (Ultra Vago)**:
+Hemos ajustado el `skipTarget` de 5 a **10**.
+- **Grabación**: Se mantiene a máx velocidad posible (limitada por hardware ~15FPS / skip=2).
+- **Vigilancia**: El software ahora solo "mira" 1 de cada 10 frames que escupe la cámara.
+- **Resultado**: ~3 FPS efectivos de análisis de movimiento. Más que suficiente para detectar a un humano (que tarda >1s en cruzar una puerta), pero libera el 90% de los ciclos de CPU dedicados a visión.
+

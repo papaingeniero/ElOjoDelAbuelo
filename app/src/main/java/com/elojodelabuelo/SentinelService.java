@@ -429,7 +429,9 @@ public class SentinelService extends Service {
 
             // [NUEVO] MODO ECO: DYNAMIC THROTTLING
             frameSkipCounter++;
-            int skipTarget = isRecording ? 2 : 5; 
+            // Si grabamos, mantenemos fluidez (2). Si solo vigilamos, ¡ULTRA VAGOS! (10)
+            // Esto baja el procesamiento de vigilancia a ~3 FPS. Suficiente para detectar personas.
+            int skipTarget = isRecording ? 2 : 10;
 
             if (frameSkipCounter % skipTarget != 0) {
                 statsFrameSkipped++; // <--- ¡AÑADE ESTO! (Contamos frame saltado)
