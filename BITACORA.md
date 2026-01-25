@@ -1847,3 +1847,35 @@ Implementado un sistema de **Lazy Execution** nativo del navegador.
     *   Sale de pantalla -> `canvas.isVisible = false`. El bucle de animación se detiene inmediatamente.
 3.  **Resultado**: Uso de CPU/GPU en el cliente cae un ~90%. Solo se gasta energía en lo que el ojo ve.
 
+
+### 🎨 v3.9.7-dev.3: "Cinema Mode" UI (Jumbo Thumbnails)
+
+**El Cambio**:
+Hemos rediseñado la interfaz web para abandonar el look "Lista de Archivos" y abrazar una estética de "Galería Multimedia".
+
+**1. Miniaturas GIGANTES (Jumbo)**:
+- **Antes**: 80x60px ("Sello de correos"). Difícil ver detalles en pantallas Retina.
+- **Ahora**: 150x110px. La imagen ocupa el 50% de la tarjeta.
+- **Efecto**: Inmersión total. Se distinguen las caras y eventos sin abrir el vídeo.
+
+**2. Placeholder Premium**:
+- En lugar de un recuadro negro vacío mientras carga, ahora mostramos un contenedor con borde sutil, sombra interior y un degradado elegante.
+- Sensación de "App Nativa" en lugar de página web antigua.
+
+**3. Layout Compacto**:
+- Reducido el padding de 15px a 8px. Menos aire, más contenido.
+
+
+### 🐛 v3.9.7-dev.3 (Hotfix): Java String Concatenation Error
+
+**El Fallo**:
+Al inyectar el nuevo CSS, se introdujeron líneas "huérfanas" con solo un operador  en medio del código Java.
+
+
+
+Esto no es sintaxis válida en Java. El operador de concatenación debe unir dos expresiones.
+
+**La Corrección**:
+Limpieza de sintaxis. Se han eliminado los  solitarios y se han unido las cadenas correctamente.
+
+
