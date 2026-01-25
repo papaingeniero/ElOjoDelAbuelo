@@ -1481,7 +1481,8 @@ public class NanoHttpServer {
                 "        \n" +
                 "        // Injected canvas for animation\n" +
                 "        var innerContent = \"<div class='thumb-container'>\" +\n" +
-                "            \"<img class='thumb' src='/thumbnails/\" + filename + \"?t=\" + Date.now() + \"' onerror='this.onerror=null; setTimeout(()=>this.src=this.src, 2000)'>\" +\n" +                "            \"<canvas class='mini-canvas' data-src='/\" + previewFilename + \"'></canvas>\" + \n" +
+                // VERSIÓN FINAL: Sin parámetros basura, sin reintentos, sin esperas extra.
+                "            \"<img class='thumb' src='/thumbnails/\" + previewFilename + \"'>\" +\n" +
                 "            \"</div>\" +\n" +
                 "            \"<div class='info'>\" +\n" +
                 "            \"<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>\" + dateStr + \" &nbsp; \" + timeStr + \"</div>\" +\n" +
