@@ -1734,3 +1734,15 @@ Añadir explícitamente `\n` al string en Java.
 **Lección**:
 Cuidado extremo al inyectar código en strings. Los comentarios de línea (`//`) son peligrosos si nos comemos el salto de línea.
 
+
+### ✂️ v3.9.6-dev.12: "The Connection Guillotine" (Socket Force Close)
+
+**El Fantasma del Socket**:
+Detectamos que al cerrar el modal de "Live View", los logs del servidor indicaban que el cliente seguía conectado y recibiendo datos.
+**Causa**: Poner `img.src = ''` no siempre cierra el socket TCP subyacente en navegadores modernos (Chrome/WebView) que mantienen la conexión "viva" por optimización (Keep-Alive). Esto mantenía al "Abuelo" generando y enviando MJPEG a una pantalla cerrada, calentando la CPU inútilmente.
+
+**La Solución (La Guillotina)**:
+En lugar de vaciar el src, lo reemplazamos por un píxel válido pero minúsculo:
+`img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';`
+Esto **obliga** al motor de renderizado a abortar la carga anterior (el stream infinito) para pintar la nueva imagen estática. El cierre del socket es inmediato. 🔪🔌
+

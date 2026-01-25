@@ -1100,8 +1100,10 @@ public class NanoHttpServer {
                 "   history.pushState(null, null, location.href);\n" +
                 "}\n" +
                 "function closeLiveView() {\n" +
-                "   document.getElementById('live-view-modal').style.display = 'none';\n" +
-                "   document.getElementById('live-stream-img').src = '';\n" +
+                "    document.getElementById('live-view-modal').style.display = 'none';\n" +
+                "    var img = document.getElementById('live-stream-img');\n" +
+                "    // TRUCO: Cargar un pixel transparente corta el socket MJPEG inmediatamente\n" +
+                "    img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';\n" +
                 "}\n" +
                 "function openSettings() {\n" +
                 "   document.getElementById('settings-modal').style.display = 'flex';\n" +

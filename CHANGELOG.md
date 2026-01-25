@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6-dev.12] - 2026-01-25
+### Fixed
+- **Web Dashboard**: Implementada "La Guillotina de Conexión".
+    - Al cerrar el modal de Live View, se fuerza la carga de un GIF transparente 1x1 en el `src` de la imagen.
+    - *Efecto*: Esto obliga al navegador a cortar el socket MJPEG inmediatamente, evitando que siga consumiendo ancho de banda y CPU del dispositivo en segundo plano.
+
 ## [v3.9.6-dev.11] - 2026-01-25
 ### Fixed
 - **Web Dashboard**: Corregido error de sintaxis en JavaScript inyectado (`NanoHttpServer`).
