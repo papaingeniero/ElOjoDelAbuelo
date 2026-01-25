@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6-dev.15] - 2026-01-25
+### Changed
+- **SentinelService**: Implementado "Retardo Táctico" (1.5s) al aplicar el zoom tras recuperar la superficie (`setPreviewSurface`).
+    - *Razón*: Evitar Condición de Carrera. El driver antiguo resetea a 1x al hacer `startPreview()`. Esperamos a que termine de inicializarse para "martillear" el zoom guardado.
+    - *Resultado*: La cámara arranca en 1x y salta al zoom correcto (ej: 2.5x) automáticamente tras 1.5s.
+
 ## [v3.9.6-dev.14] - 2026-01-25
 ### Changed
 - **SentinelService**: Modificación en `enforceSavedHardwareZoom()` para aplicar el zoom **siempre** (Imperativo), eliminando la comprobación de estado previo que fallaba por caché falsa.

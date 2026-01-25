@@ -1780,3 +1780,20 @@ Ahora, al recuperar la superficie (`setPreviewSurface`), **martilleamos** la con
 **Efecto**:
 Sincronización forzosa. El driver despierta y aplica el zoom real guardado en preferencias.
 
+
+### 🏎️ v3.9.6-dev.15: "Race Condition" & The Tactical Delay
+
+**El Misterio**:
+Ordenábamos el Zoom 2.5x justo antes de `startPreview()`. Pero al mirar, la cámara estaba en 1x.
+**La Causa (Condición de Carrera)**:
+El driver del Galaxy S resetea la configuración al arrancar. Nuestra orden de Zoom llegaba *antes* de que el driver terminara de inicializarse (lavarse la cara), por lo que era ignorada o sobrescrita por el valor de fábrica (1x).
+
+**La Solución (El Retardo Táctico)**:
+Hemos introducido **Asincronía**.
+1.  Arrancamos la cámara (`startPreview`).
+2.  Programamos un **Handler Asíncrono** (`postDelayed`) para dentro de **1500ms**.
+3.  Pasado ese tiempo (cuando el driver ya está estable y tomando café), enviamos la orden Imperativa de Zoom.
+
+**Lección de Ingeniería**:
+El hardware tiene inercia. No puedes gritarle todas las órdenes a la vez. A veces, esperar es la única forma de ganar la carrera. 🐢🏆
+

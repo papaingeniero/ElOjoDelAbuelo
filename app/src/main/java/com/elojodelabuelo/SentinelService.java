@@ -916,18 +916,27 @@ public class SentinelService extends Service {
 
                 // 6. FIX ROTACIÓN y ARRANQUE
                 instance.camera.setDisplayOrientation(180);
-                
-                // [NUEVO] Antes de arrancar, le obligamos a recordar el Zoom
-                if (instance != null) {
-                    instance.enforceSavedHardwareZoom();
+                instance.camera.startPreview(); // <--- 1. ARRANCAMOS PRIMERO (Sin esperar)
+
+                // [NUEVO] RETARDO TÁCTICO ASÍNCRONO (1.5s) ⏱️
+                // Esperamos a que el driver termine de "lavarse la cara" antes de pedirle el Zoom.
+                if (instance != null && instance.processingHandler != null) {
+                    instance.processingHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Verificamos que el servicio y la cámara sigan vivos antes de tocar nada
+                            if (instance != null && instance.camera != null) {
+                                instance.enforceSavedHardwareZoom();
+                            }
+                        }
+                    }, 1500); // 1500ms de espera
                 }
-                
-                instance.camera.startPreview();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-    }    
+    }  
 
     // --- SISTEMA DE LOGS HÍBRIDO (RAM + DISCO) ---
     // La variable debugLogs ya está definida arriba (línea 45)
