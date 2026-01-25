@@ -1701,3 +1701,20 @@ Vamos a ignorar la lista de capacidades y enviar la orden directa:
 - **Ignorado**: El driver se ríe y sigue a 30 FPS.
 - **Éxito**: Bajamos a 15 FPS reales y la temperatura cae.
 
+
+### 🏳️ v3.9.6-dev.10: "Safe Mode" (Surrender to 30 FPS)
+
+**El Intento Fallido (v3.9.6-dev.9)**:
+El modo "Kamikaze" provocó un `java.lang.RuntimeException`.
+El driver de Samsung no tolera que le impongamos una tasa (15 FPS) que él no quiere declarar.
+El "Abuelo" es terco y prefiere romperse a reducir su velocidad.
+
+**La Decisión de Ingeniería**:
+**Estabilidad > Temperatura**.
+Preferimos un sistema robusto que funcione a 30 FPS y 41°C (estable), a uno que intente ir fresco pero lance excepciones en la cara del usuario.
+
+**Implementación Actual**:
+- Hemos eliminado todas las llamadas agresivas (`setPreviewFrameRate`).
+- Ahora solicitamos `getSupportedPreviewFpsRange()` y elegimos educadamente el primer rango válido que el teléfono nos ofrezca (probablemente `[15-30]`).
+- Aceptamos la derrota térmica en el hardware en pos de la fiabilidad del software.
+

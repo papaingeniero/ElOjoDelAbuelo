@@ -309,37 +309,27 @@ public class SentinelService extends Service {
                  " | Veredicto: " + ratioName + " <<<");
         // --------------------------------------------------------
 
-        // 2. FRENADO DE HARDWARE (MODO KAMIKAZE / FUERZA BRUTA) 🥊
+        // 2. CONFIGURACIÓN FPS (MODO SEGURO / ESTABILIDAD) 🛡️
         try {
-             // INTENTO 1: Forzar 15 FPS fijos (Ignorando si dice que soporta o no)
-             logToWeb("❄️ INTENTO 1: Forzando setPreviewFrameRate(15)...");
-             params.setPreviewFrameRate(15);
-             
-             // INTENTO 2: Manipular los rangos para estrangular el máximo
-             // Le decimos: "Mínimo 10, Máximo 15". Si el driver obedece, bajará las revoluciones.
-             List<int[]> supportedRanges = params.getSupportedPreviewFpsRange();
-             if (supportedRanges != null) {
-                 int[] bestRange = null;
-                 for (int[] range : supportedRanges) {
-                     // Buscamos cualquier rango que permita bajar a 15
-                     if (range[0] <= 15000 && range[1] >= 15000) {
+             // Solo le pedimos amablemente el rango que él mismo nos ofrezca
+             List<int[]> ranges = params.getSupportedPreviewFpsRange();
+             if (ranges != null) {
+                 int[] bestRange = ranges.get(0); // Por defecto el primero
+                 for (int[] range : ranges) {
+                     // Buscamos un rango variable (ej. 15-30) en lugar de fijo (30-30)
+                     // para dejarle respirar si lo necesita.
+                     if (range[0] < range[1]) { 
                          bestRange = range;
-                         // Si encontramos uno que TOCA el 15 por arriba, ese es el ideal
-                         if (range[1] <= 20000) break; 
                      }
                  }
-                 if (bestRange != null) {
-                     // TRUCO: A veces setPreviewFpsRange(15000, 15000) funciona aunque no esté listado
-                     logToWeb("❄️ INTENTO 2: Estrangulando Rango a 15-15 FPS...");
-                     params.setPreviewFpsRange(15000, 15000); 
-                 }
+                 params.setPreviewFpsRange(bestRange[0], bestRange[1]);
+                 logToWeb("🛡️ FPS Estables aplicados: " + (bestRange[0]/1000) + "-" + (bestRange[1]/1000));
+                 
+                 // Limpiamos cualquier error previo
+                 NanoHttpServer.setLastError("None"); 
              }
         } catch (Exception e) { 
-            logToWeb("⚠️ El Abuelo resistió el frenado: " + e.getMessage());
-            // Si falla el forzado bruto, volvemos a rango seguro para que no crashee
-            try {
-                params.setPreviewFpsRange(15000, 30000);
-            } catch(Exception ex) {}
+            logToWeb("FPS Setup ignored: " + e.getMessage()); 
         }
 
         // 3. [NUEVO] APLICAR ZOOM POR HARDWARE (La Lupa Fría 🔍❄️)
