@@ -668,7 +668,7 @@ public class NanoHttpServer {
                 +
                 // ANTES: padding: 15px;
                 // AHORA: padding: 8px; (Más ajustado al borde)
-                ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 8px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s, opacity 0.5s, filter 0.5s; }\n" +
+                ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 6px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s, opacity 0.5s, filter 0.5s; }\n" +
                 ".video-item.watched { opacity: 0.5; filter: grayscale(100%); }\n" +
                 ".video-item:active { transform: scale(0.98); background: #3d3d3d; }\n" +
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
