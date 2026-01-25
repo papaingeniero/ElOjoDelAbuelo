@@ -1906,3 +1906,18 @@ El canvas inyectado no tenía la clase `.mini-canvas`, por lo que el sistema de 
 **Resultado**:
 Coherencia visual total. El parásito nace ya transformado y alineado con sus hermanos.
 
+
+### 🛡️ v3.9.7-dev.6: Defensive Coding (The Clickless Parasite)
+
+**El Bug**:
+Si intentabas ver un vídeo antiguo mientras el sistema estaba grabando uno nuevo, Javascript explotaba.
+**Mecánica del Fallo**:
+El bucle `playVideo()` recorre todos los elementos con clase `.video-item`.
+La nueva tarjeta de grabación en curso (el "Parásito") **ES** un `.video-item`, pero es pasiva (no tiene evento `onclick`).
+Al intentar leer `getAttribute('onclick').indexOf(...)`, el navegador lanzaba error porque `getAttribute` devolvía `null`.
+
+**El Escudo**:
+Programación defensiva básica: "Mira antes de tocar".
+`var clickAttr = el.getAttribute(...); if (clickAttr) ...`
+Ahora el iterador salta grácilmente sobre la tarjeta parásito sin inmutarse.
+

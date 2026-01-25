@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.6] - 2026-01-25
+### Fixed
+- **Web Dashboard (JS)**: Corrección de error `NullPointerException` en Javascript al intentar marcar un vídeo como visto mientras hay una grabación en curso.
+    - *Causa*: La tarjeta "Parásito" tiene la clase `.video-item` pero no tiene atributo `onclick`. El iterador fallaba al leer `null.indexOf`.
+    - *Fix*: Validación defensiva de existencia del atributo antes de leerlo.
+
 ## [v3.9.7-dev.5] - 2026-01-25
 ### Changed
 - **Web Dashboard (JS)**: Corrección de coherencia visual en miniatura "Parásito" (grabación en curso).
