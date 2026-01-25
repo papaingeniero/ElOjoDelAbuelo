@@ -1879,3 +1879,16 @@ Esto no es sintaxis válida en Java. El operador de concatenación debe unir dos
 Limpieza de sintaxis. Se han eliminado los  solitarios y se han unido las cadenas correctamente.
 
 
+
+### 👻 v3.9.7-dev.4: Exorcising the Ghost Image
+
+**El Hallazgo**:
+Al generar dinámicamente una nueva tarjeta de video tras una grabación (AJAX), inyectábamos dos capas:
+1.  Un `canvas` para la animación (Correcto).
+2.  Una `img` estática superpuesta (Incorrecto/Redundante).
+
+**La Realidad**:
+Esa imagen sobraba. Funcionaba "de casualidad" porque la URL generada estaba mal formada y el navegador la ocultaba al fallar la carga.
+**La Limpieza**:
+Hemos eliminado la etiqueta `<img>` del código inyectado en `finalizeRecordingCard`. Ahora solo existe el Canvas, puro y directo. Menos DOM, menos peticiones fallidas, más limpieza.
+

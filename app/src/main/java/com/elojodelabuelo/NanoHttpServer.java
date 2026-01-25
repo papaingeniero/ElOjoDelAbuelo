@@ -1481,8 +1481,8 @@ public class NanoHttpServer {
                 "        \n" +
                 "        // Injected canvas for animation\n" +
                 "        var innerContent = \"<div class='thumb-container'>\" +\n" +
-                // VERSIÓN FINAL: Sin parámetros basura, sin reintentos, sin esperas extra.
-                "            \"<img class='thumb' src='/thumbnails/\" + previewFilename + \"'>\" +\n" +
+                // VERSIÓN FINAL: con canvas, sin img estática encima.  Sin parámetros basura, sin reintentos, sin esperas extra.
+                "            \"<canvas class='mini-canvas' data-src='/\" + previewFilename + \"'></canvas>\" +\n" +
                 "            \"</div>\" +\n" +
                 "            \"<div class='info'>\" +\n" +
                 "            \"<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>\" + dateStr + \" &nbsp; \" + timeStr + \"</div>\" +\n" +
