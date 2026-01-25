@@ -5,6 +5,20 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.6] - 2026-01-25 "The Bunker" 🏯
+### Added (Stability & Cool Down)
+- **Watchdog (Interruptor de Hombre Muerto)**: Sistema Dual (Cliente/Servidor) que corta el stream si no hay latidos cada 5s. Elimina "Conexiones Zombie".
+- **Hardware Zoom Nativo**: Zoom por ISP (GPU) en lugar de CPU. Reduce temperatura pero elimina pan/zoom digital en pantalla local.
+- **Anti-Amnesia Zoom**: Restauración imperativa del zoom tras reciclaje de memoria (apagado de pantalla).
+- **Socket Guillotine**: Cierre forzoso de sockets MJPEG al cerrar modales en Web (1x1 pixel trick).
+
+### Changed
+- **FPS Limiter**: Estrangulamiento del driver a 15-30 FPS (respetando hardware) para evitar el calentamiento a 30 FPS fijos.
+- **UX Web**: 
+    - Full Bleed Video Cards (Object-fit: cover).
+    - Eliminado `location.reload()` (Fallo Silencioso) para evitar saltos visuales.
+    - Headers `Cache-Control: no-cache` para veracidad en Settings.
+
 ## [v3.9.6-dev.15] - 2026-01-25
 ### Changed
 - **SentinelService**: Implementado "Retardo Táctico" (1.5s) al aplicar el zoom tras recuperar la superficie (`setPreviewSurface`).

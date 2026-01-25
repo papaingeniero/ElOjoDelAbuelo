@@ -1,17 +1,23 @@
 
-# 🧊 v3.9.5: Ice Age Stable - Estabilidad Térmica y Visual Definitiva
 
-**Estado**: 🚀 **ÉXITO TOTAL**
+## 🚀 Release v3.9.6: "The Bunker" (Stability & Cool Down) | 2026-01-25
 
-**Verificación en Dispositivo Real**:
-- ✅ **Hot-Swap Rotation**: Cambio de rotación 0° ↔ 180° desde la web **OK**. La cámara se reinicia y recupera la imagen en pantalla sin congelarse gracias al `activeSurfaceHolder` persistente.
-- ✅ **Fluidez UI**: La Activity muestra la cámara vía Hardware (GPU) en la pantalla del teléfono. El zoom también es nativo, eliminando la carga de CPU. La vista es fluida inmediatamente tras despertar la pantalla.
-- ✅ **Temperatura**: Estable en **~38°C** en modo vigilancia (vs 42-44°C anteriores). El "Pintor Vago PRO" (0.5 FPS) funciona correctamente.
+**La Consolidación del Búnker**:
+Esta versión transforma al "Abuelo" de un prototipo funcional a una herramienta de vigilancia robusta y "fail-safe". Hemos atacado los dos mayores enemigos: **Calor** e **Inestabilidad**.
 
-**Resumen de la Solución (Arquitectura Ice Age)**:
-1. **Amnesia Fix**: Variable `static activeSurfaceHolder` en `SentinelService`. El servicio "recuerda" la pantalla física aunque el objeto Camera se destruya/recree.
-2. **Pintor Vago PRO**: Lógica estricta de tiempo (`if (now - lastLazyTime < 2000) return;`) que impone un límite físico de 0.5 FPS al procesado de frames cuando no hay ojos humanos mirando.
-3. **UI Rescue**: Configuración de `MATCH_PARENT` movida a `onCreate` para evitar confictos de carrera con el driver gráfico legacy.
+### 1. La Batalla Térmica (De 41°C a la Estabilidad) ❄️
+Descubrimos que el driver de Samsung es "entusiasta" y corre a 30 FPS aunque no se lo pidas.
+*   **FPS Throttle**: Intentamos métodos agresivos (Kamikaze) pero el driver se resistió. Optamos por la diplomacia: solicitamos rangos variables (15-30) y dejamos que el "Old School" API gestione.
+*   **Hardware Zoom vs LCD Pan**:
+    *   **Decisión**: Usar el ISP (Hardware) para hacer el zoom en lugar de recortar bitmaps con la CPU.
+    *   **Coste**: Se pierde la capacidad de hacer "Pan & Zoom" táctil en la pantalla del móvil (SurfaceView), ya que la imagen que llega a la memoria ya está recortada por el hardware.
+    *   **Beneficio**: Bajada drástica de carga de CPU. El Ojo prioriza la vigilancia web sobre la visualización local.
 
-**Nota sobre Ghost Hunter**:
-Se ha **eliminado** la lógica forense compleja (CSI) y los filtros de score artificiales. La investigación determinó que con la estabilidad actual, no son necesarios en producción, manteniendo el código limpio y ligero. Las herramientas forenses quedan archivadas en el historial de git (versiones dev).
+### 2. Arquitectura "Fail-Safe" (A prueba de balas) 🛡️
+*   **Watchdog (Dead Man's Switch)**: Si el WiFi falla o el cliente cierra el navegador "mal", el servidor corta el stream en 5 segundos.
+*   **Socket Guillotine**: Un truco sucio pero efectivo en JS (asignar un píxel 1x1 base64) para obligar a Chrome a soltar el socket TCP inmediatemente.
+*   **Anti-Amnesia**: El driver tiene "pérdida de memoria a corto plazo" cuando apagas la pantalla. Ahora le recordamos imperativamente qué zoom debe tener cada vez que despierta (Retardo Táctico de 1.5s).
+
+**Estado Final**:
+Un sistema que puede ser abandonado en un cajón durante días sin calentarse por conexiones fantasma ni perder su configuración al dormir.
+
