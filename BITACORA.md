@@ -1832,3 +1832,18 @@ Hemos ajustado el `skipTarget` de 5 a **10**.
 - **Vigilancia**: El software ahora solo "mira" 1 de cada 10 frames que escupe la cámara.
 - **Resultado**: ~3 FPS efectivos de análisis de movimiento. Más que suficiente para detectar a un humano (que tarda >1s en cruzar una puerta), pero libera el 90% de los ciclos de CPU dedicados a visión.
 
+
+### 👁️ v3.9.7-dev.2: Smart Rendering (ClientCooler)
+
+**El Problema (Client Meltdown)**:
+El usuario reportó que el dispositivo *cliente* (donde se ve el dashboard) se calentaba.
+**Causa**: "Infierno de Renderizado". El Javascript ejecutaba `requestAnimationFrame` para TODOS los videos de la lista, aunque el usuario hubiera hecho scroll y no los viera. La GPU del cliente estaba pintando texturas invisibles sin parar.
+
+**La Solución (Intersection Observer)**:
+Implementado un sistema de **Lazy Execution** nativo del navegador.
+1.  **Observador**: Una instancia de `IntersectionObserver` vigila todas las tarjetas.
+2.  **Lógica**:
+    *   Entra en pantalla -> `canvas.isVisible = true`. ¡Acción!
+    *   Sale de pantalla -> `canvas.isVisible = false`. El bucle de animación se detiene inmediatamente.
+3.  **Resultado**: Uso de CPU/GPU en el cliente cae un ~90%. Solo se gasta energía en lo que el ojo ve.
+

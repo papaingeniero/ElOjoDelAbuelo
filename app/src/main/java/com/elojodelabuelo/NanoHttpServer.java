@@ -1330,6 +1330,19 @@ public class NanoHttpServer {
                 "   });\n" +
                 "}\n" +
                 "var miniCanvases = document.querySelectorAll('.mini-canvas');\n" +
+                "                // --- FIX CPU: OBSERVADOR INTELIGENTE ---\n" +
+                "                var animationObserver = new IntersectionObserver(function(entries) {\n" +
+                "                    entries.forEach(function(entry) {\n" +
+                "                        var canvas = entry.target.querySelector('.mini-canvas');\n" +
+                "                        if(!canvas) return;\n" +
+                "                        if(entry.isIntersecting) {\n" +
+                "                            canvas.isVisible = true;\n" +
+                "                            if(canvas.hasData && !canvas.isAnimating && canvas.startAnim) canvas.startAnim();\n" +
+                "                        } else {\n" +
+                "                            canvas.isVisible = false;\n" +
+                "                        }\n" +
+                "                    });\n" +
+                "                }, { threshold: 0.1 });\n" +
                 "if (miniCanvases.length > 0) {\n" +
                 "    for(var i = 0; i < miniCanvases.length; i++) {\n" +
                 "        var canvas = miniCanvases[i];\n" +
@@ -1340,6 +1353,10 @@ public class NanoHttpServer {
                 "function loadMiniPreview(url, canvas) {\n" +
                 "    var ctx = canvas.getContext('2d');\n" +
                 "    var frames = []; var idx = 0;\n" +
+                "    canvas.isVisible = false;\n" + 
+                "    canvas.hasData = false;\n" +
+                "    var parentCard = canvas.closest('.video-item');\n" +
+                "    if(parentCard) animationObserver.observe(parentCard);\n" +
                 "    fetch(url).then(response => {\n" +
                 "        const reader = response.body.getReader();\n" +
                 "        var buffer = new Uint8Array(0);\n" +
@@ -1375,10 +1392,12 @@ public class NanoHttpServer {
                 "        }\n" +
                 "        pump();\n" +
                 "    });\n" +
-                "    function startAnimation() {\n" +
+                "    // FIX: Motor inteligente atado al objeto canvas\n" +
+                "    canvas.startAnim = function() {\n" +
                 "        if(canvas.isAnimating) return;\n" +
                 "        canvas.isAnimating = true;\n" +
                 "        function loop() {\n" +
+                "            if(!canvas.isVisible) { canvas.isAnimating = false; return; } // <--- STOP SI NO SE VE\n" +
                 "            if(frames.length > 0) {\n" +
                 "                ctx.drawImage(frames[idx], 0, 0, canvas.width, canvas.height);\n" +
                 "                idx = (idx + 1) % frames.length;\n" +
@@ -1386,8 +1405,9 @@ public class NanoHttpServer {
                 "            setTimeout(() => requestAnimationFrame(loop), 100);\n" +
                 "        }\n" +
                 "        loop();\n" +
-                "    }\n" +
-                "}\n" +
+                "    };\n" +
+                "    // Puente para compatibilidad con código antiguo que llame a startAnimation()\n" +
+                "    var startAnimation = function() { canvas.hasData = true; if(canvas.isVisible) canvas.startAnim(); };\n" +             "}\n" +
                 "var parasiteInterval = null; var parasiteBuffer = []; var parasiteIdx = 0;\n" +
                 "function injectLivePreview() {\n" +
                 "   fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
