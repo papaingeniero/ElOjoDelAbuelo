@@ -654,11 +654,11 @@ public class NanoHttpServer {
                         ? ".camera-error { background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; animation: blink 1s infinite; z-index: 2000; } @keyframes blink { 50% { opacity: 0.5; } }\\n"
                         : "")
                 +
-                ".header { padding: 20px; text-align: center; background: #1f1f1f; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }\n"
+                ".header { padding: 12px; text-align: center; background: #1f1f1f; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }\n"
                 +
                 ".stats-bar { display: flex; justify-content: space-around; background: #333; padding: 10px; margin: 10px; border-radius: 8px; font-size: 14px; flex-shrink: 0; }\n"
                 +
-                ".live-btn { display: inline-block; background: #d32f2f; color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; animation: pulse 2s infinite; }\n"
+                ".live-btn { display: inline-block; background: #d32f2f; color: white; padding: 6px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; animation: pulse 2s infinite; }\n"
                 +
                 "@keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }\n"
                 +

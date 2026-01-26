@@ -1967,5 +1967,14 @@ Basándonos en el ratio exacto de **11:9**:
 1.  **Recálculo**: Fijando el alto en **90px**, el ancho resultante exacto es **110px**.
 2.  **CSS**: Ajustado `.thumb-container` y `min-width` para bloquear estas dimensiones.
 
+### ✅ v3.9.7-dev.11: Estilización Compacta del Dashboard | 2026-01-26
+
+**El Problema**:
+La cabecera y el botón de "Cámara en Vivo" ocupaban un espacio vertical excesivo, desplazando el contenido útil de la galería hacia abajo en dispositivos móviles.
+
+**La Solución (Ajuste Estético)**:
+1.  **Header**: Reducido el padding de `20px` a `12px` para ganar espacio vertical.
+2.  **Live Button**: Ajustada la altura del botón (padding vertical de `15px` a `6px`) para hacerlo más elegante y funcional sin perder su capacidad de atraer la atención.
+
 **Resultado**:
-Miniaturas perfectamente nítidas y sin deformación, respetando la herencia visual del sensor original del Galaxy S.
+Un diseño más "limpio" y profesional que prioriza la visibilidad de los vídeos mientras mantiene los elementos de control accesibles.
