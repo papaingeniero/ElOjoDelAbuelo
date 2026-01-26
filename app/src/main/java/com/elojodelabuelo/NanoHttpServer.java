@@ -674,8 +674,9 @@ public class NanoHttpServer {
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
                 // ANTES: width: 80px; height: 60px;
                 // AHORA: width: 150px; height: 110px; (¡GIGANTE!)
+                // ahora: 110x90 
                 // Además mantenemos el degradado bonito que te dije antes.
-                ".thumb-container { position: relative; width: 150px; height: 110px; min-width: 150px; margin-right: 12px; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }\n" +
+                ".thumb-container { position: relative; width: 110px; height: 90px; min-width: 110px; margin-right: 12px; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }\n" +
                 ".thumb { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; transform-origin: 0 0; z-index: 5; }\n" +
                 ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: cover; }\n" +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +

@@ -1957,4 +1957,15 @@ Aunque el entorno de desarrollo es capaz de generar el APK, no tiene un puente a
 
 **Decisión**:
 Documentamos este "bloqueo de hardware" como un recordatorio de que la ingeniería de campo requiere el cable conectado. Procederemos a un commit de estado "Staged/Broken" según el workflow para no perder el trabajo de meta-ingeniería realizado.
+### ✅ v3.9.7-dev.10: Proporción Áurea de Bitácora | 2026-01-26
 
+**El Problema**:
+Las miniaturas de los vídeos en la bitácora (`150x110`) no eran proporcionales a la resolución de captura del sensor CIF (`352x288`), lo que generaba una ligera distorsión visual (estiramiento).
+
+**La Solución (Ingeniería de Precisión)**:
+Basándonos en el ratio exacto de **11:9**:
+1.  **Recálculo**: Fijando el alto en **90px**, el ancho resultante exacto es **110px**.
+2.  **CSS**: Ajustado `.thumb-container` y `min-width` para bloquear estas dimensiones.
+
+**Resultado**:
+Miniaturas perfectamente nítidas y sin deformación, respetando la herencia visual del sensor original del Galaxy S.
