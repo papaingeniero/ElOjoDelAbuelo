@@ -1978,3 +1978,14 @@ La cabecera y el botón de "Cámara en Vivo" ocupaban un espacio vertical excesi
 
 **Resultado**:
 Un diseño más "limpio" y profesional que prioriza la visibilidad de los vídeos mientras mantiene los elementos de control accesibles.
+
+### ✅ v3.9.7-dev.12: Optimización de Píxeles Verticales | 2026-01-26
+
+**El Problema**:
+A pesar de la compactación del header, seguía existiendo un pequeño espacio vacío antes de la lista de vídeos que desperdiciaba "real estate" en pantalla.
+
+**La Solución**:
+Ajustado el CSS de `.library` para anular el `padding-top` (0px), permitiendo que la sección de vídeos se asiente directamente contra la barra de estadísticas.
+
+**Resultado**:
+Los vídeos suben unos píxeles más, mejorando la densidad de información en la pantalla inicial del dashboard.

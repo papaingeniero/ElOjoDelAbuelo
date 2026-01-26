@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.12] - 2026-01-26
+### Changed
+- **Web Dashboard (UI)**: Ajuste de padding en `.library`.
+    - Eliminado el `padding-top` (set a 0px) para maximizar el uso del espacio bajo la cabecera.
+
 ## [v3.9.7-dev.11] - 2026-01-26
 ### Changed
 - **Web Dashboard (UI)**: Compactación de la interfaz de usuario.

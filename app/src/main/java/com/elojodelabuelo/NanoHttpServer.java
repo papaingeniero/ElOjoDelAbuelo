@@ -662,7 +662,7 @@ public class NanoHttpServer {
                 +
                 "@keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }\n"
                 +
-                ".library { flex-grow: 1; flex-shrink: 1; flex-basis: 0; padding: 10px; overflow-y: auto; height: 100%; min-height: 0; }\n"
+                ".library { flex-grow: 1; flex-shrink: 1; flex-basis: 0; padding: 10px; padding-top: 0px; overflow-y: auto; height: 100%; min-height: 0; }\n"
                 +
                 ".section-title { font-size: 0.9em; text-transform: uppercase; color: #888; margin-bottom: 10px; letter-spacing: 1px; }\n"
                 +
