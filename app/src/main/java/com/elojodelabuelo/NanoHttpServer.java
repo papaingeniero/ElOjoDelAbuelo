@@ -154,7 +154,7 @@ public class NanoHttpServer {
                     os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
                     // Solo logueamos si es video real, no previews, para no saturar
-                    if(uri.startsWith("/video_")) {
+                    if (uri.startsWith("/video_")) {
                         SentinelService.logToWeb("📺 VIDEO: Reproduciendo " + uri);
                     }
                     serveVideoFile(os, uri.substring(1), method);
@@ -222,8 +222,8 @@ public class NanoHttpServer {
 
         private void serveLiveStream(OutputStream os) throws IOException {
             // Inicializamos el reloj al entrar para dar margen inicial
-            lastHeartbeatTime = System.currentTimeMillis(); 
-            
+            lastHeartbeatTime = System.currentTimeMillis();
+
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write(("Content-Type: multipart/x-mixed-replace; boundary=" + BOUNDARY + "\r\n").getBytes());
             os.write("Connection: keep-alive\r\n".getBytes());
@@ -491,13 +491,14 @@ public class NanoHttpServer {
 
         /**
          * GET /api/list_videos?offset=0&limit=10
-         * Returns paginated list of videos with metadata (extracted from filename only).
+         * Returns paginated list of videos with metadata (extracted from filename
+         * only).
          * Response: JSON array [{name, size, date, thumb, preview, duration, fps}, ...]
          */
         private void serveVideoList(OutputStream os, String uri) throws IOException {
             int offset = 0;
             int limit = 10;
-            
+
             // Parse query params
             try {
                 if (uri.contains("?")) {
@@ -506,15 +507,18 @@ public class NanoHttpServer {
                     for (String pair : pairs) {
                         String[] kv = pair.split("=");
                         if (kv.length == 2) {
-                            if (kv[0].equals("offset")) offset = Integer.parseInt(kv[1]);
-                            else if (kv[0].equals("limit")) limit = Integer.parseInt(kv[1]);
+                            if (kv[0].equals("offset"))
+                                offset = Integer.parseInt(kv[1]);
+                            else if (kv[0].equals("limit"))
+                                limit = Integer.parseInt(kv[1]);
                         }
                     }
                 }
-            } catch (Exception e) { /* Use defaults */ }
-            
+            } catch (Exception e) {
+                /* Use defaults */ }
+
             StringBuilder jsonArray = new StringBuilder("[");
-            
+
             if (STORAGE_DIR.exists()) {
                 File[] files = STORAGE_DIR.listFiles();
                 if (files != null) {
@@ -525,7 +529,7 @@ public class NanoHttpServer {
                             videos.add(f);
                         }
                     }
-                    
+
                     // Sort by date (newest first)
                     java.util.Collections.sort(videos, new Comparator<File>() {
                         @Override
@@ -533,23 +537,23 @@ public class NanoHttpServer {
                             return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
                         }
                     });
-                    
+
                     // Paginate
                     int start = Math.min(offset, videos.size());
                     int end = Math.min(offset + limit, videos.size());
-                    
+
                     for (int i = start; i < end; i++) {
                         File f = videos.get(i);
                         String name = f.getName();
                         long size = f.length();
                         long date = f.lastModified();
-                        
+
                         // Extract metadata from filename ONLY (Regex)
                         String thumbName = name.replace(".mjpeg", ".jpg");
                         String timestamp = "";
                         int fps = 10; // Default
                         long duration = 0;
-                        
+
                         // Pattern: video_YYYYMMDD_HHMMSS_Xfps.mjpeg
                         java.util.regex.Matcher m = java.util.regex.Pattern
                                 .compile("video_(\\d{8}_\\d{6})_(\\d+)fps")
@@ -557,40 +561,45 @@ public class NanoHttpServer {
                         if (m.find()) {
                             timestamp = m.group(1);
                             fps = Integer.parseInt(m.group(2));
-                            
+
                             // Duration from filename timestamp + lastModified
                             try {
-                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
+                                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss",
+                                        Locale.US);
                                 java.util.Date creationDate = sdf.parse(timestamp);
                                 duration = (f.lastModified() - creationDate.getTime()) / 1000;
-                                if (duration < 0) duration = 0;
-                            } catch (Exception e) { }
+                                if (duration < 0)
+                                    duration = 0;
+                            } catch (Exception e) {
+                            }
                         }
-                        
+
                         // Preview file check
                         String previewName = "preview_" + timestamp + ".mjpeg";
                         File previewFile = new File(STORAGE_DIR, previewName);
                         boolean hasPreview = previewFile.exists();
                         File thumbFile = new File(STORAGE_DIR, thumbName);
                         boolean hasThumb = thumbFile.exists();
-                        
-                        if (i > start) jsonArray.append(",");
+
+                        if (i > start)
+                            jsonArray.append(",");
                         jsonArray.append("{");
                         jsonArray.append("\"name\":\"").append(name).append("\",");
                         jsonArray.append("\"size\":").append(size).append(",");
                         jsonArray.append("\"date\":").append(date).append(",");
                         jsonArray.append("\"thumb\":").append(hasThumb ? "\"" + thumbName + "\"" : "null").append(",");
-                        jsonArray.append("\"preview\":").append(hasPreview ? "\"" + previewName + "\"" : "null").append(",");
+                        jsonArray.append("\"preview\":").append(hasPreview ? "\"" + previewName + "\"" : "null")
+                                .append(",");
                         jsonArray.append("\"duration\":").append(duration).append(",");
                         jsonArray.append("\"fps\":").append(fps);
                         jsonArray.append("}");
                     }
                 }
             }
-            
+
             jsonArray.append("]");
             String json = jsonArray.toString();
-            
+
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
             os.write("Cache-Control: no-cache\r\n".getBytes());
@@ -622,7 +631,8 @@ public class NanoHttpServer {
         // LAZY LOAD: Video list generated by JavaScript, not Java
         StringBuilder listHtml = new StringBuilder();
         listHtml.append("<div id='video-list-container'></div>");
-        listHtml.append("<div id='loading-sentinel' style='text-align:center; padding:20px; color:#888;'>⏳ Cargando grabaciones...</div>");
+        listHtml.append(
+                "<div id='loading-sentinel' style='text-align:center; padding:20px; color:#888;'>⏳ Cargando grabaciones...</div>");
 
         // Stats
         int batLevel = SystemStats.getBatteryLevel(context);
@@ -668,17 +678,21 @@ public class NanoHttpServer {
                 +
                 // ANTES: padding: 15px;
                 // AHORA: padding: 8px; (Más ajustado al borde)
-                ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 6px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s, opacity 0.5s, filter 0.5s; }\n" +
+                ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 6px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s, opacity 0.5s, filter 0.5s; }\n"
+                +
                 ".video-item.watched { opacity: 0.5; filter: grayscale(100%); }\n" +
                 ".video-item:active { transform: scale(0.98); background: #3d3d3d; }\n" +
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
                 // ANTES: width: 80px; height: 60px;
                 // AHORA: width: 150px; height: 110px; (¡GIGANTE!)
-                // ahora: 110x90 
+                // ahora: 110x90
                 // Además mantenemos el degradado bonito que te dije antes.
-                ".thumb-container { position: relative; width: 110px; height: 90px; min-width: 110px; margin-right: 12px; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }\n" +
-                ".thumb { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; transform-origin: 0 0; z-index: 5; }\n" +
-                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: cover; }\n" +
+                ".thumb-container { position: relative; width: 110px; height: 90px; min-width: 110px; margin-right: 12px; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }\n"
+                +
+                ".thumb { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; transform-origin: 0 0; z-index: 5; }\n"
+                +
+                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: cover; }\n"
+                +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +
                 "/* Modal Player */\n" +
                 "#player-modal, #live-view-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; flex-direction: column; }\n"
@@ -1121,17 +1135,23 @@ public class NanoHttpServer {
                 "    fetch('/stats').then(r => r.json()).then(data => {\n" +
                 "      var batIcon = data.charging ? '⚡' : (data.bat > 20 ? '🔋' : '🪫');\n" +
                 "      \n" +
-                "      // FIX: Usamos querySelectorAll para actualizar TODAS las copias de los stats (Main y Modales)\n" +
-                "      document.querySelectorAll('.stat-bat').forEach(function(el) { el.innerText = batIcon + ' ' + data.bat + '%'; });\n" +
+                "      // FIX: Usamos querySelectorAll para actualizar TODAS las copias de los stats (Main y Modales)\n"
+                +
+                "      document.querySelectorAll('.stat-bat').forEach(function(el) { el.innerText = batIcon + ' ' + data.bat + '%'; });\n"
+                +
                 "      \n" +
                 "      if (lastTemp === null) lastTemp = data.temp;\n" +
-                "      if (data.temp > lastTemp) lastTrend = ' <span style=\"color:#ff4444; font-size:0.8em;\">▲</span>';\n" +
-                "      else if (data.temp < lastTemp) lastTrend = ' <span style=\"color:#66ff66; font-size:0.8em;\">▼</span>';\n" +
+                "      if (data.temp > lastTemp) lastTrend = ' <span style=\"color:#ff4444; font-size:0.8em;\">▲</span>';\n"
+                +
+                "      else if (data.temp < lastTemp) lastTrend = ' <span style=\"color:#66ff66; font-size:0.8em;\">▼</span>';\n"
+                +
                 "      lastTemp = data.temp;\n" +
                 "      var tempIcon = data.temp > 40 ? '🔥' : '🌡️';\n" +
                 "      \n" +
-                "      document.querySelectorAll('.stat-temp').forEach(function(el) { el.innerHTML = tempIcon + ' ' + data.temp + '°C' + lastTrend; });\n" +
-                "      document.querySelectorAll('.stat-storage').forEach(function(el) { el.innerText = '💾 ' + data.storage; });\n" +
+                "      document.querySelectorAll('.stat-temp').forEach(function(el) { el.innerHTML = tempIcon + ' ' + data.temp + '°C' + lastTrend; });\n"
+                +
+                "      document.querySelectorAll('.stat-storage').forEach(function(el) { el.innerText = '💾 ' + data.storage; });\n"
+                +
                 "      \n" +
                 "      // Status update (color logic)\n" +
                 "      document.querySelectorAll('.stat-status').forEach(function(el) {\n" +
@@ -1147,11 +1167,12 @@ public class NanoHttpServer {
                 "    document.getElementById('live-stream-img').src = '/stream';\n" +
                 "    history.pushState(null, null, location.href);\n" +
                 "    startHeartbeat();\n" + // <--- AÑADIDO
-                "}\n" +                
+                "}\n" +
                 "function closeLiveView() {\n" +
                 "    document.getElementById('live-view-modal').style.display = 'none';\n" +
                 "    // Limpieza agresiva del DOM\n" +
-                "    var container = document.getElementById('live-view-modal').querySelector('div[style*=\"overflow:hidden\"]');\n" +
+                "    var container = document.getElementById('live-view-modal').querySelector('div[style*=\"overflow:hidden\"]');\n"
+                +
                 "    var oldImg = document.getElementById('live-stream-img');\n" +
                 "    if(oldImg) { oldImg.src = ''; oldImg.remove(); }\n" +
                 "    \n" +
@@ -1167,7 +1188,7 @@ public class NanoHttpServer {
                 "    // Backup: Enviar señal de muerte inmediata\n" +
                 "    fetch('/api/kill_stream').catch(e => {});\n" +
                 "    // Parar latido (Si no hay grabación de fondo)\n" +
-                "    stopHeartbeat();\n" + 
+                "    stopHeartbeat();\n" +
                 "}\n" +
                 "function openSettings() {\n" +
                 "   document.getElementById('settings-modal').style.display = 'flex';\n" +
@@ -1247,7 +1268,8 @@ public class NanoHttpServer {
                 "  fetch('/api/list_videos?offset=' + currentOffset + '&limit=' + LIMIT)\n" +
                 "    .then(r => r.json())\n" +
                 "    .then(videos => {\n" +
-                "      if(videos.length === 0) { noMoreVideos = true; document.getElementById('loading-sentinel').innerHTML = '✅ Fin de grabaciones'; return; }\n" +
+                "      if(videos.length === 0) { noMoreVideos = true; document.getElementById('loading-sentinel').innerHTML = '✅ Fin de grabaciones'; return; }\n"
+                +
                 "      renderCards(videos);\n" +
                 "      currentOffset += videos.length;\n" +
                 "      isLoading = false;\n" +
@@ -1261,20 +1283,27 @@ public class NanoHttpServer {
                 "    div.className = 'video-item';\n" +
                 "    // Thumbnail\n" +
                 "    var thumbHtml = '<div class=\\'thumb-container\\'>';\n" +
-                "    if(v.thumb) thumbHtml += '<img src=\\'/thumbnails/' + v.thumb + '\\' class=\\'thumb\\' loading=\\'lazy\\'>';\n" +
-                "    if(v.preview) thumbHtml += '<canvas class=\\'mini-canvas\\' data-src=\\'/' + v.preview + '\\'></canvas>';\n" +
+                "    if(v.thumb) thumbHtml += '<img src=\\'/thumbnails/' + v.thumb + '\\' class=\\'thumb\\' loading=\\'lazy\\'>';\n"
+                +
+                "    if(v.preview) thumbHtml += '<canvas class=\\'mini-canvas\\' data-src=\\'/' + v.preview + '\\'></canvas>';\n"
+                +
                 "    if(!v.thumb && !v.preview) thumbHtml += '<div class=\\'icon\\'>📼</div>';\n" +
                 "    thumbHtml += '</div>';\n" +
                 "    // Metadata\n" +
                 "    var d = new Date(v.date);\n" +
-                "    var dateStr = '📅 ' + ('0'+d.getDate()).slice(-2) + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + d.getFullYear();\n" +
-                "    var timeStr = '⏰ ' + ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2) + ':' + ('0'+d.getSeconds()).slice(-2);\n" +
-                "    var sizeStr = v.size > 1024*1024 ? (v.size/(1024*1024)).toFixed(1) + ' MB' : Math.floor(v.size/1024) + ' KB';\n" +
+                "    var dateStr = '📅 ' + ('0'+d.getDate()).slice(-2) + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + d.getFullYear();\n"
+                +
+                "    var timeStr = '⏰ ' + ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2) + ':' + ('0'+d.getSeconds()).slice(-2);\n"
+                +
+                "    var sizeStr = v.size > 1024*1024 ? (v.size/(1024*1024)).toFixed(1) + ' MB' : Math.floor(v.size/1024) + ' KB';\n"
+                +
                 "    var durationStr = v.duration + 's';\n" +
                 "    var fpsStr = '🎥 ' + v.fps + ' FPS';\n" +
                 "    var infoHtml = '<div class=\\'info\\'>' +\n" +
-                "      '<div style=\\'font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;\\'>' + dateStr + ' &nbsp; ' + timeStr + '</div>' +\n" +
-                "      '<div style=\\'color:#ccc; font-size:13px;\\'><b>💾 ' + sizeStr + '</b> &nbsp;|&nbsp; <b>⏳ ' + durationStr + '</b> &nbsp;|&nbsp; ' + fpsStr + '</div></div>';\n" +
+                "      '<div style=\\'font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;\\'>' + dateStr + ' &nbsp; ' + timeStr + '</div>' +\n"
+                +
+                "      '<div style=\\'color:#ccc; font-size:13px;\\'><b>💾 ' + sizeStr + '</b> &nbsp;|&nbsp; <b>⏳ ' + durationStr + '</b> &nbsp;|&nbsp; ' + fpsStr + '</div></div>';\n"
+                +
                 "    div.innerHTML = thumbHtml + infoHtml;\n" +
                 "    div.setAttribute('onclick', \"playVideo('\" + v.name + \"')\");\n" +
                 "    container.appendChild(div);\n" +
@@ -1341,7 +1370,8 @@ public class NanoHttpServer {
                 "                        if(!canvas) return;\n" +
                 "                        if(entry.isIntersecting) {\n" +
                 "                            canvas.isVisible = true;\n" +
-                "                            if(canvas.hasData && !canvas.isAnimating && canvas.startAnim) canvas.startAnim();\n" +
+                "                            if(canvas.hasData && !canvas.isAnimating && canvas.startAnim) canvas.startAnim();\n"
+                +
                 "                        } else {\n" +
                 "                            canvas.isVisible = false;\n" +
                 "                        }\n" +
@@ -1357,7 +1387,7 @@ public class NanoHttpServer {
                 "function loadMiniPreview(url, canvas) {\n" +
                 "    var ctx = canvas.getContext('2d');\n" +
                 "    var frames = []; var idx = 0;\n" +
-                "    canvas.isVisible = false;\n" + 
+                "    canvas.isVisible = false;\n" +
                 "    canvas.hasData = false;\n" +
                 "    var parentCard = canvas.closest('.video-item');\n" +
                 "    if(parentCard) animationObserver.observe(parentCard);\n" +
@@ -1411,7 +1441,8 @@ public class NanoHttpServer {
                 "        loop();\n" +
                 "    };\n" +
                 "    // Puente para compatibilidad con código antiguo que llame a startAnimation()\n" +
-                "    var startAnimation = function() { canvas.hasData = true; if(canvas.isVisible) canvas.startAnim(); };\n" +             "}\n" +
+                "    var startAnimation = function() { canvas.hasData = true; if(canvas.isVisible) canvas.startAnim(); };\n"
+                + "}\n" +
                 "var parasiteInterval = null; var parasiteBuffer = []; var parasiteIdx = 0;\n" +
                 "function injectLivePreview() {\n" +
                 "   fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
@@ -1420,7 +1451,7 @@ public class NanoHttpServer {
                 "       var container = document.querySelector('.library');\n" +
                 "       var div = document.createElement('div'); div.className = 'video-item'; div.id = 'temp-preview-card'; div.style.borderLeft = '4px solid #d32f2f'; div.style.background = '#3e2727';\n"
                 +
-                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='thumb mini-canvas' width='352' height='288'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
+                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='mini-canvas'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
                 +
                 "       var title = container.querySelector('.section-title'); title.parentNode.insertBefore(div, title.nextSibling);\n"
                 +
@@ -1476,7 +1507,8 @@ public class NanoHttpServer {
                 "        \n" +
                 "        // Derive preview filename from video filename (remove FPS suffix)\n" +
                 "        // video_YYYYMMDD_HHMMSS_XXfps.mjpeg -> preview_YYYYMMDD_HHMMSS.mjpeg\n" +
-                "        var previewFilename = filename.replace(\"video_\", \"preview_\").replace(/_\\d+fps/, \"\");\n" +
+                "        var previewFilename = filename.replace(\"video_\", \"preview_\").replace(/_\\d+fps/, \"\");\n"
+                +
                 "        \n" +
                 "        card.className = 'video-item';\n" +
                 "        card.id = '';\n" +
@@ -1485,11 +1517,13 @@ public class NanoHttpServer {
                 "        \n" +
                 "        // Injected canvas for animation\n" +
                 "        var innerContent = \"<div class='thumb-container'>\" +\n" +
-                // VERSIÓN FINAL: con canvas, sin img estática encima.  Sin parámetros basura, sin reintentos, sin esperas extra.
+                // VERSIÓN FINAL: con canvas, sin img estática encima. Sin parámetros basura,
+                // sin reintentos, sin esperas extra.
                 "            \"<canvas class='mini-canvas' data-src='/\" + previewFilename + \"'></canvas>\" +\n" +
                 "            \"</div>\" +\n" +
                 "            \"<div class='info'>\" +\n" +
-                "            \"<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>\" + dateStr + \" &nbsp; \" + timeStr + \"</div>\" +\n" +
+                "            \"<div style='font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;'>\" + dateStr + \" &nbsp; \" + timeStr + \"</div>\" +\n"
+                +
                 "            \"<div style='color:#ccc; font-size:13px;'>\" +\n" +
                 "            \"<b>💾 \" + sizeMB + \"</b>\" +\n" +
                 "            \" &nbsp;|&nbsp; \" +\n" +
@@ -1512,7 +1546,8 @@ public class NanoHttpServer {
                 "\n" +
                 "function cleanupLivePreview() {\n" +
                 "   if(parasiteInterval) clearInterval(parasiteInterval);\n" +
-                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n" +
+                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n"
+                +
                 "    stopHeartbeat();\n" + // <--- AÑADIDO
                 "   setTimeout(function() { \n" +
                 "       fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +

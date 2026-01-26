@@ -1989,3 +1989,14 @@ Ajustado el CSS de `.library` para anular el `padding-top` (0px), permitiendo qu
 
 **Resultado**:
 Los vídeos suben unos píxeles más, mejorando la densidad de información en la pantalla inicial del dashboard.
+
+### ❌ Intento Fallido (v3.9.7-dev.13): Bloqueo de Infraestructura Gradle | 2026-01-26
+
+**El Problema**:
+Al intentar compilar la versión `dev.13`, el wrapper de Gradle colapsó con una excepción `java.io.FileNotFoundException ... .lck (Operation not permitted)`.
+
+**Análisis Forense**:
+No es un error de código Java, sino un bloqueo a nivel de sistema de archivos en la caché del Wrapper de Gradle (`.gradle/wrapper/...`). Probablemente un proceso `java` zombie o una instancia anterior del daemon dejó el archivo de bloqueo en estado inconsistente.
+
+**Impacto**:
+Imposible compilar o desplegar hasta sanear el entorno de build local. Se procede a commitear el estado actual (trabajo en proceso en `NanoHttpServer.java`) antes de intentar maniobras de recuperación del sistema.
