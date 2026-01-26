@@ -2000,3 +2000,18 @@ No es un error de código Java, sino un bloqueo a nivel de sistema de archivos e
 
 **Impacto**:
 Imposible compilar o desplegar hasta sanear el entorno de build local. Se procede a commitear el estado actual (trabajo en proceso en `NanoHttpServer.java`) antes de intentar maniobras de recuperación del sistema.
+
+### ✅ v3.9.7-dev.14: Estandarización Geométrica del Parásito | 2026-01-26
+
+**El Problema**:
+La tarjeta de grabación activa (el "Parásito") tenía dimensiones y proporciones diferentes a las tarjetas de vídeos finalizados. Esto se debía a que se creaba con una resolución explícita de `352x288` (ratio 1.22), mientras que el resto de miniaturas dependían del tamaño por defecto del navegador (ratio 2.0).
+
+**La Solución (Estrategia de Mimetismo)**:
+Hemos eliminado los atributos `width` y `height` explícitos del `<canvas>` inyectado. Ahora el navegador lo renderiza con su tamaño por defecto, y el CSS `object-fit: cover` lo recorta exactamente igual que a sus hermanos mayores.
+
+**Observación de Campo (Fallo Estético Detectado)**:
+Aunque el tamaño y la proporción son idénticos, la miniatura del parásito **no está centrada**. Se ve desplazada significativamente hacia abajo, mostrando solo la parte superior del frame (probablemente debido a cómo el canvas maneja su `drawingBuffer` vs su tamaño de visualización en este contexto).
+*Nota:* El fix de centrado queda pendiente para un futuro ciclo manual.
+
+**Lección**:
+A veces, "igualar" las condiciones técnicas no garantiza "igualar" el resultado visual si el motor de renderizado (WebView Android 2.3) tiene comportamientos erráticos con el alineamiento vertical de elementos canvas.

@@ -825,3 +825,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Thermal Guardian**: Automatic safety shut-off when CPU temperature > 45°.
 - **System Stats**: Battery and Storage monitoring.
 - **NanoHTTPD**: Lightweight Web Server.
+- **ui(web)**: Eliminados atributos de tamaño fijo en miniatura de grabación activa para igualar proporción.
+- **fix(ux)**: Corrección de alineamiento visual pendiente (miniatura desplazada).
