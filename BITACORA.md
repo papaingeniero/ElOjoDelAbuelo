@@ -2015,3 +2015,14 @@ Aunque el tamaño y la proporción son idénticos, la miniatura del parásito **
 
 **Lección**:
 A veces, "igualar" las condiciones técnicas no garantiza "igualar" el resultado visual si el motor de renderizado (WebView Android 2.3) tiene comportamientos erráticos con el alineamiento vertical de elementos canvas.
+
+### 🧪 v3.9.7-dev.16: Ajuste Experimental de Geometría (320x200) | 2026-01-27
+
+**El Experimento**:
+Intentando corregir el "efecto caída" de la miniatura parásito, hemos reintroducido dimensiones fijas en el canvas, pero con un ratio diferente: `320x200` (Ratio 1.6).
+
+**Hipótesis**:
+Un ratio intermedio entre el nativo (1.22) y el panorámico (2.0) podría mitigar el recorte agresivo y mejorar el centrado.
+
+**Resultado**:
+Mejora parcial. La miniatura se percibe "algo mejor", menos distorsionada, aunque persiste un ligero desplazamiento vertical ("caída"). Se decide mantener este estado como base estable para futuras iteraciones de UI.
