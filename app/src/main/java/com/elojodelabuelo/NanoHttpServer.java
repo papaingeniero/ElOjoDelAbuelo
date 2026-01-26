@@ -1451,7 +1451,7 @@ public class NanoHttpServer {
                 "       var container = document.querySelector('.library');\n" +
                 "       var div = document.createElement('div'); div.className = 'video-item'; div.id = 'temp-preview-card'; div.style.borderLeft = '4px solid #d32f2f'; div.style.background = '#3e2727';\n"
                 +
-                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='mini-canvas' width='320px' height='200px'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
+                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='thumb mini-canvas' width='320px' height='200px'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
                 +
                 "       var title = container.querySelector('.section-title'); title.parentNode.insertBefore(div, title.nextSibling);\n"
                 +

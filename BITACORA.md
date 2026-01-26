@@ -2026,3 +2026,14 @@ Un ratio intermedio entre el nativo (1.22) y el panorámico (2.0) podría mitiga
 
 **Resultado**:
 Mejora parcial. La miniatura se percibe "algo mejor", menos distorsionada, aunque persiste un ligero desplazamiento vertical ("caída"). Se decide mantener este estado como base estable para futuras iteraciones de UI.
+
+### ✅ v3.9.7-dev.17: Restauración de Clase .thumb | 2026-01-27
+
+**El Problema**:
+En la limpieza anterior, eliminamos accidentalmente la clase `.thumb` del parásito. Aunque visualmente el CSS era similar, esta clase podría ser clave para selectores JS específicos o reglas CSS compartidas con las imágenes estáticas.
+
+**La Corrección**:
+Se ha reinsertado `class='thumb mini-canvas'` en la cadena de inyección HTML del parásito.
+
+**Resultado**:
+Consistencia total de clases entre elementos estáticos y dinámicos.

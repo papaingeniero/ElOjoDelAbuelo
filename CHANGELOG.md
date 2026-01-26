@@ -828,3 +828,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ui(web)**: Eliminados atributos de tamaño fijo en miniatura de grabación activa para igualar proporción.
 - **fix(ux)**: Corrección de alineamiento visual pendiente (miniatura desplazada).
 - **ui(web)**: Ajuste de canvas parásito a 320x200px para mejorar alineamiento visual.
+- **fix(web)**: Restaurada clase CSS .thumb perdida en componente parásito.
