@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.8] - 2026-01-26
+### Engineering & Process
+- **Workflow /deploy_snapshot**: Fortificado el protocolo de despliegue.
+    - Se obliga por contrato a realizar el **Registro Forense** en la Bitácora antes de corregir un fallo.
+    - Se integra el **Protocolo de Cierre Cuaternario** explícitamente al final del ciclo de vida del snapshot.
+
 ## [v3.9.7-dev.7] - 2026-01-25
 ### Fixed
 - **Web Dashboard (JS)**: Corrección definitiva del crash de `onclick` con validación estricta de tipos.

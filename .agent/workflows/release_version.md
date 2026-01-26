@@ -45,6 +45,15 @@ Este workflow implementa las salvaguardas definidas en `legacy_dev_rules.md`.
 4.  **Push Main**:
     *   `git push origin main`
 
-## 4. Cierre
+## 4. Cierre y Verificación de 8 Puntos
 1.  Confirma que `git status` vuelve a estar limpio.
-2.  Informa al usuario: "Release vX.Y.Z desplegada, documentada y etiquetada."
+2.  **Reporte Final Estandarizado**:
+    1. Versión (`build.gradle`)
+    2. Compilación y Despliegue (OK)
+    3. Ejecución en Dispositivo (Corriendo)
+    4. Bitácora (Updated)
+    5. Changelog (Updated)
+    6. Commit & Tag (Hash + Tag)
+    7. Push (Main + Tag)
+    8. Git Status (Clean)
+3.  Informa al usuario: "Release vX.Y.Z desplegada, documentada y etiquetada."

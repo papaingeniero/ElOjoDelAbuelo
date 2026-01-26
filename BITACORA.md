@@ -1933,3 +1933,28 @@ Hemos añadido Validación de Tipos Estricta:
 `if(clickAttr && typeof clickAttr === 'string' && ...)`
 Ahora no solo exigimos que "exista algo", sino que exigimos explícitamente que ese algo sea TEXTO antes de intentar buscar subcadenas en él.
 
+
+### [Meta-Ingeniería] Fortificación de Workflow: El Guardián de la Bitácora | 2026-01-26
+
+**El Problema**:
+Detectamos una "fuga de narrativa". En la prisa del ciclo de Snapshots, el agente (yo) tendía a saltarse el registro en la Bitácora, priorizando solo el Changelog o el commit rápido. Esto violaba la **Regla 5** y mutilaba la historia pedagógica del proyecto.
+
+**La Solución Estratégica**:
+Hemos modificado el archivo de inteligencia `.agent/workflows/deploy_snapshot.md`.
+1.  **Blindaje Forense**: Ahora es obligatorio anotar el ERROR en la Bitácora antes de aplicar el FIX. El "cadáver" del bug debe ser analizado antes de ser enterrado.
+2.  **Cierre Explícito**: Se ha inyectado el **Protocolo de Cierre Cuaternario** (Versión -> Bit -> Chan -> Commit) directamente en los pasos del workflow de snapshots.
+
+**Lección de Ingeniería**:
+El proceso es la armadura del código. Si el proceso es débil, la documentación muere, y sin documentación, el código es solo magia negra inexplicable.
+
+### ❌ Intento Fallido (v3.9.7-dev.9): Error de Conexión ADB | 2026-01-26
+
+**El Problema**:
+Al intentar ejecutar el comando `./gradlew assembleDebug && adb install...`, la compilación fue exitosa (BUILD SUCCESSFUL), pero el despliegue falló catastróficamente con el mensaje `adb: no devices/emulators found`. 
+
+**Análisis Forense**:
+Aunque el entorno de desarrollo es capaz de generar el APK, no tiene un puente activo con el hardware real (Samsung Galaxy S GT-I9000). Sin este puente, la verificación física del "Ojo del Abuelo" es imposible.
+
+**Decisión**:
+Documentamos este "bloqueo de hardware" como un recordatorio de que la ingeniería de campo requiere el cable conectado. Procederemos a un commit de estado "Staged/Broken" según el workflow para no perder el trabajo de meta-ingeniería realizado.
+

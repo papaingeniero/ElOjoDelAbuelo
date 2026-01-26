@@ -1419,7 +1419,7 @@ public class NanoHttpServer {
                 "       var container = document.querySelector('.library');\n" +
                 "       var div = document.createElement('div'); div.className = 'video-item'; div.id = 'temp-preview-card'; div.style.borderLeft = '4px solid #d32f2f'; div.style.background = '#3e2727';\n"
                 +
-                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='thumb mini-canvas' width='320' height='240'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
+                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='thumb mini-canvas' width='352' height='288'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
                 +
                 "       var title = container.querySelector('.section-title'); title.parentNode.insertBefore(div, title.nextSibling);\n"
                 +
@@ -1430,11 +1430,11 @@ public class NanoHttpServer {
                 "function startParasite() {\n" +
                 "   var img = document.createElement('img'); img.src = '/stream'; img.style.display = 'none'; img.id = 'hidden-stream-source'; document.body.appendChild(img);\n"
                 +
-                "   var hiddenCanvas = document.createElement('canvas'); hiddenCanvas.width = 320; hiddenCanvas.height = 240; var ctx = hiddenCanvas.getContext('2d');\n"
+                "   var hiddenCanvas = document.createElement('canvas'); hiddenCanvas.width = 352; hiddenCanvas.height = 288; var ctx = hiddenCanvas.getContext('2d');\n"
                 +
                 "   parasiteBuffer = [];\n" +
                 "   parasiteInterval = setInterval(function() {\n" +
-                "       try { ctx.drawImage(img, 0, 0, 320, 240); parasiteBuffer.push(hiddenCanvas.toDataURL('image/jpeg', 0.4)); if (parasiteBuffer.length > 30) parasiteBuffer.shift(); } catch(e) {}\n"
+                "       try { ctx.drawImage(img, 0, 0, 352, 288); parasiteBuffer.push(hiddenCanvas.toDataURL('image/jpeg', 0.4)); if (parasiteBuffer.length > 30) parasiteBuffer.shift(); } catch(e) {}\n"
                 +
                 "   }, 1000);\n" +
                 "   var displayCanvas = document.getElementById('parasite-canvas');\n" +
@@ -1442,7 +1442,7 @@ public class NanoHttpServer {
                 "       var dCtx = displayCanvas.getContext('2d');\n" +
                 "       var pLoop = function() {\n" +
                 "           if(parasiteBuffer.length > 0) {\n" +
-                "               var i = new Image(); i.onload = function() { dCtx.drawImage(i, 0, 0, 320, 240); }; i.src = parasiteBuffer[parasiteIdx]; parasiteIdx = (parasiteIdx + 1) % parasiteBuffer.length;\n"
+                "               var i = new Image(); i.onload = function() { dCtx.drawImage(i, 0, 0, 352, 288); }; i.src = parasiteBuffer[parasiteIdx]; parasiteIdx = (parasiteIdx + 1) % parasiteBuffer.length;\n"
                 +
                 "           }\n" +
                 "           if(document.body.contains(displayCanvas)) setTimeout(pLoop, 100);\n" +

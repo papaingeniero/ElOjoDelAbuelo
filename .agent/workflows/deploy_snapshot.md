@@ -13,6 +13,7 @@ Usa este workflow para pruebas. TRATA CADA SNAPSHOT COMO UN EXPERIMENTO. Si fall
     *   *Objetivo*: No "quemar" números de versión finales en pruebas internas. SemVer: `dev.x` < `Release`.
 2.  **Edita `app/build.gradle`**:
     *   Actualiza `versionName`.
+// turbo
 3.  **Compila y Despliega**:
     *   `./gradlew assembleDebug`
     *   `adb install -r app/build/outputs/apk/debug/app-debug.apk`
@@ -20,15 +21,36 @@ Usa este workflow para pruebas. TRATA CADA SNAPSHOT COMO UN EXPERIMENTO. Si fall
 
 ## 2. Gestión de Fallos (Si el usuario dice "No funciona")
 1.  **STOP**: No corrijas el código todavía.
-2.  **COMMIT DEL ERROR**: Guarda el estado actual para la posteridad.
+2.  **REGISTRO FORENSE (OBLIGATORIO)**:
+    *   Edita `BITACORA.md`: Añade sección `### ❌ Intento Fallido (vX.Y.Z-dev.N): [Por qué falló]`. (Regla 5)
+3.  **COMMIT DEL ERROR**: Guarda el estado actual para la posteridad.
     *   `git add .`
-    *   `git commit -m "chore(debug): Snapshot vX.Y.Z-dev FAILED - [Descripción del Fallo]"`
-    *   *Objetivo*: Que el fallo quede registrado en la historia de Git.
-3.  **CORRIGE E INCREMENTA SUFIJO**:
-    *   Ahora aplica el fix en el código.
+    *   `git commit -m "vX.Y.Z-dev.N chore(debug): FAILED - [Descripción del Fallo]" -m "$(cat BITACORA.md | tail -n 10)"`
+    *   `git push origin main`
+    *   *Objetivo*: Que el fallo y su análisis queden registrados en la historia de Git y suban inmediatamente a la nube según la Sync Policy.
+4.  **CORRIGE E INCREMENTA SUFIJO**:
+    *   Aplica el fix en el código.
     *   Sube el sufijo en `build.gradle` (vX.Y.Z-dev.N+1).
     *   Vuelve al punto 1 (Desplegar).
 
-## 3. Éxito
-1.  Si el usuario valida el snapshot:
-    *   Procede al Commit final (`feat: ...`) o Release.
+## 3. Éxito y Cierre (Protocolo de Cierre Cuaternario - Regla 7)
+Si el usuario valida el funcionamiento:
+
+1.  **Ejecutar Protocolo**:
+    *   [ ] **Incrementar versión** en `build.gradle` (vX.Y.Z-dev.N+1). (Si aplica nueva iteración)
+    *   [ ] **Actualizar BITACORA.md**: Añadir entrada final `### 🚀 vX.Y.Z-dev.N: [Solución Definitiva]` + Detalles técnicos.
+    *   [ ] **Actualizar CHANGELOG.md**: Resumen técnico.
+    *   [ ] **Commit**:
+        `git add .`
+        `git commit -m "vX.Y.Z-dev.N <tipo>: <descripción>" -m "$(cat BITACORA.md | tail -n 20)"`
+2.  **Push Final**: `git push origin main`.
+3.  **Reporte Final Estandarizado (Verificación de 8 Puntos)**:
+    Generar el reporte final verificando:
+    1. Versión (`build.gradle`)
+    2. Compilación y Despliegue (OK)
+    3. Ejecución en Dispositivo (Corriendo)
+    4. Bitácora (Updated)
+    5. Changelog (Updated)
+    6. Commit (Hash)
+    7. Push (Main)
+    8. Git Status (Clean)
