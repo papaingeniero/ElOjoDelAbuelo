@@ -2061,3 +2061,22 @@ Se ha realizado un barrido del código para localizar estas referencias anacrón
 
 **Resultado**:
 Coherencia absoluta entre la realidad física del sensor y las constantes lógicas del software.
+
+### 🚀 v3.9.7-dev.22: Sistema de Auto-Recuperación ADB (Watchdog)
+
+**El Problema (Storytelling) 📜**
+Convertir a "El Abuelo" (Galaxy S) en un servidor 100% autónomo. Hasta ahora, tras varias horas de funcionamiento, el demonio de depuración (adbd) del sistema operativo se quedaba "sordo" (estado offline), obligando a intervenir manualmente para reconectar el IDE desde el MacBook Air.
+
+**La Solución (Ingeniería) 🛠️**
+Hemos implementado un hilo de ejecución paralelo en segundo plano ("Watchdog Silencioso") en `SentinelService`. Su misión es vigilar la salud del puerto de depuración sin consumir recursos innecesarios.
+
+*   **Diagnóstico No-Invasivo**: Cada 30 minutos, ejecuta `netstat` para verificar si el puerto TCP 5555 está en `LISTEN`.
+*   **Intervención Quirúrgica**: Si detecta caída, asume permisos de Root (`su`) y ejecuta la "Triada de Resurrección": `setprop service.adb.tcp.port 5555; stop adbd; start adbd`.
+*   **Observabilidad**: Todas las acciones se registran en el Log Web.
+
+**Lecciones Aprendidas 🎓**
+*   **Autonomía Total**: El dispositivo recupera gestión remota sin intervención humana.
+*   **Eficiencia Térmica**: Usar comprobaciones pasivas (`netstat`) mantiene la CPU en rango óptimo (36°C - 38°C) frente a reinicios ciegos.
+
+**Glosario 📖**
+*   **Watchdog**: Mecanismo de seguridad que monitoriza y recupera el sistema de fallos.

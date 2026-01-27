@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Se eliminaron las referencias experimentales a `320x200` para garantizar la coherencia con el sensor de hardware.
 
 ## [v3.9.7-dev.12] - 2026-01-26
+- **v3.9.7-dev.22**:
+    - `feat(adb)`: 🐕 Implementado Watchdog para auto-recuperación del daemon ADB (Puerto 5555) mediante reinicio root selectivo.
 ### Changed
 - **Web Dashboard (UI)**: Ajuste de padding en `.library`.
     - Eliminado el `padding-top` (set a 0px) para maximizar el uso del espacio bajo la cabecera.
