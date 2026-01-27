@@ -829,3 +829,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **fix(ux)**: Corrección de alineamiento visual pendiente (miniatura desplazada).
 - **ui(web)**: Ajuste de canvas parásito a 320x200px para mejorar alineamiento visual.
 - **fix(web)**: Restaurada clase CSS .thumb perdida en componente parásito.
+- **ui(web)**: Forzada resolución nativa 352x288 en previews MJPEG para evitar distorsión de aspecto.
+- **css**: Añadido object-position: center para unificar recorte de miniaturas.

@@ -689,9 +689,9 @@ public class NanoHttpServer {
                 // Además mantenemos el degradado bonito que te dije antes.
                 ".thumb-container { position: relative; width: 110px; height: 90px; min-width: 110px; margin-right: 12px; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }\n"
                 +
-                ".thumb { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; transform-origin: 0 0; z-index: 5; }\n"
+                ".thumb { width: 100%; height: 100%; object-fit: cover; object-position: center; position: absolute; top:0; left:0; transform-origin: 0 0; z-index: 5; }\n"
                 +
-                ".mini-canvas { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: cover; }\n"
+                ".mini-canvas { width: 100%; height: 100%; position: absolute; object-position: center; top:0; left:0; z-index: 10; transform-origin: 0 0; object-fit: cover; }\n"
                 +
                 ".video-item .info { flex: 1; font-size: 14px; }\n" +
                 "/* Modal Player */\n" +
@@ -1285,7 +1285,7 @@ public class NanoHttpServer {
                 "    var thumbHtml = '<div class=\\'thumb-container\\'>';\n" +
                 "    if(v.thumb) thumbHtml += '<img src=\\'/thumbnails/' + v.thumb + '\\' class=\\'thumb\\' loading=\\'lazy\\'>';\n"
                 +
-                "    if(v.preview) thumbHtml += '<canvas class=\\'mini-canvas\\' data-src=\\'/' + v.preview + '\\'></canvas>';\n"
+                "    if(v.preview) thumbHtml += '<canvas class=\\'mini-canvas\\' width=\\'352\\' height=\\'288\\' data-src=\\'/' + v.preview + '\\'></canvas>';\n"
                 +
                 "    if(!v.thumb && !v.preview) thumbHtml += '<div class=\\'icon\\'>📼</div>';\n" +
                 "    thumbHtml += '</div>';\n" +
@@ -1451,7 +1451,7 @@ public class NanoHttpServer {
                 "       var container = document.querySelector('.library');\n" +
                 "       var div = document.createElement('div'); div.className = 'video-item'; div.id = 'temp-preview-card'; div.style.borderLeft = '4px solid #d32f2f'; div.style.background = '#3e2727';\n"
                 +
-                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='thumb mini-canvas' width='320px' height='200px'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
+                "       div.innerHTML = \"<div class='thumb-container' style='border: 1px solid #d32f2f;'><canvas id='parasite-canvas' class='thumb mini-canvas' width='352px' height='288px'></canvas></div><div class='info'><b>\" + meta.filename + \"</b><br><span style='color:#ff4444; font-weight:bold; animation: blink 1s infinite;'>🔴 GRABANDO...</span></div>\";\n"
                 +
                 "       var title = container.querySelector('.section-title'); title.parentNode.insertBefore(div, title.nextSibling);\n"
                 +

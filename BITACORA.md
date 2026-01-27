@@ -2037,3 +2037,16 @@ Se ha reinsertado `class='thumb mini-canvas'` en la cadena de inyección HTML de
 
 **Resultado**:
 Consistencia total de clases entre elementos estáticos y dinámicos.
+
+### 💎 v3.9.7-dev.20: Unificación Geométrica Total (Quality Upgrade) | 2026-01-27
+
+**El Problema**:
+Detectamos una inconsistencia visual grave: El "Parásito" (grabación en curso) se veía geométricamente correcto (4:3), mientras que las miniaturas de vídeos grabados se veían distorsionadas (panorámicas/aplastadas).
+La causa era que los `<canvas>` de preview se generaban sin dimensiones explícitas, forzando al navegador a usar su default de 300x150 (Ratio 2.0).
+
+**La Solución (Ingeniería de Precisión)**:
+1.  **Resolución Nativa**: Modificada la rutina JS de generación de tarjetas (`renderCards`) para inyectar explícitamente `width='352' height='288'` en los canvas de preview.
+2.  **Alineación CSS**: Añadido `object-position: center;` a las clases `.thumb` y `.mini-canvas` para asegurar un comportamiento de recorte predecible y centrado.
+
+**Resultado**:
+Todas las miniaturas (dinámicas y estáticas) comparten ahora la misma resolución nativa CIF y el mismo comportamiento de renderizado. El "salto" visual al finalizar una grabación ha sido eliminado.
