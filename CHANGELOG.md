@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.21] - 2026-01-27
+### Fixed
+- **Core**: Estandarización de resolución a **352x288** (CIF) en todo el código base.
+    - Se eliminaron las referencias experimentales a `320x200` para garantizar la coherencia con el sensor de hardware.
+
 ## [v3.9.7-dev.12] - 2026-01-26
 ### Changed
 - **Web Dashboard (UI)**: Ajuste de padding en `.library`.

@@ -2050,3 +2050,14 @@ La causa era que los `<canvas>` de preview se generaban sin dimensiones explíci
 
 **Resultado**:
 Todas las miniaturas (dinámicas y estáticas) comparten ahora la misma resolución nativa CIF y el mismo comportamiento de renderizado. El "salto" visual al finalizar una grabación ha sido eliminado.
+
+### ✅ v3.9.7-dev.21: Consistencia de Resolución (352x288) | 2026-01-27
+
+**El Problema**:
+Existían referencias dispersas en el código a una resolución "experimental" de `320x200` (heredada de intentos anteriores de ajustar el aspect ratio), que no se correspondía con la realidad del hardware (CIF `352x288`). Esto generaba potencial confusión y desalineación en el procesamiento de imagen.
+
+**La Solución**:
+Se ha realizado un barrido del código para localizar estas referencias anacrónicas y actualizarlas a la resolución nativa correcta: **352x288**.
+
+**Resultado**:
+Coherencia absoluta entre la realidad física del sensor y las constantes lógicas del software.

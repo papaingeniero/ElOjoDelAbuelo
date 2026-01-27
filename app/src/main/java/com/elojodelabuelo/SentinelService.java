@@ -269,8 +269,8 @@ public class SentinelService extends Service {
         }
     }
     // Globals to store actual size
-    private int PREVIEW_WIDTH = 320;
-    private int PREVIEW_HEIGHT = 240;
+    private int PREVIEW_WIDTH = 352;
+    private int PREVIEW_HEIGHT = 288;
 
     private void setupCameraParameters() {
         Camera.Parameters params = camera.getParameters();
@@ -288,7 +288,7 @@ public class SentinelService extends Service {
             bestSize = sizes.get(0);
             int minDiff = Integer.MAX_VALUE;
             for (Camera.Size size : sizes) {
-                int diff = Math.abs(size.width * size.height - 320 * 240);
+                int diff = Math.abs(size.width * size.height - 352 * 288);
                 if (diff < minDiff) {
                     minDiff = diff;
                     bestSize = size;

@@ -40,7 +40,7 @@ public class MotionDetector {
         // for the NEXT call,
         // we must be careful if the buffer is reused by Camera API.
         // With setPreviewCallbackWithBuffer, we control the buffers.
-        // For safety here, we clone. System copy is fast enough for 320x240.
+        // For safety here, we clone. System copy is fast enough for 352x288.
         System.arraycopy(currentFrame, 0, previousFrame, 0, currentFrame.length);
 
         return diffCount;
