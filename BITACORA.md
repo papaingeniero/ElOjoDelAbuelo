@@ -2097,3 +2097,21 @@ Esto confirma en cada arranque que el driver (hardware) y el software están ali
 
 **Lecciones Aprendidas 🎓**
 *   **Semántica del Log**: Los logs no deben mentir ni asustar al operador. Deben "bendecir" la configuración correcta, no culparla.
+
+### 🚀 v3.9.7-dev.24: Watchdog ADB V2 - Estrategia de Tierra Quemada
+
+**El Problema (Storytelling) 📜**
+El fenómeno del "Socket Zombi" afectaba la fiabilidad a largo plazo. `netstat` reportaba el puerto 5555 como `LISTEN`, pero el proceso `adbd` estaba muerto o bloqueado internamente, causando que el IDE no pudiera reconectar tras largas sesiones.
+Detectar el puerto abierto no era garantía de salud del servicio ("El cartel de Abierto está colgado, pero el tendero está muerto").
+
+**La Solución (Ingeniería) 🛠️**
+Implementada una **Arquitectura de Doble Anillo** en `SentinelService`:
+
+1.  **Capa Reactiva (Semáforo)**: Chequeo cada 30 min. Si el puerto desaparece de `netstat`, se reinicia inmediatamente.
+2.  **Capa Preventiva (El Limpiador Anti-Zombi)**:
+    *   **Intervalo**: Cada 3 Horas (Incondicional).
+    *   **Acción**: `stop adbd; start adbd`.
+    *   **Objetivo**: Purgar fugas de memoria y sockets huérfanos antes de que degraden el sistema, independientemente de si el puerto parece estar bien.
+
+**Lecciones Aprendidas 🎓**
+*   **Robustez Legacy**: En sistemas embebidos inestables, la monitorización pasiva no basta. Un reinicio preventivo programado (Reboot/Restart policy) es más fiable que intentar detectar estados inconsistentes. "Apagar y encender antes de que se rompa".

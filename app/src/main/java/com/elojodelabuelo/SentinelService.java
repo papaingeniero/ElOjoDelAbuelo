@@ -983,44 +983,50 @@ public class SentinelService extends Service {
         }).start();
     }
 
+
     // --------------------------------------------------------------------------
-    // 🐕 ADB WATCHDOG: Mantiene el puerto 5555 abierto para depuración remota
+    // 🐕 ADB WATCHDOG V2: Con ciclo preventivo anti-zombis
     // --------------------------------------------------------------------------
     private void startADBWatchdog() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // Pequeña espera inicial para no saturar el arranque (1 min)
+                // Espera inicial de seguridad
                 try { Thread.sleep(60000); } catch (InterruptedException e) {}
+
+                long lastForceReset = System.currentTimeMillis();
+                // ⏱️ INTERVALO DE LIMPIEZA PREVENTIVA: 3 HORAS (en milisegundos)
+                // Esto evita que se quede "Zombie/Offline" aunque el puerto parezca abierto
+                long PREVENTIVE_INTERVAL = 3 * 60 * 60 * 1000; 
 
                 while (true) {
                     try {
-                        // 1. Diagnóstico: ¿Está el puerto 5555 escuchando?
                         boolean isListening = checkADBPort();
-                        
-                        // [LOG SOLICITADO] Reporte de estado rutinario
-                        logToWeb("🔍 ADB Watchdog: Chequeo puerto 5555 -> " + (isListening ? "OK (Online)" : "❌ CERRADO (Offline)"));
+                        long timeSinceLastReset = System.currentTimeMillis() - lastForceReset;
 
+                        // CASO 1: El puerto está cerrado (Crash total)
                         if (!isListening) {
-                            // [LOG SOLICITADO] Alerta de intervención
-                            logToWeb("⚡ ADB Watchdog: ¡SERVICIO CAÍDO! Forzando reinicio (setprop + stop/start adbd)...");
-                            
-                            // 2. Tratamiento: Electroshock
-                            Process p = Runtime.getRuntime().exec(new String[]{
-                                "su", "-c", 
-                                "setprop service.adb.tcp.port 5555; stop adbd; start adbd"
-                            });
-                            p.waitFor();
-                            
-                            logToWeb("✅ ADB Watchdog: Orden de resurrección enviada. El servicio debería volver en breve.");
+                            logToWeb("⚡ ADB Watchdog: ¡Puerto cerrado! Resucitando...");
+                            restartADBD();
+                            lastForceReset = System.currentTimeMillis();
                         } 
+                        // CASO 2: Mantenimiento Preventivo (Anti-Zombi)
+                        else if (timeSinceLastReset > PREVENTIVE_INTERVAL) {
+                            logToWeb("♻️ ADB Watchdog: Mantenimiento preventivo (3h). Reiniciando demonio para evitar Zombis...");
+                            restartADBD();
+                            lastForceReset = System.currentTimeMillis();
+                        }
+                        // CASO 3: Todo parece ir bien
+                        else {
+                            logToWeb("🔍 ADB Watchdog: Estado OK. Próximo ciclo preventivo en: " + 
+                                     ((PREVENTIVE_INTERVAL - timeSinceLastReset) / 60000) + " min.");
+                        }
 
-                        // 3. Frecuencia: Chequeo cada 30 minutos (1800000 ms)
+                        // Chequeo cada 30 minutos
                         Thread.sleep(1800000); 
 
                     } catch (Exception e) {
-                        logToWeb("❌ ADB Watchdog Error Crítico: " + e.getMessage());
-                        // Si falla, reintentamos en 1 minuto
+                        logToWeb("❌ ADB Watchdog Error: " + e.getMessage());
                         try { Thread.sleep(60000); } catch (InterruptedException ie) {} 
                     }
                 }
@@ -1028,28 +1034,31 @@ public class SentinelService extends Service {
         }).start();
     }
 
-
+    // Método auxiliar para no repetir código
+    private void restartADBD() throws Exception {
+        Process p = Runtime.getRuntime().exec(new String[]{
+            "su", "-c", 
+            "setprop service.adb.tcp.port 5555; stop adbd; start adbd"
+        });
+        p.waitFor();
+    }
 
     // Método auxiliar para leer el estado de la red
     private boolean checkADBPort() {
         try {
-            // Ejecutamos netstat y buscamos la cadena ":5555" en estado LISTEN
             Process p = Runtime.getRuntime().exec("netstat -an");
             java.io.BufferedReader reader = new java.io.BufferedReader(
                 new java.io.InputStreamReader(p.getInputStream()));
-                
             String line;
             while ((line = reader.readLine()) != null) {
-                // Buscamos algo como "tcp 0 0 0.0.0.0:5555 LISTEN"
-                if (line.contains(":5555") && line.contains("LISTEN")) {
-                    return true; 
-                }
+                if (line.contains(":5555") && line.contains("LISTEN")) return true; 
             }
             reader.close();
             p.waitFor();
-        } catch (Exception e) {
-            return false; // Ante la duda, asumimos que está caído
-        }
+        } catch (Exception e) { return false; }
         return false;
     }
+
+
+    //fin de la clase
 }
