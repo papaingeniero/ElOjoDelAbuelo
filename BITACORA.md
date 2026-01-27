@@ -2080,3 +2080,20 @@ Hemos implementado un hilo de ejecución paralelo en segundo plano ("Watchdog Si
 
 **Glosario 📖**
 *   **Watchdog**: Mecanismo de seguridad que monitoriza y recupera el sistema de fallos.
+
+
+### 🚀 v3.9.7-dev.23: Ajuste Semántico Log Resolución
+
+**El Problema (Storytelling) 📜**
+El log de arranque de la cámara mostraba `Veredicto: CIF (Culpable probable)` al detectar la resolución nativa 352x288 (Ratio 1.22).
+Este mensaje era un remanente "arqueológico" de cuando investigábamos deformaciones de aspecto, pero es técnicamente incorrecto y confuso ahora que hemos establecido CIF como la resolución **óptima y estandarizada** para el hardware del i9000.
+
+**La Solución (Ingeniería) 🛠️**
+Se ha actualizado `SentinelService.java` para reflejar la realidad técnica:
+*   Antes: `Veredicto: CIF (Culpable probable)` / `AUTORÍA RESOLUCIÓN`
+*   Ahora: `Tipo: CIF (Nativa/Óptima)` / `CHECK RESOLUCIÓN`
+
+Esto confirma en cada arranque que el driver (hardware) y el software están alineados, eliminando falsas alarmas.
+
+**Lecciones Aprendidas 🎓**
+*   **Semántica del Log**: Los logs no deben mentir ni asustar al operador. Deben "bendecir" la configuración correcta, no culparla.

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Se eliminaron las referencias experimentales a `320x200` para garantizar la coherencia con el sensor de hardware.
 
 ## [v3.9.7-dev.12] - 2026-01-26
+- **v3.9.7-dev.23**:
+    - `chore(logs)`: 📝 Corregido mensaje de log de resolución para validar CIF como "Nativa/Óptima" en lugar de "Culpable".
 - **v3.9.7-dev.22**:
     - `feat(adb)`: 🐕 Implementado Watchdog para auto-recuperación del daemon ADB (Puerto 5555) mediante reinicio root selectivo.
 ### Changed

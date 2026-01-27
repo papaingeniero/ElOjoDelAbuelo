@@ -303,13 +303,13 @@ public class SentinelService extends Service {
         params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
         // --- TRAZA FORENSE INYECTADA (PARA DETECTAR EL RATIO) ---
         float ratio = (float) PREVIEW_WIDTH / PREVIEW_HEIGHT;
-        String ratioName = (Math.abs(ratio - 1.3333) < 0.05) ? "4:3 (Perfecto)" : 
+        String ratioName = (Math.abs(ratio - 1.3333) < 0.05) ? "4:3 (Estándar)" : 
                            (Math.abs(ratio - 1.7777) < 0.05) ? "16:9 (Panorámico)" : 
-                           (Math.abs(ratio - 1.2222) < 0.05) ? "CIF (Culpable probable)" : "Ratio Raro";
+                           (Math.abs(ratio - 1.2222) < 0.05) ? "CIF (Nativa/Óptima)" : "Ratio Atípico";
         
-        logToWeb(">>> 🕵️ AUTORÍA RESOLUCIÓN: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT + 
-                 " | Ratio Numérico: " + String.format(Locale.US, "%.2f", ratio) + 
-                 " | Veredicto: " + ratioName + " <<<");
+        logToWeb(" >>> � CHECK RESOLUCIÓN: " + PREVIEW_WIDTH + "x" + PREVIEW_HEIGHT + 
+                 " | Ratio: " + String.format(Locale.US, "%.2f", ratio) + 
+                 " | Tipo: " + ratioName + " <<<");
         // --------------------------------------------------------
 
         // 2. CONFIGURACIÓN FPS (MODO SEGURO / ESTABILIDAD) 🛡️
