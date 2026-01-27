@@ -1298,11 +1298,10 @@ public class NanoHttpServer {
                 "    var sizeStr = v.size > 1024*1024 ? (v.size/(1024*1024)).toFixed(1) + ' MB' : Math.floor(v.size/1024) + ' KB';\n"
                 +
                 "    var durationStr = v.duration + 's';\n" +
-                "    var fpsStr = '🎥 ' + v.fps + ' FPS';\n" +
                 "    var infoHtml = '<div class=\\'info\\'>' +\n" +
                 "      '<div style=\\'font-size:15px; font-weight:bold; color:#ffffff; margin-bottom:4px;\\'>' + dateStr + ' &nbsp; ' + timeStr + '</div>' +\n"
                 +
-                "      '<div style=\\'color:#ccc; font-size:13px;\\'><b>💾 ' + sizeStr + '</b> &nbsp;|&nbsp; <b>⏳ ' + durationStr + '</b> &nbsp;|&nbsp; ' + fpsStr + '</div></div>';\n"
+                "      '<div style=\\'color:#ccc; font-size:13px;\\'><b>💾 ' + sizeStr + '</b> &nbsp;|&nbsp; <b>⏳ ' + durationStr + '</b></div></div>';\n"
                 +
                 "    div.innerHTML = thumbHtml + infoHtml;\n" +
                 "    div.setAttribute('onclick', \"playVideo('\" + v.name + \"')\");\n" +
@@ -1528,8 +1527,6 @@ public class NanoHttpServer {
                 "            \"<b>💾 \" + sizeMB + \"</b>\" +\n" +
                 "            \" &nbsp;|&nbsp; \" +\n" +
                 "            \"<b>⏳ \" + durationStr + \"</b>\" +\n" +
-                "            \" &nbsp;|&nbsp; \" +\n" +
-                "            \"🎥 MJPEG\" +\n" +
                 "            \"</div></div>\";\n" +
                 "        card.innerHTML = innerContent;\n" +
                 "        if(typeof gWebZoom !== 'undefined') updateWebTransform(gWebZoom, gWebPanX, gWebPanY);\n" +

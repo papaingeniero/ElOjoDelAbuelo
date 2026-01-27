@@ -2115,3 +2115,17 @@ Implementada una **Arquitectura de Doble Anillo** en `SentinelService`:
 
 **Lecciones Aprendidas 🎓**
 *   **Robustez Legacy**: En sistemas embebidos inestables, la monitorización pasiva no basta. Un reinicio preventivo programado (Reboot/Restart policy) es más fiable que intentar detectar estados inconsistentes. "Apagar y encender antes de que se rompa".
+
+### 🚀 v3.9.7-dev.25: Limpieza UI Tarjetas de Video
+
+**El Problema (Storytelling) 📜**
+Las tarjetas de la galería de videos estaban sobrecargadas de información técnica. Mostraban los FPS ("🎥 14 FPS"), un dato técnico que aporta poco valor al usuario final a simple vista y consumía espacio visual valioso.
+
+**La Solución (Ingeniería) 🛠️**
+Se ha simplificado la estructura HTML generada en `NanoHttpServer.java` para las tarjetas de video:
+*   Eliminado el indicador de FPS.
+*   Mantenidos los datos críticos: Fecha, Hora, Tamaño (MB/KB) y Duración.
+*   Resultado: Una interfaz más limpia y enfocada en lo que importa (cuándo y cuánto).
+
+**Lecciones Aprendidas 🎓**
+*   **Minimalismo Funcional**: En interfaces móviles compactas, menos es más. Mostrar debug info al usuario final es ruido, no transparencia.
