@@ -2192,3 +2192,18 @@ El Usuario ha realizado una intervención quirúrgica en `legacy_dev_rules.md` y
 Esto reduce la "Verificación de 8 Puntos" a una **"Verificación de 7 Puntos"**, manteniendo la misma rigurosidad pero con mayor eficiencia conceptual.
 
 **Lección**: Menos es más. Si dos pasos están atómicos y acoplados, deben tratarse como uno solo para reducir la carga mental.
+
+### [Meta-Ingeniería] Higiene de Git (Surgical Staging)
+**Versión**: v3.9.7-dev.29
+
+**El Problema**: Contaminación recurrente del historial. El archivo temporal `commit_msg.txt` (usado para inyectar la bitácora en el commit) era capturado por `git add .` y añadido al repositorio. Aunque luego se borraba localmente (`rm`), Git lo registraba como un archivo "deleted" pendiente de commit, ensuciando el status y obligando a un segundo commit de limpieza.
+
+**La Solución**:
+Hemos refinado el Algoritmo de Commit en `deploy_snapshot.md` introduciendo un paso negativo:
+1.  `git add .` (Captura todo, incluido el error).
+2.  `git reset commit_msg.txt` (⚠️ **Nuevo Paso**: Expulsar explícitamente el archivo temporal del área de staging).
+3.  `git commit -F ...`
+
+**Resultado**: El archivo temporal sirve su propósito (input de texto) pero **jamás** toca el índice de Git. El repositorio permanece impoluto tras el despliegue.
+
+**Lección**: En automatización, lo que *no* haces (excluir archivos) es tan importante como lo que haces.

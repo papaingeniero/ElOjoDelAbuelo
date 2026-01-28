@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.29] - 2026-01-28
+### Meta-Engineering
+- **Workflow Upgrade (Git Hygiene)**: Modificado `deploy_snapshot.md` para prevenir la contaminación del repositorio con archivos temporales.
+    - Implementado `git reset commit_msg.txt` antes del commit para excluir el mensaje del staging area.
+    - *Objetivo*: Eliminar el estado "deleted but not staged" y los commits de limpieza posteriores.
+
 ## [v3.9.7-dev.28] - 2026-01-28
 ### Meta-Engineering
 - **Rules Refactor**: Simplificación del Reporte Final en Regla 7 (`legacy_dev_rules.md`).

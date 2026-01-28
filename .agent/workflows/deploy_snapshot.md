@@ -29,9 +29,11 @@ Sigue el orden estricto.
     - Resumen técnico breve.
 
 # 5. Git Snapshot
+- [ ] Generar archivo temporal `commit_msg.txt` con el contenido de la Bitácora.
 - [ ] `git add .`
-- [ ] `git commit -m "vX.Y.Z-dev.N <tipo>: <descripción>"`
-    - Cuerpo del commit: Copia LITERAL de la entrada de Bitácora.
+- [ ] `git reset commit_msg.txt` (⚠️ IMPRESCINDIBLE: Saca el archivo temporal del stage para no ensuciar el repo).
+- [ ] `git commit -F commit_msg.txt`
+- [ ] `rm commit_msg.txt`
 - [ ] `git push origin main`.
 - [ ] `git push origin vX.Y.Z-dev.N`
 
