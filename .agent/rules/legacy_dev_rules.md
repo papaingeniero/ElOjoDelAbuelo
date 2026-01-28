@@ -85,14 +85,10 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
     3.  `[ ] Actualizar CHANGELOG.md` (Registro técnico usando la nueva versión)
     4.  `[ ] Commit & Tag vX.Y.Z-dev.N+1`
 *   **Regla de Oro**: Si el código o docs cambian, la versión cambia. Sin excepción.
-*   **Reporte Final Estandarizado**: Al completar el protocolo, el Agente **DEBE** generar un reporte final usando el formato tabular de "Verificación de 6 Puntos":
-    1. Versión (`build.gradle`)
-    2. Bitácora (Updated)
-    3. Changelog (Updated)
-    4. Commit & Tag (Hash + Tag)
-    5. Push (Main + Tag)
-    6. Git Status (Clean)
-    Seguido de un breve "Resumen de Cambios" con viñetas.
+*   **Reporte Final Estandarizado**: Al completar el protocolo, el Agente **DEBE** generar un reporte final que incluya:
+    1.  **Tabla de Verificación de 8 Puntos** (Versión, Build, Install, Bitácora, Changelog, Commit, Push, Status).
+    2.  **Resumen de Cambios** (Viñetas).
+    3.  **Reporte de Incidentes y Resoluciones (OBLIGATORIO)**: Una lista detallada de CADA error encontrado durante el proceso (compilación, git, lógica) y CÓMO se resolvió. Si no hubo errores, indicarlo explícitamente ("Sin incidentes").
 
 ## 8. Protocolo de Ruptura (Circuit Breaker)
 Qué hacer cuando una Verificación FALLA:

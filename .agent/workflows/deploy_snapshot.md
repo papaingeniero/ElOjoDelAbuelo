@@ -37,12 +37,11 @@ Sigue el orden estricto.
 - [ ] `git push origin vX.Y.Z-dev.N`
 
 # 6. Verificación de 8 Puntos (Reporte Final)
-Generar tabla final:
-1. Versión: [vX.Y.Z-dev.N]
-2. Build: [✅ OK]
-3. Install: [✅ OK]
-4. Bitácora: [✅ Updated]
-5. Changelog: [✅ Updated]
-6. Commit: [Hash]
-7. Push: [✅ OK]
-8. Status: [Clean]
+Generar reporte estructurado:
+1. **Tabla de Verificación de 8 Puntos**:
+   - Versión, Build, Install, Bitácora, Changelog, Commit, Push, Status.
+2. **Resumen de Cambios**:
+   - Lista de cambios técnicos y funcionales.
+3. **Reporte de Incidentes y Resoluciones (OBLIGATORIO)**:
+   - Detalle de CADA error encontrado en cualquier paso (1-8) y su solución.
+   - Formato: `❌ Error: [Descripción] -> ✅ Solución: [Acción tomada]`.

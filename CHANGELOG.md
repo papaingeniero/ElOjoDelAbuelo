@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.27] - 2026-01-28
+### Meta-Engineering
+- **Rules Upgrade**: Actualizada Regla 7 en `legacy_dev_rules.md` para hacer **obligatorio** el "Reporte de Incidentes y Resoluciones" en el cierre de tareas.
+- **Workflow Upgrade**: Modificado `deploy_snapshot.md` para incluir la sección de Reporte de Incidentes en la estructura de salida.
+    - *Objetivo*: Garantizar trazabilidad total de los errores intermedios y sus correcciones.
+
 ## [v3.9.7-dev.26] - 2026-01-28
 ### Added
 - **Web OSD Editor**: Implementación de un Editor OSD modular para configurar la posición de la fecha/hora en la imagen.

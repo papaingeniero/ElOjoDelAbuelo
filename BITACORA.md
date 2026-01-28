@@ -2165,3 +2165,16 @@ Insertamos la llamada al método de dibujo justo en el ciclo `processFrame`, ant
 
 ### 💡 Lección del Día
 "No cargues en la mochila principal lo que solo vas a usar una vez al año." Separar las herramientas de configuración en archivos independientes mantiene el núcleo del sistema ligero, rápido y más seguro ante errores humanos.
+
+### [Meta-Ingeniería] Estandarización del Reporte de Incidentes
+**Versión**: v3.9.7-dev.27
+
+**El Problema**: La "Caja Negra" de la resolución de problemas. El usuario solicitó explícitamente conocer *qué falló y cómo se arregló* durante cada despliegue, para tener trazabilidad de los errores "invisibles" que el Agente soluciona sobre la marcha. Hasta ahora, el reporte final era solo una tabla de "OKs", ocultando la batalla técnica subyacente.
+
+**La Solución**:
+Hemos modificado el Kernel del Agente (`legacy_dev_rules.md`) y el Protocolo de Monitorización (`deploy_snapshot.md`) para instituir la **Obligatoriedad del Reporte de Incidentes**.
+
+Ahora, la "Verificación de 8 Puntos" tiene una nueva sección mandatoria:
+> **3. Reporte de Incidentes y Resoluciones (OBLIGATORIO)**: Detalle de CADA error encontrado... y CÓMO se resolvió.
+
+**Lección**: La transparencia en los fallos genera más confianza que una falsa apariencia de perfección. Mostrar cómo superamos un obstáculo enseña más que mostrar que llegamos a la meta.
