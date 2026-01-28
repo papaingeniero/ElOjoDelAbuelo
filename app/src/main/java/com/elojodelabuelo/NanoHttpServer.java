@@ -225,7 +225,7 @@ public class NanoHttpServer {
                 } else if (uri.equals("/api/debug")) {
                     StringBuilder sb = new StringBuilder();
                     sb.append("<html><head><meta name='viewport' content='width=device-width'><title>Sentinel Debug</title>");
-                    sb.append("<style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;} .btn{background:#300;color:#fff;border:1px solid #f00;padding:10px;margin-bottom:20px;cursor:pointer;width:100%;font-weight:bold;}</style>");
+                    sb.append("<style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;font-size:18px;} .btn{background:#300;color:#fff;border:1px solid #f00;padding:10px;margin-bottom:20px;cursor:pointer;width:100%;font-weight:bold;font-size:16px;}</style>");
                     sb.append("</head><body>");
                     
                     // Botón de Pánico ADB

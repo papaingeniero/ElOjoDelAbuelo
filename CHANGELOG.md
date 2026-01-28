@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.32] - 2026-01-28
+### Changed
+- **Configuración OOB**: Modificación cosmética en `/api/debug` para aumentar la legibilidad de los logs del sistema.
+    - Se incrementó el tamaño de fuente global a `18px` y botones a `16px`.
+    - *Objetivo*: Facilitar la lectura de logs en pantallas móviles pequeñas durante operaciones de rescate.
+
 ## [v3.9.7-dev.31] - 2026-01-28
 ### Added
 - **ADB Panic Button**: Implementación de un "Botón de Pánico" en la interfaz oculta de debug (`/api/debug`).

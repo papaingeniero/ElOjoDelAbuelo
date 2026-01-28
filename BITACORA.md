@@ -2250,3 +2250,20 @@ Esto mata el proceso zombi y lo obliga a nacer de nuevo, restaurando la conectiv
 
 ### 💡 Conclusión para Aprendices
 Un buen ingeniero no solo programa para cuando todo va bien ("Happy Path"). Un buen ingeniero programa herramientas para cuando todo va mal. Implementar mecanismos de recuperación manual (Web Triggers) cuando los automatismos (Watchdogs) fallan es lo que diferencia un juguete de un sistema de vigilancia profesional.
+
+## 🚀 Ajuste de Legibilidad en Panel OOB
+**Versión**: v3.9.7-dev.32
+
+### 🔍 El Problema: Logs Microscópicos
+Durante las pruebas de campo del nuevo "Botón de Pánico", notamos que la lectura de los logs del sistema (`/api/debug`) en la pantalla móvil resultaba fatigosa debido al tamaño de fuente predeterminado del navegador (típicamente 10-12px en contextos `monospace`).
+
+### 🛠️ La Solución: CSS Injectado
+Hemos aumentado el tamaño base de la fuente a **18px** y el de los botones a **16px** mediante la inyección de estilos inline en la respuesta HTML generada por `NanoHttpServer`.
+
+```css
+body { font-size: 18px; }
+.btn { font-size: 16px; }
+```
+
+### 💡 Lección de UX
+"El código de debug no tiene por qué ser feo ni ilegible". Si una herramienta de emergencia es difícil de leer bajo presión, su utilidad disminuye drásticamente.
