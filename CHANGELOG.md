@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.30] - 2026-01-28
+### Meta-Engineering
+- **Workflow Refactor**: Eliminado el tagging automático en snapshots de desarrollo (`deploy_snapshot.md`).
+    - Las versiones `-dev.N` ya no generarán tags en GitHub.
+    - Los Tags se reservan exclusivamente para versiones estables (`release_version.md`).
+
 ## [v3.9.7-dev.29] - 2026-01-28
 ### Meta-Engineering
 - **Workflow Upgrade (Git Hygiene)**: Modificado `deploy_snapshot.md` para prevenir la contaminación del repositorio con archivos temporales.

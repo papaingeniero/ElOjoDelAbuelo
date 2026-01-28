@@ -35,7 +35,6 @@ Sigue el orden estricto.
 - [ ] `git commit -F commit_msg.txt`
 - [ ] `rm commit_msg.txt`
 - [ ] `git push origin main`.
-- [ ] `git push origin vX.Y.Z-dev.N`
 
 # 6. Verificación de 7 Puntos (Reporte Final)
 Generar reporte estructurado:

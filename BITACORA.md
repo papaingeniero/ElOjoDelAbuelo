@@ -2207,3 +2207,17 @@ Hemos refinado el Algoritmo de Commit en `deploy_snapshot.md` introduciendo un p
 **Resultado**: El archivo temporal sirve su propósito (input de texto) pero **jamás** toca el índice de Git. El repositorio permanece impoluto tras el despliegue.
 
 **Lección**: En automatización, lo que *no* haces (excluir archivos) es tan importante como lo que haces.
+
+### [Meta-Ingeniería] Política de "No Tagging" para Snapshots
+**Versión**: v3.9.7-dev.30
+
+**El Problema**: Polución en el listado de Tags de GitHub. Al crear un tag por cada snapshot de desarrollo (`-dev.N`), saturábamos el repositorio con referencias que solo tienen valor efímero. Los tags deben reservarse para hitos estables (Releases).
+
+**La Solución**:
+Hemos modificado `deploy_snapshot.md` para **eliminar la creación y subida de tags**.
+*   **Workflow Anterior**: Commit -> Tag -> Push Main -> Push Tag.
+*   **Workflow Nuevo**: Commit -> Push Main.
+
+**Resultado**: Las versiones de desarrollo quedan registradas en el historial de commits (hash) y en el código (`build.gradle`), pero no ensucian la lista de "Releases/Tags".
+
+**Lección**: Un "Snapshot" es una foto instantánea en el álbum (commit), no un trofeo en la vitrina (tag).
