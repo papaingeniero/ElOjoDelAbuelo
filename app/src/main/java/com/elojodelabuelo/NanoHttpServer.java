@@ -245,16 +245,41 @@ public class NanoHttpServer {
                     
                     String response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n" + sb.toString();
                     os.write(response.getBytes());
-                // 2. AÑADIR LA RUTA DEL TRIGGER (Justo debajo del bloque anterior)
+                // 2. AÑADIR LA RUTA DEL TRIGGER (Con diagnóstico completo)
                 } else if (uri.equals("/api/restart_adb")) {
-                    // Ejecutamos el comando root para reiniciar adbd
                     try {
-                        Runtime.getRuntime().exec(new String[]{"su", "-c", "setprop service.adb.tcp.port 5555; stop adbd; start adbd"});
-                        SentinelService.logToWeb("⚠️ WEB TRIGGER: Reiniciando ADB manualmente...");
+                        SentinelService.logToWeb("⚠️ WEB TRIGGER: Intentando reiniciar ADB...");
+                        
+                        // Lanzamos el proceso
+                        Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", "setprop service.adb.tcp.port 5555; stop adbd; start adbd"});
+                        
+                        // LEEMOS LA RESPUESTA (Las "Orejas")
+                        // Es importante leer el stream de error por si el comando falla
+                        java.io.BufferedReader adbReader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(process.getErrorStream()));
+                        StringBuilder output = new StringBuilder();
+                        String adbOutputLine;
+                        while ((adbOutputLine = adbReader.readLine()) != null) {
+                            output.append(adbOutputLine).append(" ");
+                        }
+                        
+                        // Esperamos a que el comando termine y nos dé su veredicto (0 = Éxito)
+                        int exitCode = process.waitFor();
+                        
+                        if (exitCode == 0) {
+                            SentinelService.logToWeb("✅ ÉXITO: ADB Reiniciado correctamente (Exit Code 0).");
+                        } else {
+                            // Si falla, logueamos qué ha dicho el sistema (ej: "Permission denied")
+                            SentinelService.logToWeb("❌ FALLO ROOT (Código " + exitCode + "): " + output.toString());
+                        }
+                        
                     } catch (Exception e) {
-                        SentinelService.logToWeb("❌ Error reiniciando ADB: " + e.getMessage());
+                        SentinelService.logToWeb("❌ EXCEPCIÓN JAVA crítica: " + e.getMessage());
                     }
+                    
+                    // Respondemos al navegador
                     os.write("HTTP/1.1 200 OK\r\n\r\nOK".getBytes());
+                    
                 } else {
                     SentinelService.logToWeb("🌐 WEB: Dashboard cargado");
                     serveDashboard(os);

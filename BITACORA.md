@@ -2311,3 +2311,21 @@ Este cambio es complementario a la reducción de fuente.
 *   Más líneas en memoria (200).
 *   Más líneas visibles en pantalla (gracias a los 14px).
 = **Mejor Diagnóstico.**
+
+## 🚀 Diagnosticando el Silencio (Root Error Catching)
+**Versión**: v3.9.7-dev.36
+
+### 🔍 El Problema: "No pasa nada"
+El comando `/api/restart_adb` a veces fallaba silenciosamente. El usuario hacía clic, el sistema decía "Intentando...", pero ADB nunca reiniciaba. Al no capturar el `stderr`, estábamos ciegos ante errores de permisos (`su` rechazado) o sintaxis de shell.
+
+### 🛠️ La Solución: Escuchar al Sistema
+Hemos mejorado el bloque de ejecución para "poner la oreja" en el canal de errores (`process.getErrorStream()`) y esperar explícitamente el veredicto del sistema (`process.waitFor()`).
+
+```java
+if (exitCode != 0) {
+    logToWeb("❌ FALLO ROOT (Código " + exitCode + "): " + output);
+}
+```
+
+### 💡 Lección de Ingeniería
+En el mundo de los scripts de shell (`su -c ...`), el silencio no es siempre éxito. Un proceso puede arrancar perfectamente (Java feliz) y suicidarse un milisegundo después (Shell triste). Capturar el `exitCode` es la única forma de saber la verdad.

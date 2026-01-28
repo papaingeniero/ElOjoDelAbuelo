@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.36] - 2026-01-28
+### Added
+- **Diagnostic Upgrade (Root)**: Mejoras en el endpoint `/api/restart_adb`.
+    - Ahora captura el `stderr` (salida de error) del comando root.
+    - Reporta el código de salida exacto (`Exit Code`) en el log web.
+    - *Objetivo*: Diagnosticar por qué fallan los reinicios de ADB cuando el comando se ejecuta pero no tiene efecto (ej: "Permission denied" o binario ocupado).
+
 ## [v3.9.7-dev.35] - 2026-01-28
 ### Improved
 - **Diagnostic Upgrade**: Aumentada la capacidad del buffer de logs en memoria para `/api/debug`.
