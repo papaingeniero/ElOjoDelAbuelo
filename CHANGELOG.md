@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.31] - 2026-01-28
+### Added
+- **ADB Panic Button**: Implementación de un "Botón de Pánico" en la interfaz oculta de debug (`/api/debug`).
+    - *Funcionalidad*: Permite reiniciar el servicio ADB (`adbd`) mediante un comando root (`su -c ...`) ejecutado desde el servidor web.
+    - *Objetivo*: Recuperar la conectividad de depuración cuando el puerto 5555 entra en estado "zombi" sin necesidad de acceso físico al dispositivo.
+    - *UX*: Acceso restringido y advertencia visual ("⚠️ REINICIAR SERVICIO ADB").
+
 ## [v3.9.7-dev.30] - 2026-01-28
 ### Meta-Engineering
 - **Workflow Refactor**: Eliminado el tagging automático en snapshots de desarrollo (`deploy_snapshot.md`).

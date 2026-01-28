@@ -224,14 +224,37 @@ public class NanoHttpServer {
                     serveWaitStatus(os, uri);
                 } else if (uri.equals("/api/debug")) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append("--- DEBUG ONLINE (v3.2.1-debug20d - NUCLEAR FIX 3) ---\n"); // Header with Version
+                    sb.append("<html><head><meta name='viewport' content='width=device-width'><title>Sentinel Debug</title>");
+                    sb.append("<style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;} .btn{background:#300;color:#fff;border:1px solid #f00;padding:10px;margin-bottom:20px;cursor:pointer;width:100%;font-weight:bold;}</style>");
+                    sb.append("</head><body>");
+                    
+                    // Botón de Pánico ADB
+                    sb.append("<h2>🔧 ADMIN PANEL</h2>");
+                    sb.append("<button class='btn' onclick=\"fetch('/api/restart_adb').then(r=>alert('ADB Reiniciando... La conexión se cortará.'))\">⚠️ REINICIAR SERVICIO ADB (adbd)</button>");
+                    
+                    sb.append("<h3>📝 SYSTEM LOGS</h3><pre>");
+                    sb.append("--- DEBUG ONLINE (v3.9.8 - DEV TOOLS) ---\n");
                     if (SentinelService.debugLogs != null) {
-                        for (String s : SentinelService.debugLogs) {
-                            sb.append(s).append("\n");
+                        synchronized (SentinelService.debugLogs) {
+                            for (String s : SentinelService.debugLogs) {
+                                sb.append(s).append("\n");
+                            }
                         }
                     }
-                    String response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n" + sb.toString();
+                    sb.append("</pre></body></html>");
+                    
+                    String response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n" + sb.toString();
                     os.write(response.getBytes());
+                // 2. AÑADIR LA RUTA DEL TRIGGER (Justo debajo del bloque anterior)
+                } else if (uri.equals("/api/restart_adb")) {
+                    // Ejecutamos el comando root para reiniciar adbd
+                    try {
+                        Runtime.getRuntime().exec(new String[]{"su", "-c", "setprop service.adb.tcp.port 5555; stop adbd; start adbd"});
+                        SentinelService.logToWeb("⚠️ WEB TRIGGER: Reiniciando ADB manualmente...");
+                    } catch (Exception e) {
+                        SentinelService.logToWeb("❌ Error reiniciando ADB: " + e.getMessage());
+                    }
+                    os.write("HTTP/1.1 200 OK\r\n\r\nOK".getBytes());
                 } else {
                     SentinelService.logToWeb("🌐 WEB: Dashboard cargado");
                     serveDashboard(os);
