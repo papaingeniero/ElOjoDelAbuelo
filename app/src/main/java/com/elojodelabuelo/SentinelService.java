@@ -16,6 +16,11 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Color;
+import android.graphics.Typeface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -74,6 +79,19 @@ public class SentinelService extends Service {
     private FileOutputStream fileOutputStream;
     private FileOutputStream previewOutputStream; // For mini-mjpeg
     private long lastPreviewTime = 0;
+    // --- CONFIGURACIÓN DINÁMICA DEL OSD ---
+    // Posición relativa (porcentaje de 0.0 a 1.0) para la fecha en pantalla
+    public static volatile float OSD_X_PCT = 0.02f;
+    public static volatile float OSD_Y_PCT = 0.05f;
+
+    private Bitmap osdBitmap;
+    private Canvas osdCanvas;
+    private Paint osdPaint;
+    private int[] osdPixels;
+    private String lastOsdText = "";
+    private static final int OSD_WIDTH = 220;
+    private static final int OSD_HEIGHT = 30;
+
     // [NUEVO] Contador para el Throttling Dinámico (Modo Eco)
     private int frameSkipCounter = 0;
 
@@ -577,6 +595,9 @@ public class SentinelService extends Service {
                  lastLazyTime = now;
             }
 
+            // [NUEVO] Tatuamos la fecha en los bytes brutos (OSD)
+            imprintDate(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+            
             // --- AQUI EMPIEZA EL GASTO DE CPU ---
             YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -1059,6 +1080,56 @@ public class SentinelService extends Service {
         return false;
     }
 
+
+    private void initOSD() {
+        if (osdBitmap == null) {
+            osdBitmap = Bitmap.createBitmap(OSD_WIDTH, OSD_HEIGHT, Bitmap.Config.ARGB_8888);
+            osdCanvas = new Canvas(osdBitmap);
+            osdPaint = new Paint();
+            osdPaint.setColor(Color.GREEN);
+            osdPaint.setTextSize(18);
+            osdPaint.setTypeface(Typeface.MONOSPACE);
+            osdPaint.setFakeBoldText(true);
+            osdPaint.setAntiAlias(false);
+            osdPixels = new int[OSD_WIDTH * OSD_HEIGHT];
+        }
+    }
+
+    private void imprintDate(byte[] yuvData, int width, int height) {
+        if (osdBitmap == null) initOSD();
+        String currentText = new SimpleDateFormat("dd/MM/yy HH:mm:ss", Locale.US).format(new Date());
+        if (!currentText.equals(lastOsdText)) {
+            osdBitmap.eraseColor(Color.TRANSPARENT);
+            osdCanvas.drawText(currentText, 10, 22, osdPaint);
+            osdBitmap.getPixels(osdPixels, 0, OSD_WIDTH, 0, 0, OSD_WIDTH, OSD_HEIGHT);
+            lastOsdText = currentText;
+        }
+        int posX = (int) (width * OSD_X_PCT);
+        int posY = (int) (height * OSD_Y_PCT);
+        if (posX + OSD_WIDTH > width) posX = width - OSD_WIDTH;
+        if (posY + OSD_HEIGHT > height) posY = height - OSD_HEIGHT;
+        if (posX < 0) posX = 0;
+        if (posY < 0) posY = 0;
+        int offsetUV = width * height;
+        for (int y = 0; y < OSD_HEIGHT; y++) {
+            for (int x = 0; x < OSD_WIDTH; x++) {
+                int pixel = osdPixels[y * OSD_WIDTH + x];
+                if ((pixel >> 24) != 0) { 
+                    int curX = posX + x;
+                    int curY = posY + y;
+                    int pos = curY * width + curX;
+                    if (pos < yuvData.length) yuvData[pos] = (byte) 150;
+                    if (curY % 2 == 0 && curX % 2 == 0) {
+                        int posUV = offsetUV + (curY >> 1) * width + curX;
+                        if (posUV + 1 < yuvData.length) {
+                            yuvData[posUV] = (byte) 0;
+                            yuvData[posUV + 1] = (byte) 50;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     //fin de la clase
 }

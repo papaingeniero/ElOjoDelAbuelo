@@ -144,6 +144,35 @@ public class NanoHttpServer {
                 String uri = st.hasMoreTokens() ? st.nextToken() : "/";
 
                 // 2. Route Request
+                // --- RUTAS OSD (V3.9.7) ---
+                if (uri.equals("/config/osd")) {
+                    sendStringResponse(os, "text/html", WebOsdEditor.getHtml());
+                    return;
+                }
+                if (uri.equals("/api/set_osd")) {
+                    java.util.Properties parms = new java.util.Properties();
+                    if (line.contains("?")) {
+                        String query = line.substring(line.indexOf("?") + 1);
+                        String[] pairs = query.split("&");
+                        for (String pair : pairs) {
+                            String[] kv = pair.split("=");
+                            if (kv.length == 2) parms.setProperty(kv[0], kv[1]);
+                        }
+                    }
+                    String x = parms.getProperty("x");
+                    String y = parms.getProperty("y");
+                    if (x != null && y != null) {
+                        try {
+                            SentinelService.OSD_X_PCT = Float.parseFloat(x);
+                            SentinelService.OSD_Y_PCT = Float.parseFloat(y);
+                            sendStringResponse(os, "text/plain", "OK");
+                            return;
+                        } catch (Exception e) {}
+                    }
+                    sendStringResponse(os, "text/plain", "ERR");
+                    return;
+                }
+                // ---------------------------
                 if (uri.equals("/stream")) {
                     SentinelService.logToWeb("📹 STREAM: Cliente conectado (IP: " + socket.getInetAddress() + ")");
                     serveLiveStream(os); // Bloquea el hilo mientras transmite
@@ -625,6 +654,15 @@ public class NanoHttpServer {
             os.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
         }
 
+        private void sendStringResponse(OutputStream os, String contentType, String body) throws IOException {
+            os.write("HTTP/1.1 200 OK\r\n".getBytes());
+            os.write(("Content-Type: " + contentType + "\r\n").getBytes());
+            os.write(("Content-Length: " + body.getBytes().length + "\r\n").getBytes());
+            os.write("\r\n".getBytes());
+            os.write(body.getBytes());
+            os.flush();
+        }
+
     }
 
     private String generateDashboardHtml() {
@@ -728,8 +766,7 @@ public class NanoHttpServer {
                 commonHeader
                 +
                 "  <div style='text-align:center; padding-bottom:10px; flex-shrink:0;'>\n" +
-                "      <div class='live-btn' onclick='openLiveView()' style='cursor:pointer;'>🔴 VER CÁMARA EN VIVO</div>\n"
-                +
+                "      <div class='live-btn' onclick='openLiveView()' style='cursor:pointer;'>🔴 VER CÁMARA EN VIVO</div>\n" +
                 "      <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: "
                 + SystemStats.getBootTime() + "</div>\n" +
                 "  </div>\n" +
@@ -829,6 +866,12 @@ public class NanoHttpServer {
                 "         <div style='font-size:11px; color:#aaa; margin-top:5px;'>* Zoom y Desplazamiento (Pan) del video mostrado en la pantalla del móvil de la cámara.</div>"
                 +
                 "      </div>" +
+
+                "      <div class='settings-row' style='margin-top:15px; border-top:1px dashed #444; padding-top:10px;'>\n" +
+                "          <label>Estampado Fecha (OSD):</label>\n" +
+                "          <a href='/config/osd' target='_blank' style='background:#222; border:1px solid #0f0; color:#0f0; padding:6px 15px; text-decoration:none; border-radius:4px; font-size:13px; font-family:monospace;'>📟 AJUSTAR POSICIÓN</a>\n" +
+                "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:5px; margin-bottom:15px;'>* Abre el editor visual en una pestaña nueva.</div>\n" +
 
                 // 3. GENERAL SETTINGS
                 "      <div class='settings-row'>\n" +

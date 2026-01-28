@@ -5,6 +5,15 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.26] - 2026-01-28
+### Added
+- **Web OSD Editor**: Implementación de un Editor OSD modular para configurar la posición de la fecha/hora en la imagen.
+    - **Back-end Lightweight**: Gestión de coordenadas mediante variables volátiles (`SentinelService.OSD_X_PCT`) para escritura sin reinicios.
+    - **Front-end Lazy**: Carga del editor HTML/JS solo bajo demanda (`WebOsdEditor.java`) para no engordar el servidor principal.
+    - **UX**: Acceso integrado en el Modal de Ajustes (Botón "AJUSTAR POSICIÓN").
+### Fixed
+- **NanoHttpServer**: Implementado helper `sendStringResponse` y carga correcta de `Properties` para solucionar errores de compilación al parsear parámetros URL.
+
 ## [v3.9.7-dev.21] - 2026-01-27
 ### Fixed
 - **Core**: Estandarización de resolución a **352x288** (CIF) en todo el código base.
