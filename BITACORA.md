@@ -2267,3 +2267,17 @@ body { font-size: 18px; }
 
 ### 💡 Lección de UX
 "El código de debug no tiene por qué ser feo ni ilegible". Si una herramienta de emergencia es difícil de leer bajo presión, su utilidad disminuye drásticamente.
+
+## 🚀 Ajuste Fino de Tipografía (14px)
+**Versión**: v3.9.7-dev.33
+
+### 🔍 El Problema: Pérdida de Contexto
+El aumento a 18px fue bien intencionado pero excesivo. En las pantallas pequeñas del dispositivo de rescate, apenas cabían 5-6 líneas de log, obligando a un scroll excesivo para entender la historia reciente.
+
+### 🛠️ La Solución: El Punto Dulce
+Hemos recalibrado la fuente a **14px**.
+*   Menor que 18px (para maximizar densidad de información).
+*   Mayor que el default (para mantener legibilidad operativa).
+
+### 💡 Lección de UX
+"El tamaño importa, pero la densidad también". En herramientas de diagnóstico, ver el *patrón* de los errores (múltiples líneas) suele ser más importante que ver una sola línea muy grande.
