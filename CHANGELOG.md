@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.28] - 2026-01-28
+### Meta-Engineering
+- **Rules Refactor**: Simplificación del Reporte Final en Regla 7 (`legacy_dev_rules.md`).
+    - Fusionado "Commit" y "Push" en un solo ítem.
+    - Reducción de 8 a **7 Puntos de Verificación**.
+- **Workflow Update**: Actualizado `deploy_snapshot.md` para reflejar la estructura de 7 puntos.
+
 ## [v3.9.7-dev.27] - 2026-01-28
 ### Meta-Engineering
 - **Rules Upgrade**: Actualizada Regla 7 en `legacy_dev_rules.md` para hacer **obligatorio** el "Reporte de Incidentes y Resoluciones" en el cierre de tareas.

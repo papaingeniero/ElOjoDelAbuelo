@@ -2178,3 +2178,17 @@ Ahora, la "Verificación de 8 Puntos" tiene una nueva sección mandatoria:
 > **3. Reporte de Incidentes y Resoluciones (OBLIGATORIO)**: Detalle de CADA error encontrado... y CÓMO se resolvió.
 
 **Lección**: La transparencia en los fallos genera más confianza que una falsa apariencia de perfección. Mostrar cómo superamos un obstáculo enseña más que mostrar que llegamos a la meta.
+
+### [Meta-Ingeniería] Simplificación del Protocolo de Verificación (7 Puntos)
+**Versión**: v3.9.7-dev.28
+
+**El Problema**: Redundancia cognitiva en el reporte final. Separar "Commit" y "Push" en dos puntos distintos inflaba artificialmente la lista de verificación, cuando en nuestro flujo de trabajo (`sync policy`) el push es obligatorio e inmediato tras el commit.
+
+**La Solución**:
+El Usuario ha realizado una intervención quirúrgica en `legacy_dev_rules.md` y `deploy_snapshot.md` fusionando ambos conceptos:
+*   **Antes**: 6. Commit, 7. Push.
+*   **Ahora**: **6. Commit & Push**.
+
+Esto reduce la "Verificación de 8 Puntos" a una **"Verificación de 7 Puntos"**, manteniendo la misma rigurosidad pero con mayor eficiencia conceptual.
+
+**Lección**: Menos es más. Si dos pasos están atómicos y acoplados, deben tratarse como uno solo para reducir la carga mental.

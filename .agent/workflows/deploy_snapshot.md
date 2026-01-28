@@ -33,15 +33,14 @@ Sigue el orden estricto.
 - [ ] `git commit -m "vX.Y.Z-dev.N <tipo>: <descripción>"`
     - Cuerpo del commit: Copia LITERAL de la entrada de Bitácora.
 - [ ] `git push origin main`.
-- [ ] `git tag vX.Y.Z-dev.N`
 - [ ] `git push origin vX.Y.Z-dev.N`
 
-# 6. Verificación de 8 Puntos (Reporte Final)
+# 6. Verificación de 7 Puntos (Reporte Final)
 Generar reporte estructurado:
-1. **Tabla de Verificación de 8 Puntos**:
-   - Versión, Build, Install, Bitácora, Changelog, Commit, Push, Status.
+1. **Tabla de Verificación de 7 Puntos**:
+   - Versión, Build, Install, Bitácora, Changelog, Commit y Push, Status.
 2. **Resumen de Cambios**:
    - Lista de cambios técnicos y funcionales.
 3. **Reporte de Incidentes y Resoluciones (OBLIGATORIO)**:
-   - Detalle de CADA error encontrado en cualquier paso (1-8) y su solución.
+   - Detalle de CADA error encontrado en cualquier paso (1-7) y su solución.
    - Formato: `❌ Error: [Descripción] -> ✅ Solución: [Acción tomada]`.
