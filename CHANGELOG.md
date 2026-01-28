@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.35] - 2026-01-28
+### Improved
+- **Diagnostic Upgrade**: Aumentada la capacidad del buffer de logs en memoria para `/api/debug`.
+    - Límite anterior: 50 entradas.
+    - Nuevo límite: **200 entradas**.
+    - *Objetivo*: Permitir un diagnóstico más profundo sin perder el historial reciente, aprovechando el ajuste de fuente (14px) que permite visualizar más líneas por pantalla.
+
 ## [v3.9.7-dev.34] - 2026-01-28
 ### Fixed
 - **Mobile Responsive (OOB)**: Corregido el problema de escalado de texto en la interfaz de debug (`/api/debug`) al rotar el dispositivo.

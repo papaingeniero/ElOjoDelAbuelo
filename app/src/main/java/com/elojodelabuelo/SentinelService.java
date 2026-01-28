@@ -977,8 +977,8 @@ public class SentinelService extends Service {
         // 2. RAM (Para el servidor Web /log)
         synchronized (debugLogs) {
             debugLogs.add(entry);
-            // Mantenemos solo las últimas 50 líneas para no llenar la memoria
-            if (debugLogs.size() > 50) debugLogs.remove(0);
+            // Mantenemos solo las últimas 200 líneas para no llenar la memoria
+            if (debugLogs.size() > 200) debugLogs.remove(0);
         }
 
         // 3. DISCO (Persistencia Real para ADB: tail -f abuelolog.log)

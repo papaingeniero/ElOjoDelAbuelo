@@ -2294,3 +2294,20 @@ Hemos aplicado el "candado doble" para garantizar consistencia visual:
 2.  **CSS**: `-webkit-text-size-adjust: 100%` (Desactiva la inflación algorítmica de texto).
 
 Esto asegura que 14px sean 14px píxeles lógicos, independientemente de la orientación del giroscopio.
+
+## 🚀 Ampliación de Memoria de Diagnóstico
+**Versión**: v3.9.7-dev.35
+
+### 🔍 El Problema: Memoria Corto Placista
+Con el aumento de complejidad de la aplicación, 50 líneas de log se llenaban demasiado rápido, haciendo que eventos importantes de hace apenas unos minutos desaparecieran de la vista en `/api/debug`.
+
+### 🛠️ La Solución: Buffer x4
+Hemos cuadruplicado el buffer circular de logs en memoria, pasando de 50 a **200 entradas**.
+*   **Impacto en RAM**: Insignificante (aprox. 20-30 KB adicionales).
+*   **Impacto en Utilidad**: Masivo. Ahora podemos ver varios ciclos de "Heartbeat" (que ocurren cada 60s) y eventos de detección de movimiento de manera simultánea.
+
+### 💡 Nota Técnica
+Este cambio es complementario a la reducción de fuente.
+*   Más líneas en memoria (200).
+*   Más líneas visibles en pantalla (gracias a los 14px).
+= **Mejor Diagnóstico.**
