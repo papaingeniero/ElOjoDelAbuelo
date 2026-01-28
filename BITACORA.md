@@ -2281,3 +2281,16 @@ Hemos recalibrado la fuente a **14px**.
 
 ### 💡 Lección de UX
 "El tamaño importa, pero la densidad también". En herramientas de diagnóstico, ver el *patrón* de los errores (múltiples líneas) suele ser más importante que ver una sola línea muy grande.
+
+## 🚀 Mobile Viewport Stability Fix
+**Versión**: v3.9.7-dev.34
+
+### 🔍 El Problema: Inconsistencia Vertical/Horizontal
+El Usuario reportó una diferencia notable en el tamaño relativo de los elementos al rotar el dispositivo. Esto es un comportamiento estándar (pero indeseado) de los navegadores móviles ("Text Inflation Algorithm") para compensar líneas largas en Landscape.
+
+### 🛠️ La Solución: Forzar 1:1
+Hemos aplicado el "candado doble" para garantizar consistencia visual:
+1.  **Meta Tag**: `initial-scale=1.0` (Evita zoom automático al rotar).
+2.  **CSS**: `-webkit-text-size-adjust: 100%` (Desactiva la inflación algorítmica de texto).
+
+Esto asegura que 14px sean 14px píxeles lógicos, independientemente de la orientación del giroscopio.

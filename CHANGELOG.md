@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.34] - 2026-01-28
+### Fixed
+- **Mobile Responsive (OOB)**: Corregido el problema de escalado de texto en la interfaz de debug (`/api/debug`) al rotar el dispositivo.
+    - Added `initial-scale=1.0` al meta viewport para fijar el zoom.
+    - Added `-webkit-text-size-adjust: 100%` al CSS para desactivar el "hinchado" automático de texto en iOS horizontal.
+
 ## [v3.9.7-dev.33] - 2026-01-28
 ### Changed
 - **Configuración OOB**: Ajuste fino de tipografía en `/api/debug`.
