@@ -2329,3 +2329,11 @@ if (exitCode != 0) {
 
 ### 💡 Lección de Ingeniería
 En el mundo de los scripts de shell (`su -c ...`), el silencio no es siempre éxito. Un proceso puede arrancar perfectamente (Java feliz) y suicidarse un milisegundo después (Shell triste). Capturar el `exitCode` es la única forma de saber la verdad.
+
+### 🧠 Lección Aprendida: El Factor Humano en Root (SuperUser)
+**Contexto**: Implementación del reinicio remoto de ADB.
+**Hallazgo**: Aunque el código Java para ejecutar `su` sea perfecto, la primera ejecución siempre fallará o se bloqueará si no hay un humano delante.
+**Razón**: Android protege el acceso root mediante un "Prompt" visual en pantalla (SuperUser/SuperSU) que requiere toque físico para "Permitir" y "Recordar".
+**Conclusión**:
+*   La automatización remota con Root tiene una dependencia física de "Bootstrap" (arranque inicial).
+*   *Corolario*: Si reinstalas la ROM o haces Wipe Data, perderás la capacidad de recuperación remota hasta que vuelvas a validar físicamente el permiso.
