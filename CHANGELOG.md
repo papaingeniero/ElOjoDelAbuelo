@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.41] - 2026-01-28
+### Improved
+- **UI UX Web**: Afinado el estilo del botón de cierre [X] en `/api/debug`.
+    - **Forma Cuadrada**: Eliminado `border-radius:50%` para una estética más técnica y alineada con los botones de Android nativo antiguo.
+    - **Alineación Vertical**: Ajustado `margin-top: 5px` (resetando el margen general a 0) para alinearlo visualmente con el texto del encabezado `ADMIN PANEL` (H2).
+
 ## [v3.9.7-dev.40] - 2026-01-28
 ### Changed
 - **UI UX Web**: Ajuste de posición del botón de cierre [X] en `/api/debug`.

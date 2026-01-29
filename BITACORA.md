@@ -2397,3 +2397,14 @@ Hemos cambiado la estrategia de posicionamiento a `float: right`.
 *   Sigue estando a la derecha.
 *   Pero ahora **respeta el flujo** del documento. Si haces scroll para leer un log antiguo, el botón se desplaza hacia arriba con el resto de la cabecera, liberando el espacio visual.
 *   Es un comportamiento más nativo y menos intrusivo.
+
+## 🚀 Estilo Brutalista (Square Button)
+**Versión**: v3.9.7-dev.41
+
+### 🔍 El Problema: "Redondez Incorrecta"
+El botón circular de cierre desentonaba con la estética técnica/brutalista del panel de debug (monospaced, negro y rojo). Además, visualmente parecía "flotar" por debajo de la línea base del título.
+
+### 🛠️ La Solución: CSS Geométrico
+Hemos eliminado los adornos y ajustado la geometría:
+1.  **Cuadrado**: Adiós `border-radius`. Ahora es un bloque sólido de 30x30px.
+2.  **Alineación Óptica**: Sustituido el margen genérico por un `margin-top: 5px` calculado. Esto lo eleva ligeramente para que su centro óptico coincida con el centro de las mayúsculas de "ADMIN PANEL".
