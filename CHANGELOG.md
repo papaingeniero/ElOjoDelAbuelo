@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.46] - 2026-01-29
+### Added
+- **OSD Editor**: Implementada "Vista en Vivo" (Live Preview).
+    - El fondo del editor ahora muestra el stream MJPEG de la cámara.
+    - Geometría forzada a ratio CIF (352/288) para garantizar precisión WYSIWYG.
+
 ## [v3.9.7-dev.45] - 2026-01-29
 ### Improved
 - **OSD Graphics**: Mejora drástica de nitidez en el texto sobreimpreso.

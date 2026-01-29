@@ -9,8 +9,8 @@ public class WebOsdEditor {
     return "<html><head><meta charset='UTF-8'><title>OSD Config</title>" +
         "<meta name='viewport' content='width=device-width, initial-scale=1'>" +
         "<style>" +
-        "body { background:#111; color:#0f0; font-family:monospace; text-align:center; padding:20px; }" +
-        ".preview-area { position:relative; width:100%; max-width:480px; aspect-ratio:4/3; background:#000; border:2px dashed #333; margin:20px auto; overflow:hidden; }" +
+        "body { background:#000; color:#0f0; font-family:monospace; margin:0; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; }" +
+        ".preview-area { position:relative; width:100%; max-width:600px; aspect-ratio:352/288; background:url('/stream') no-repeat center/100% 100%; border:2px solid #f00; margin:20px auto; overflow:hidden; }" +
         ".osd-label { position:absolute; padding:5px; background:rgba(0,255,0,0.1); cursor:move; font-weight:bold; user-select:none; white-space:nowrap; }" +
         ".btn { background:#050; color:#fff; border:1px solid #0f0; padding:12px 24px; cursor:pointer; font-weight:bold; margin-top:20px; }" +
         "</style></head><body>" +

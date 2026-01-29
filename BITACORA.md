@@ -2459,3 +2459,10 @@ Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La va
 2. **Inyección de Color Forzosa**: Se escribe el color verde (UV) para *cada* píxel del OSD, calculando correctamente la dirección del bloque de color compartido `(curX & ~1)`.
 3. **Alto Brillo**: Se sube la luminancia (Y) de 150 a 200.
 **Resultado Esperado:** Texto verde sólido, pixelado y de alto contraste, legible incluso en fondos complejos.
+
+### 🎥 v3.9.7-dev.46: Live OSD Preview (WYSIWYG)
+**El Problema:** Posicionar el texto sobre una caja negra era un acto de fe. El usuario no sabía si estaba tapando algo importante.
+**La Solución:** 
+1. **Fondo en Vivo:** El editor OSD ahora carga `/stream` como background de la caja de edición.
+2. **Fidelidad Geométrica:** CSS `aspect-ratio: 352/288` para forzar que la caja tenga la misma forma exacta que el sensor.
+**Resultado:** Lo que ves en el editor es exactamente donde caerá el texto en la realidad.
