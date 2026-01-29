@@ -2482,3 +2482,9 @@ Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La va
     - Si el pixel es Verde -> Pinta Texto (200 Luma + UV).
     - Si el pixel es Azul -> Aplica **Sombra**. Leemos el brillo original del video y lo dividimos por 2 (`>> 1`), creando una semitransparencia negra perfecta del 50%.
 **Resultado:** Texto verde sobre una pastilla semitransparente que garantiza legibilidad en cualquier situación lumínica.
+
+### 💾 v3.9.7-dev.49: OSD Persistence (Memoria de Elefante)
+**El Problema:** La posición del texto OSD se perdía al reiniciar la aplicación, volviendo a los valores por defecto.
+**La Solución:** 
+1. **SharedPreferences:** Ahora guardamos `osdX` y `osdY` cada vez que el usuario pulsa "GUARDAR" en el editor web.
+2. **Restauración:** Al iniciar `SentinelService`, cargamos estas coordenadas para que el texto aparezca exactamente donde se dejó.

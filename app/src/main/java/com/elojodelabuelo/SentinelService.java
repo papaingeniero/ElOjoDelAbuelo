@@ -161,6 +161,8 @@ public class SentinelService extends Service {
         defaultPanY = prefs.getInt("defaultPanY", 0);
         
         OSD_TEXT_SIZE = prefs.getInt("osdTextSize", 12);
+        OSD_X_PCT = prefs.getFloat("osdX", 0.02f);
+        OSD_Y_PCT = prefs.getFloat("osdY", 0.05f);
 
         // Calculate initial threshold (Phase 13: Exponential)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
@@ -1129,6 +1131,17 @@ public class SentinelService extends Service {
         if (instance != null) {
             instance.osdBitmap = null;
         }
+    }
+
+    public static void updateOsdPosition(Context context, float x, float y) {
+        OSD_X_PCT = x;
+        OSD_Y_PCT = y;
+        context.getSharedPreferences("SentinelPrefs", MODE_PRIVATE)
+               .edit()
+               .putFloat("osdX", x)
+               .putFloat("osdY", y)
+               .commit();
+        // Force redraw not needed for position, next frame will pick it up
     }
 
     private void imprintDate(byte[] yuvData, int width, int height) {

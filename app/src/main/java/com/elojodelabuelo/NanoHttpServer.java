@@ -165,8 +165,9 @@ public class NanoHttpServer {
 
                     if (x != null && y != null) {
                         try {
-                            SentinelService.OSD_X_PCT = Float.parseFloat(x);
-                            SentinelService.OSD_Y_PCT = Float.parseFloat(y);
+                            float xVal = Float.parseFloat(x);
+                            float yVal = Float.parseFloat(y);
+                            SentinelService.updateOsdPosition(context, xVal, yVal);
                             
                             if (size != null) {
                                 SentinelService.updateOsdSize(context, Integer.parseInt(size));
