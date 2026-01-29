@@ -2408,3 +2408,29 @@ El botón circular de cierre desentonaba con la estética técnica/brutalista de
 Hemos eliminado los adornos y ajustado la geometría:
 1.  **Cuadrado**: Adiós `border-radius`. Ahora es un bloque sólido de 30x30px.
 2.  **Alineación Óptica**: Sustituido el margen genérico por un `margin-top: 5px` calculado. Esto lo eleva ligeramente para que su centro óptico coincida con el centro de las mayúsculas de "ADMIN PANEL".
+
+### 🚀 v3.9.7-dev.42: OSD Dinámico "Talla Única"
+
+**El Problema:**
+El texto de fecha/hora sobreimpreso en el vídeo tenía un tamaño fijo de 18px. Esto obligaba a elegir entre "demasiado pequeño para verlo" o "demasiado grande y tapa la acción". Queremos que el usuario decida qué tanto molesta.
+
+**La Solución:**
+Hemos implementado un sistema de **Tamaño Variable**:
+1.  **Backend (`SentinelService`)**: 
+    - Variable `OSD_TEXT_SIZE` (default 12px).
+    - Lógica de persistencia en `SharedPreferences`.
+    - Recálculo dinámico del tamaño del bitmap `initOSD()` según la fuente elegida.
+2.  **Frontend (`WebOsdEditor`)**:
+    - Slider HTML5 (`<input type="range" min="10" max="100">`).
+    - Feedback visual inmediato mediante JS (`d.style.fontSize`).
+3.  **Transporte (`NanoHttpServer`)**:
+    - El endpoint `/api/set_osd` ahora acepta `&size=NN`.
+
+**Lecciones Aprendidas:**
+- **UX**: Un borde sólido verde (`border: 1px solid #0f0`) distrae mucho para previsualizar texto. Quitarlo y dejar solo el fondo semitransparente mejora la percepción del tamaño real.
+- **Arquitectura**: Al tener el OSD desacoplado en una clase "Lazy" (`WebOsdEditor`), pudimos iterar la UI sin tocar el servicio core pesado.
+
+**Estado Final:**
+- [x] Backend soporta `setTextSize`.
+- [x] Web permite ajustar de 10px a 100px.
+- [x] Configuración persistente tras reinicios.

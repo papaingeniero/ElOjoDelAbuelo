@@ -89,8 +89,9 @@ public class SentinelService extends Service {
     private Paint osdPaint;
     private int[] osdPixels;
     private String lastOsdText = "";
-    private static final int OSD_WIDTH = 220;
-    private static final int OSD_HEIGHT = 30;
+    public static volatile int OSD_TEXT_SIZE = 12; // Default 12px as requested
+    private static int OSD_WIDTH = 220;
+    private static int OSD_HEIGHT = 30;
 
     // [NUEVO] Contador para el Throttling Dinámico (Modo Eco)
     private int frameSkipCounter = 0;
@@ -158,6 +159,8 @@ public class SentinelService extends Service {
         defaultZoom = prefs.getFloat("defaultZoom", 1.0f);
         defaultPanX = prefs.getInt("defaultPanX", 0);
         defaultPanY = prefs.getInt("defaultPanY", 0);
+        
+        OSD_TEXT_SIZE = prefs.getInt("osdTextSize", 12);
 
         // Calculate initial threshold (Phase 13: Exponential)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
@@ -1094,15 +1097,37 @@ public class SentinelService extends Service {
 
     private void initOSD() {
         if (osdBitmap == null) {
+            // Recalculate dimensions based on text size
+            // Date string "dd/MM/yy HH:mm:ss" is ~17 chars.
+            // Width approx: 17 chars * (0.6 * size) + padding
+            OSD_WIDTH = (int) (OSD_TEXT_SIZE * 0.6 * 19); 
+            OSD_HEIGHT = (int) (OSD_TEXT_SIZE * 1.5);
+            
+            // Safety mins
+            if (OSD_WIDTH < 100) OSD_WIDTH = 100;
+            if (OSD_HEIGHT < 20) OSD_HEIGHT = 20;
+
             osdBitmap = Bitmap.createBitmap(OSD_WIDTH, OSD_HEIGHT, Bitmap.Config.ARGB_8888);
             osdCanvas = new Canvas(osdBitmap);
             osdPaint = new Paint();
             osdPaint.setColor(Color.GREEN);
-            osdPaint.setTextSize(18);
+            osdPaint.setTextSize(OSD_TEXT_SIZE);
             osdPaint.setTypeface(Typeface.MONOSPACE);
             osdPaint.setFakeBoldText(true);
             osdPaint.setAntiAlias(false);
             osdPixels = new int[OSD_WIDTH * OSD_HEIGHT];
+        }
+    }
+
+    public static void updateOsdSize(Context context, int newSize) {
+        OSD_TEXT_SIZE = newSize;
+        context.getSharedPreferences("SentinelPrefs", MODE_PRIVATE)
+               .edit()
+               .putInt("osdTextSize", newSize)
+               .commit();
+        // Force redraw on next frame
+        if (instance != null) {
+            instance.osdBitmap = null;
         }
     }
 

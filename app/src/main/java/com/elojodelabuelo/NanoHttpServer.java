@@ -149,7 +149,7 @@ public class NanoHttpServer {
                     sendStringResponse(os, "text/html", WebOsdEditor.getHtml());
                     return;
                 }
-                if (uri.equals("/api/set_osd")) {
+                if (uri.startsWith("/api/set_osd")) {
                     java.util.Properties parms = new java.util.Properties();
                     if (line.contains("?")) {
                         String query = line.substring(line.indexOf("?") + 1);
@@ -161,10 +161,17 @@ public class NanoHttpServer {
                     }
                     String x = parms.getProperty("x");
                     String y = parms.getProperty("y");
+                    String size = parms.getProperty("size");
+
                     if (x != null && y != null) {
                         try {
                             SentinelService.OSD_X_PCT = Float.parseFloat(x);
                             SentinelService.OSD_Y_PCT = Float.parseFloat(y);
+                            
+                            if (size != null) {
+                                SentinelService.updateOsdSize(context, Integer.parseInt(size));
+                            }
+                            
                             sendStringResponse(os, "text/plain", "OK");
                             return;
                         } catch (Exception e) {}
