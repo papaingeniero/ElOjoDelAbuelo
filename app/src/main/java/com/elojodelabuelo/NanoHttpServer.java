@@ -227,6 +227,7 @@ public class NanoHttpServer {
                     sb.append("<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>Sentinel Debug</title>");
                     sb.append("<style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;font-size:14px;-webkit-text-size-adjust:100%;} .btn{background:#300;color:#fff;border:1px solid #f00;padding:10px;margin-bottom:20px;cursor:pointer;width:100%;font-weight:bold;font-size:16px;}</style>");
                     sb.append("</head><body>");
+                    sb.append("<button onclick='window.close()' style='position:fixed;top:10px;right:10px;background:#c00;color:white;border:1px solid #fff;border-radius:50%;width:30px;height:30px;font-weight:bold;cursor:pointer;z-index:9999;'>X</button>");
                     
                     // Botón de Pánico ADB
                     sb.append("<h2>🔧 ADMIN PANEL</h2>");
@@ -975,7 +976,7 @@ public class NanoHttpServer {
                 "      </div>\n" +
                 "      <!-- Opción B: Footer Diagnóstico -->\n" +
                 "      <div style='margin-top:20px; text-align:center;'>\n" +
-                "         <a href='/api/debug' target='_blank' style='color:#ef5350; text-decoration:none; font-size:12px; border-bottom:1px dotted #ef5350;'>⚠️ VER LOGS DE DEBUG</a>\n" +
+                "         <a href='#' onclick=\"window.open('/api/debug'); return false;\" style='color:#ef5350; text-decoration:none; font-size:12px; border-bottom:1px dotted #ef5350;'>⚠️ VER LOGS DE DEBUG</a>\n" +
                 "      </div>\n" +
                 "  </div>\n" +
                 "</div>\n" +

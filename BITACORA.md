@@ -2370,3 +2370,18 @@ Hemos sustituido la lógica de `checkADBPort()` por una prueba de conexión acti
 
 ### 💡 Lección de Redes
 "Escuchar no es responder". En sistemas embebidos antiguos, la pila TCP/IP puede mantener un puerto abierto a nivel de kernel, aunque la aplicación de usuario haya crasheado lógicamente. **La única prueba de vida real es una interacción completa.**
+
+## 🚀 Flujo Circular de Navegación (Debug UX)
+**Versión**: v3.9.7-dev.39
+
+### 🔍 El Problema: "Back Trap"
+Al abrir el panel de Debug en una pestaña nueva, el usuario (especialmente en móviles) se queda "atrapado" allí. Usar el botón "Atrás" del navegador cierra la pestaña o la deja en el historial, rompiendo el flujo. `window.close()` no funcionaba porque la pestaña no se abría mediante script.
+
+### 🛠️ La Solución: Pestaña Hija
+Hemos reescrito el disparador de apertura para usar `window.open` explícito. Esto establece una relación padre-hijo entre el Dashboard y el Debug.
+1.  **Dashboard**: Llama a `window.open()`.
+2.  **Debug View**: Muestra un botón flotante rojo `[X]`.
+3.  **Acción**: Ese botón llama a `window.close()`. Ahora el navegador **SÍ** lo permite porque sabe quién abrió la puerta.
+
+### 💡 Lección de Web APIs
+La seguridad moderna de los navegadores impide que una página se cierre a sí misma ("Suicide Prevention") a menos que haya sido creada por un script ("Parental Consent"). Para cerrar una pestaña, primero tienes que haberla engendrado tú.
