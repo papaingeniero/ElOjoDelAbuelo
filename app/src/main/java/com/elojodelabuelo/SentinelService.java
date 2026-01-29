@@ -1101,7 +1101,7 @@ public class SentinelService extends Service {
             // Date string "dd/MM/yy HH:mm:ss" is ~17 chars.
             // Width approx: 17 chars * (0.6 * size) + padding
             OSD_WIDTH = (int) (OSD_TEXT_SIZE * 0.6 * 19); 
-            OSD_HEIGHT = (int) (OSD_TEXT_SIZE * 1.5);
+            OSD_HEIGHT = (int) (OSD_TEXT_SIZE * 2.0);
             
             // Safety mins
             if (OSD_WIDTH < 100) OSD_WIDTH = 100;
@@ -1136,7 +1136,7 @@ public class SentinelService extends Service {
         String currentText = new SimpleDateFormat("dd/MM/yy HH:mm:ss", Locale.US).format(new Date());
         if (!currentText.equals(lastOsdText)) {
             osdBitmap.eraseColor(Color.TRANSPARENT);
-            osdCanvas.drawText(currentText, 10, 22, osdPaint);
+            osdCanvas.drawText(currentText, 10, OSD_TEXT_SIZE * 1.5f, osdPaint);
             osdBitmap.getPixels(osdPixels, 0, OSD_WIDTH, 0, 0, OSD_WIDTH, OSD_HEIGHT);
             lastOsdText = currentText;
         }

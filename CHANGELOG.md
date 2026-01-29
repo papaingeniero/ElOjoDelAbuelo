@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.47] - 2026-01-29
+### Fixed
+- **OSD Graphics**: Corregido corte inferior en el texto de fecha/hora.
+    - Altura del canvas aumentada de 1.5x a 2.0x.
+    - Coordenada de pintado dinámica para soportar fuentes grandes sin salirse del margen.
+
 ## [v3.9.7-dev.46] - 2026-01-29
 ### Added
 - **OSD Editor**: Implementada "Vista en Vivo" (Live Preview).

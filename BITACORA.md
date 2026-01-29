@@ -2466,3 +2466,10 @@ Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La va
 1. **Fondo en Vivo:** El editor OSD ahora carga `/stream` como background de la caja de edición.
 2. **Fidelidad Geométrica:** CSS `aspect-ratio: 352/288` para forzar que la caja tenga la misma forma exacta que el sensor.
 **Resultado:** Lo que ves en el editor es exactamente donde caerá el texto en la realidad.
+
+### ✂️ v3.9.7-dev.47: OSD Clipping Fix (El Barbero)
+**El Problema:** La parte inferior de los números (descendentes) se cortaba porque el lienzo del OSD tenía una altura fija insuficiente (1.5x) y una coordenada de pintado fija (Y=22).
+**La Solución:** 
+1. **Lienzo más alto:** Aumentado el `OSD_HEIGHT` a **2.0x** el tamaño de la fuente.
+2. **Posición Dinámica:** La coordenada Y de pintado ahora es relativa: `size * 1.5`.
+**Resultado:** El texto "respira" y ya no se cortan los pies de los números.
