@@ -163,6 +163,8 @@ public class NanoHttpServer {
                     String y = parms.getProperty("y");
                     String size = parms.getProperty("size");
 
+                    SentinelService.logToWeb("DEBUG OSD: Recibido x=" + x + " y=" + y + " size=" + size);
+
                     if (x != null && y != null) {
                         try {
                             SentinelService.OSD_X_PCT = Float.parseFloat(x);

@@ -5,6 +5,10 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.43] - 2026-01-29
+### Debugging
+- **OSD**: Añadido log verbose (`DEBUG OSD: ...`) en endpoint de guardado para diagnosticar error de parámetros `null/NaN`.
+
 ## [v3.9.7-dev.42] - 2026-01-28
 ### Added
 - **OSD**: Control de tamaño de texto dinámico.

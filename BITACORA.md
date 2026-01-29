@@ -2434,3 +2434,8 @@ Hemos implementado un sistema de **Tamaño Variable**:
 - [x] Backend soporta `setTextSize`.
 - [x] Web permite ajustar de 10px a 100px.
 - [x] Configuración persistente tras reinicios.
+
+### 🐛 v3.9.7-dev.43: Caza de Bugs (OSD Save Error)
+**Incidente:** El usuario reporta mensaje "❌ Error" al intentar guardar posición en WebOsdEditor.
+**Acción:** Añadido log de depuración en `NanoHttpServer` (/api/set_osd) para imprimir los valores de x, y, size recibidos.
+**Objetivo:** Confirmar si llegan nulos o NaN.
