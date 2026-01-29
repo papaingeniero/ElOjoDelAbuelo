@@ -2385,3 +2385,15 @@ Hemos reescrito el disparador de apertura para usar `window.open` explícito. Es
 
 ### 💡 Lección de Web APIs
 La seguridad moderna de los navegadores impide que una página se cierre a sí misma ("Suicide Prevention") a menos que haya sido creada por un script ("Parental Consent"). Para cerrar una pestaña, primero tienes que haberla engendrado tú.
+
+## 🚀 CSS Táctico: Botón de Cierre Fluido
+**Versión**: v3.9.7-dev.40
+
+### 🔍 El Problema: "Sticky Button"
+El botón fijo (`position: fixed`) [X] era útil pero agresivo. En pantallas pequeñas o con mucho zoom, permanecía "pegado" a la esquina visual, tapando a veces parte de los logs o botones vitales.
+
+### 🛠️ La Solución: Float Right
+Hemos cambiado la estrategia de posicionamiento a `float: right`.
+*   Sigue estando a la derecha.
+*   Pero ahora **respeta el flujo** del documento. Si haces scroll para leer un log antiguo, el botón se desplaza hacia arriba con el resto de la cabecera, liberando el espacio visual.
+*   Es un comportamiento más nativo y menos intrusivo.

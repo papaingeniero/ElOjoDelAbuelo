@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.40] - 2026-01-28
+### Changed
+- **UI UX Web**: Ajuste de posición del botón de cierre [X] en `/api/debug`.
+    - Antes: `position: fixed` (siempre visible).
+    - Ahora: `float: right` (flujo normal).
+    - *Objetivo*: Evitar que el botón tape contenido importante en pantallas muy pequeñas al hacer zoom o scroll, moviéndose solidariamente con el resto de la página.
+
 ## [v3.9.7-dev.39] - 2026-01-28
 ### Added
 - **UI UX Web**: Mejora en el flujo de la pestaña de Debug.
