@@ -2473,3 +2473,12 @@ Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La va
 1. **Lienzo más alto:** Aumentado el `OSD_HEIGHT` a **2.0x** el tamaño de la fuente.
 2. **Posición Dinámica:** La coordenada Y de pintado ahora es relativa: `size * 1.5`.
 **Resultado:** El texto "respira" y ya no se cortan los pies de los números.
+
+### 🕶️ v3.9.7-dev.48: OSD Background (Semitransparencia)
+**El Problema:** El texto verde brillante a veces se confundía si la cámara apuntaba a zonas verdes o muy luminosas.
+**La Solución (Ingeniería de Píxeles):**
+1. **Marcador Azul:** Usamos `Color.BLUE` para pintar el fondo de la caja de texto en el bitmap (invisible al usuario).
+2. **Mezclador YUV:** 
+    - Si el pixel es Verde -> Pinta Texto (200 Luma + UV).
+    - Si el pixel es Azul -> Aplica **Sombra**. Leemos el brillo original del video y lo dividimos por 2 (`>> 1`), creando una semitransparencia negra perfecta del 50%.
+**Resultado:** Texto verde sobre una pastilla semitransparente que garantiza legibilidad en cualquier situación lumínica.

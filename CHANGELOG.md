@@ -5,6 +5,11 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.48] - 2026-01-29
+### Added
+- **OSD Legibility**: Añadido fondo semitransparente automático tras el texto.
+    - Implementación mediante sustracción de luminancia (Bit Shifting) para oscurecer el video tras las letras sin coste de CPU.
+
 ## [v3.9.7-dev.47] - 2026-01-29
 ### Fixed
 - **OSD Graphics**: Corregido corte inferior en el texto de fecha/hora.

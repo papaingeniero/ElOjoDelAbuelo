@@ -1135,7 +1135,7 @@ public class SentinelService extends Service {
         if (osdBitmap == null) initOSD();
         String currentText = new SimpleDateFormat("dd/MM/yy HH:mm:ss", Locale.US).format(new Date());
         if (!currentText.equals(lastOsdText)) {
-            osdBitmap.eraseColor(Color.TRANSPARENT);
+            osdBitmap.eraseColor(Color.BLUE); // Fondo azul actúa como máscara de semitransparencia
             osdCanvas.drawText(currentText, 10, OSD_TEXT_SIZE * 1.5f, osdPaint);
             osdBitmap.getPixels(osdPixels, 0, OSD_WIDTH, 0, 0, OSD_WIDTH, OSD_HEIGHT);
             lastOsdText = currentText;
@@ -1150,21 +1150,29 @@ public class SentinelService extends Service {
         for (int y = 0; y < OSD_HEIGHT; y++) {
             for (int x = 0; x < OSD_WIDTH; x++) {
                 int pixel = osdPixels[y * OSD_WIDTH + x];
-                // Sharpness Fix: Solid Green Threshold
-                if (((pixel >> 24) & 0xff) > 128) { 
+                if (pixel != 0) { // <--- AÑADIR ESTA LINEA
                     int curX = posX + x;
                     int curY = posY + y;
                     int pos = curY * width + curX;
-                    
-                    // 1. High Luma (Bright)
-                    if (pos < yuvData.length) yuvData[pos] = (byte) 200;
-
-                    // 2. Force Chroma (Solid Green)
-                    // Calculate the UV block address for this pixel (2x2 grid)
-                    int posUV = offsetUV + (curY >> 1) * width + (curX & ~1);
-                    if (posUV + 1 < yuvData.length) {
-                        yuvData[posUV] = (byte) 0;      // V (Cr) -> 0
-                        yuvData[posUV + 1] = (byte) 50; // U (Cb) -> 50
+                    if (pos < yuvData.length) {
+                        // CASO 1: Si el pixel es VERDE (G > 128) -> ES TEXTO
+                        if (((pixel >> 8) & 0xff) > 128) {
+                            yuvData[pos] = (byte) 200; // Luma muy brillante (Texto)
+                            
+                            // Inyectar color verde sólido
+                            int posUV = offsetUV + (curY >> 1) * width + (curX & ~1);
+                            if (posUV + 1 < yuvData.length) {
+                                yuvData[posUV] = (byte) 0;
+                                yuvData[posUV + 1] = (byte) 50;
+                            }
+                        }
+                        // CASO 2: Si el pixel es AZUL (B > 128) -> ES FONDO
+                        else if ((pixel & 0xff) > 128) {
+                            // Oscurecer el video original al 50% (Semitransparencia)
+                            // Leemos, dividimos por 2 (>>1) y escribimos de vuelta.
+                            int originalLuma = yuvData[pos] & 0xff;
+                            yuvData[pos] = (byte) (originalLuma >> 1);
+                        }
                     }
                 }
             }
