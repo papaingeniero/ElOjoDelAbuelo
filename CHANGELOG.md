@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.45] - 2026-01-29
+### Improved
+- **OSD Graphics**: Mejora drástica de nitidez en el texto sobreimpreso.
+    - Implementado umbral de canal Alpha (> 50%) para eliminar bordes borrosos.
+    - Aumentado brillo del texto (Luma 200).
+    - Forzado de color Chroma sólido para eliminar artefactos "fantasmas" en la rejilla YUV.
+
 ## [v3.9.7-dev.44] - 2026-01-29
 ### Fixed
 - **NanoHttpServer**: Corregido bug crítico de parsing en `/api/set_osd`. Se usaba la línea de petición cruda en lugar de la URI, provocando que el último parámetro incluyera el protocolo `HTTP/1.1` y fallara la conversión numérica.

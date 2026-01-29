@@ -2451,3 +2451,11 @@ Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La va
 **Lecciones Aprendidas:**
 - **Parsing defensivo**: En protocolos de texto, nunca confíes en el final de la línea sin limpiar el delimitador de protocolo (` HTTP/1.1`).
 - **Logs de Guerra**: Gracias a la inyección rápida de trazas en la v43, localizamos un bug de lógica en segundos en lugar de horas de adivinación.
+
+### 👁️ v3.9.7-dev.45: OSD "High Contrast" (Solid Green)
+**El Problema:** El OSD tenía bordes borrosos y un efecto "fantasma" debido a la semitransparencia y a la falta de alineación con la rejilla de color NV21 (2x2 píxeles).
+**La Solución:** 
+1. **Umbral Duro**: Se ignora cualquier píxel con transparencia < 50% (adiós antialiasing borroso).
+2. **Inyección de Color Forzosa**: Se escribe el color verde (UV) para *cada* píxel del OSD, calculando correctamente la dirección del bloque de color compartido `(curX & ~1)`.
+3. **Alto Brillo**: Se sube la luminancia (Y) de 150 a 200.
+**Resultado Esperado:** Texto verde sólido, pixelado y de alto contraste, legible incluso en fondos complejos.

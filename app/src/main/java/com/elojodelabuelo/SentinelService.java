@@ -1150,17 +1150,21 @@ public class SentinelService extends Service {
         for (int y = 0; y < OSD_HEIGHT; y++) {
             for (int x = 0; x < OSD_WIDTH; x++) {
                 int pixel = osdPixels[y * OSD_WIDTH + x];
-                if ((pixel >> 24) != 0) { 
+                // Sharpness Fix: Solid Green Threshold
+                if (((pixel >> 24) & 0xff) > 128) { 
                     int curX = posX + x;
                     int curY = posY + y;
                     int pos = curY * width + curX;
-                    if (pos < yuvData.length) yuvData[pos] = (byte) 150;
-                    if (curY % 2 == 0 && curX % 2 == 0) {
-                        int posUV = offsetUV + (curY >> 1) * width + curX;
-                        if (posUV + 1 < yuvData.length) {
-                            yuvData[posUV] = (byte) 0;
-                            yuvData[posUV + 1] = (byte) 50;
-                        }
+                    
+                    // 1. High Luma (Bright)
+                    if (pos < yuvData.length) yuvData[pos] = (byte) 200;
+
+                    // 2. Force Chroma (Solid Green)
+                    // Calculate the UV block address for this pixel (2x2 grid)
+                    int posUV = offsetUV + (curY >> 1) * width + (curX & ~1);
+                    if (posUV + 1 < yuvData.length) {
+                        yuvData[posUV] = (byte) 0;      // V (Cr) -> 0
+                        yuvData[posUV + 1] = (byte) 50; // U (Cb) -> 50
                     }
                 }
             }
