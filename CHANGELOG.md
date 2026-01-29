@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.37] - 2026-01-28
+### Added
+- **UI UX Web**: Integración de un acceso directo a "Panel de Debug" en la configuración web.
+    - Ubicado estratégicamente en el footer del modal de ajustes (Opción B: Discreta).
+    - Permite acceso rápido a `/api/debug` sin escribir URL manual.
+    - *Objetivo*: Facilitar el diagnóstico técnico in-situ desde el propio dashboard.
+
 ## [v3.9.7-dev.36] - 2026-01-28
 ### Added
 - **Diagnostic Upgrade (Root)**: Mejoras en el endpoint `/api/restart_adb`.

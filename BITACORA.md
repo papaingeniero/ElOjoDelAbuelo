@@ -2337,3 +2337,21 @@ En el mundo de los scripts de shell (`su -c ...`), el silencio no es siempre éx
 **Conclusión**:
 *   La automatización remota con Root tiene una dependencia física de "Bootstrap" (arranque inicial).
 *   *Corolario*: Si reinstalas la ROM o haces Wipe Data, perderás la capacidad de recuperación remota hasta que vuelvas a validar físicamente el permiso.
+
+## 🚀 Accesibilidad Técnica Mejorada (Footer Link)
+**Versión**: v3.9.7-dev.37
+
+### 🔍 El Problema: URLs Ocultas
+Para acceder a los diagnósticos, el usuario debía memorizar y escribir manualmente `/api/debug`. Esto es contrario a una buena UX, especialmente en situaciones de estrés (cuando más necesitas el debug).
+
+### 🛠️ La Solución: Opción B (Footer Discreto)
+Hemos inyectado un botón de enlace en el HTML del Modal de Configuración, en la zona inferior (Footer).
+*   **Diseño**: Estilo "Danger/Warning" sutil (borde punteado rojo, texto pequeño).
+*   **Comportamiento**: `target="_blank"` para no perder el contexto del video en vivo.
+
+```html
+<a href='/api/debug' target='_blank'>⚠️ VER LOGS DE DEBUG</a>
+```
+
+### 💡 Lección de UI
+Las herramientas peligrosas o técnicas deben estar "a mano pero no en medio". El footer de un modal de configuración es el equivalente digital al "doble fondo" de una caja de herramientas.
