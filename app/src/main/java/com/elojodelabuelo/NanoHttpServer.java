@@ -151,8 +151,8 @@ public class NanoHttpServer {
                 }
                 if (uri.startsWith("/api/set_osd")) {
                     java.util.Properties parms = new java.util.Properties();
-                    if (line.contains("?")) {
-                        String query = line.substring(line.indexOf("?") + 1);
+                    if (uri.contains("?")) {
+                        String query = uri.substring(uri.indexOf("?") + 1);
                         String[] pairs = query.split("&");
                         for (String pair : pairs) {
                             String[] kv = pair.split("=");
@@ -162,8 +162,6 @@ public class NanoHttpServer {
                     String x = parms.getProperty("x");
                     String y = parms.getProperty("y");
                     String size = parms.getProperty("size");
-
-                    SentinelService.logToWeb("DEBUG OSD: Recibido x=" + x + " y=" + y + " size=" + size);
 
                     if (x != null && y != null) {
                         try {

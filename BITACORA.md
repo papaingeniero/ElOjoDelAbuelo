@@ -2439,3 +2439,15 @@ Hemos implementado un sistema de **Tamaño Variable**:
 **Incidente:** El usuario reporta mensaje "❌ Error" al intentar guardar posición en WebOsdEditor.
 **Acción:** Añadido log de depuración en `NanoHttpServer` (/api/set_osd) para imprimir los valores de x, y, size recibidos.
 **Objetivo:** Confirmar si llegan nulos o NaN.
+
+### ✅ v3.9.7-dev.44: Arreglado Error de Guardado OSD (Parsing Bug)
+
+**El Problema:**
+Al guardar la posición del OSD, el sistema devolvía "Error". Los logs de diagnóstico de la v3.9.7-dev.43 revelaron que el último parámetro (`size`) llegaba con basura: `"17 HTTP/1.1"`. Esto ocurría porque se parseaba la línea cruda de la petición HTTP en lugar de la URI procesada.
+
+**La Solución:**
+Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La variable `uri` ya ha sido limpiada del protocolo por el servidor.
+
+**Lecciones Aprendidas:**
+- **Parsing defensivo**: En protocolos de texto, nunca confíes en el final de la línea sin limpiar el delimitador de protocolo (` HTTP/1.1`).
+- **Logs de Guerra**: Gracias a la inyección rápida de trazas en la v43, localizamos un bug de lógica en segundos en lugar de horas de adivinación.
