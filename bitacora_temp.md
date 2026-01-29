@@ -2497,26 +2497,3 @@ Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La va
 2. **Chroma Neutra (UV 128):** Forzamos las componentes de color a gris neutro en los píxeles de texto para evitar bordes "sucios".
 3. **Fondo Preservado:** Mantenemos nuestra lógica de "Sombra Semitransparente" (Luma >> 1) para que el texto blanco sea legible incluso sobre fondos blancos quemados.
 **Resultado:** La legibilidad de una Handycam profesional con la robustez de nuestro motor gráfico.
-
-## 🚀 v3.9.7: The Sharpness Update (La Actualización de Nitidez) | Fecha: 30 de Enero de 2026
-**Resumen Ejecutivo:**
-Tras 50 iteraciones de desarrollo (`dev.0` a `dev.50`), "El Ojo del Abuelo" alcanza un nuevo estándar de calidad visual y usabilidad. Esta versión transforma la experiencia de vigilancia, pasando de un texto OSD ilegible y un editor ciego, a un sistema profesional nítido, persistente y WYSIWYG.
-
-### 💎 Pilares de la Release
-
-#### 1. Ingeniería Gráfica (OSD Engine V2)
-*   **White Pro Mode:** Abandonamos el "Verde Hacker" por un **Blanco Puro (Luma 255)** con neutralización de color (UV 128). Esto maximiza la legibilidad en resoluciones bajas (CIF 352x288) evitando el borrosidad del subsampling de color.
-*   **Smart Background:** Implementamos "Bit Shifting de Luma" (`Y >> 1`) para crear una sombra semitransparente detrás del texto sin coste de CPU. Legibilidad garantizada contra el sol.
-*   **Text Clipping Fix:** Altura de lienzo dinámica (2.0x) para evitar cortes en caracteres descendentes.
-
-#### 2. Experiencia de Usuario (Editor OSD)
-*   **Live Preview Real:** El editor web ahora muestra el video en vivo (`/stream`) como fondo.
-*   **Fidelidad Geométrica:** CSS `aspect-ratio: 352/288` forzado para que lo que ves en el editor sea *exactamente* lo que sale en el video grabado.
-*   **Persistencia (Memoria):** Las coordenadas y tamaño del texto se guardan en memoria permanente (`SharedPreferences`) y sobreviven a reinicios.
-
-#### 3. Robustez y Diagnóstico
-*   **Watchdog ADB:** Nuevo sistema capaz de detectar y recuperar la conexión USB con el dispositivo si este deja de responder durante el desarrollo.
-*   **Heartbeat Estabilizado:** Monitorización constante de temperatura y memoria.
-
-### 🎓 Lección de Ingeniería: "Menos es Más"
-Aprendimos que en hardware legacy (Galaxy S i9000), las soluciones complejas (anti-aliasing, sombras gaussianas) fallan. La solución ganadora fue la manipulación directa de bits (Luma/Chroma) y la simplificación visual. **La nitidez no viene de añadir píxeles, sino de purificar los que tienes.**

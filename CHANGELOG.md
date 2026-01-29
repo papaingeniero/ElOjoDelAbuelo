@@ -5,6 +5,16 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7] - 2026-01-30
+### Summary
+"The Sharpness Update". Actualización mayor enfocada en la calidad del OSD y la usabilidad del editor.
+
+### Highlights
+- **OSD White Pro**: Texto blanco puro ultra-nítido con fondo semitransparente.
+- **Live Preview CIF**: Editor WYSIWYG real.
+- **Persistence**: Memoria de configuración.
+- **Stability**: ADB Watchdog y mejoras térmicas.
+
 ## [v3.9.7-dev.50] - 2026-01-30
 ### Changed
 - **OSD Style**: Cambio de estilo a "White Pro Mode".
