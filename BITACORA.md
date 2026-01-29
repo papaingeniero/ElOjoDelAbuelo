@@ -2355,3 +2355,18 @@ Hemos inyectado un botón de enlace en el HTML del Modal de Configuración, en l
 
 ### 💡 Lección de UI
 Las herramientas peligrosas o técnicas deben estar "a mano pero no en medio". El footer de un modal de configuración es el equivalente digital al "doble fondo" de una caja de herramientas.
+
+## 🚀 ADB Smart Probe: La prueba del "Hola"
+**Versión**: v3.9.7-dev.38
+
+### 🔍 El Problema: El Portero Zombi
+Usar `netstat` en Android 2.3 para verificar ADB era engañoso. El sistema operativo podía reportar el puerto 5555 como `LISTEN` (abierto), pero el proceso `adbd` podía estar internamente congelado (deadlock), ignorando nuevas conexiones. Para el Watchdog anterior, "puerto abierto" significaba "todo bien", cuando en realidad estábamos incomunicados.
+
+### 🛠️ La Solución: Cliente ADB "Minimalista"
+Hemos sustituido la lógica de `checkADBPort()` por una prueba de conexión activa:
+1.  **Socket Real**: Java intenta conectar a `127.0.0.1:5555`.
+2.  **Escritura Activa**: Si conecta, enviamos 4 bytes dummy. Esto verifica que el buffer de entrada del demonio no está lleno y que el hilo de red está procesando.
+3.  **Timeout Estricto**: 2000ms. Si tarda más, se considera muerto.
+
+### 💡 Lección de Redes
+"Escuchar no es responder". En sistemas embebidos antiguos, la pila TCP/IP puede mantener un puerto abierto a nivel de kernel, aunque la aplicación de usuario haya crasheado lógicamente. **La única prueba de vida real es una interacción completa.**

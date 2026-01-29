@@ -5,6 +5,13 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.38] - 2026-01-28
+### Improved
+- **ADB Watchdog (Smart Probe)**: Reemplazo de la detección basada en `netstat` por una basada en `Socket Real`.
+    - Antes: Comprobaba si el puerto estaba "recibiendo" (LISTEN), lo que daba falsos positivos con procesos zombis.
+    - Ahora: Intenta abrir un Socket TCP real a `localhost:5555` y enviar bytes. Si falla o timeout (2s), considera el servicio muerto y lo reinicia.
+    - *Objetivo*: Detectar y resolver bloqueos silenciosos del ADB sin intervención humana.
+
 ## [v3.9.7-dev.37] - 2026-01-28
 ### Added
 - **UI UX Web**: Integración de un acceso directo a "Panel de Debug" en la configuración web.

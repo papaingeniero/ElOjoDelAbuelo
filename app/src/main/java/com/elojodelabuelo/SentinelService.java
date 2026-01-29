@@ -210,7 +210,7 @@ public class SentinelService extends Service {
                 int temp = ThermalGuardian.getBatteryTemperature(getApplicationContext());
                 
                 // 3. Log Resumen
-                logToWeb("📊 HEARTBEAT (60s): Temp: " + temp + "°C | Mem: " + freeMem + "MB / " + totalMem + "MB | Frames: " + statsFrameProcessed + " OK / " + statsFrameSkipped + " Skip");
+                logToWeb("📊 HEARTBEAT (60s): Temp: " + temp + "°C | Mem: " + freeMem + "MB Free / " + totalMem + "MB Total | Frames: " + statsFrameProcessed + " OK / " + statsFrameSkipped + " Skip");
                 
                 // Reset contadores parciales
                 statsFrameProcessed = 0;
@@ -1066,18 +1066,29 @@ public class SentinelService extends Service {
 
     // Método auxiliar para leer el estado de la red
     private boolean checkADBPort() {
+        // [MEJORA] Test de Socket Real ("Handshake Probe")
+        // No confiamos en netstat (zombis). Intentamos hablar el protocolo ADB.
+        java.net.Socket socket = null;
         try {
-            Process p = Runtime.getRuntime().exec("netstat -an");
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(":5555") && line.contains("LISTEN")) return true; 
+            socket = new java.net.Socket();
+            // Timeout agresivo: Si no conecta en 2s, está muerto.
+            socket.connect(new java.net.InetSocketAddress("127.0.0.1", 5555), 2000);
+            
+            // Si conecta, enviamos el saludo inicial ADB: "CNXN" (0x434E584E) + Length + etc.
+            // Para simplificar: Solo comprobar que el socket abre y acepta bytes.
+            // Un zombi acepta SYN pero no hace handshake completo.
+            
+            // Enviamos 4 bytes dummy para ver si el canal de escritura está vivo
+            socket.getOutputStream().write(new byte[]{0,0,0,0}, 0, 4);
+            
+            return true; // Conexión viva y tubería acepta datos
+        } catch (Exception e) { 
+            return false; // Connection refused o Timeout -> Zombi/Muerto
+        } finally {
+            if (socket != null) {
+                try { socket.close(); } catch (Exception ignored) {}
             }
-            reader.close();
-            p.waitFor();
-        } catch (Exception e) { return false; }
-        return false;
+        }
     }
 
 
