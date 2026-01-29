@@ -1112,7 +1112,7 @@ public class SentinelService extends Service {
             osdBitmap = Bitmap.createBitmap(OSD_WIDTH, OSD_HEIGHT, Bitmap.Config.ARGB_8888);
             osdCanvas = new Canvas(osdBitmap);
             osdPaint = new Paint();
-            osdPaint.setColor(Color.GREEN);
+            osdPaint.setColor(Color.WHITE);
             osdPaint.setTextSize(OSD_TEXT_SIZE);
             osdPaint.setTypeface(Typeface.MONOSPACE);
             osdPaint.setFakeBoldText(true);
@@ -1168,15 +1168,15 @@ public class SentinelService extends Service {
                     int curY = posY + y;
                     int pos = curY * width + curX;
                     if (pos < yuvData.length) {
-                        // CASO 1: Si el pixel es VERDE (G > 128) -> ES TEXTO
+                        // CASO 1: Si el pixel es TEXTO (R/G/B > 128) -> WHITE PRO MODE
                         if (((pixel >> 8) & 0xff) > 128) {
-                            yuvData[pos] = (byte) 200; // Luma muy brillante (Texto)
+                            yuvData[pos] = (byte) 255; // Luma MAX (Blanco Puro)
                             
-                            // Inyectar color verde sólido
+                            // Inyectar color NEUTRO (Gris) para evitar bordes de color (Chroma vacía)
                             int posUV = offsetUV + (curY >> 1) * width + (curX & ~1);
                             if (posUV + 1 < yuvData.length) {
-                                yuvData[posUV] = (byte) 0;
-                                yuvData[posUV + 1] = (byte) 50;
+                                yuvData[posUV] = (byte) 128;     // V (Cr) -> 128 (Neutro)
+                                yuvData[posUV + 1] = (byte) 128; // U (Cb) -> 128 (Neutro)
                             }
                         }
                         // CASO 2: Si el pixel es AZUL (B > 128) -> ES FONDO

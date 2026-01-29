@@ -5,6 +5,12 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.9.7-dev.50] - 2026-01-30
+### Changed
+- **OSD Style**: Cambio de estilo a "White Pro Mode".
+    - Texto ahora es Blanco Puro (Luma 255, Chroma Neutra) para máxima nitidez a tamaños pequeños.
+    - Se mantiene el fondo semitransparente para alto contraste.
+
 ## [v3.9.7-dev.49] - 2026-01-29
 ### Added
 - **OSD Persistence**: La posición (X, Y) del texto ahora se guarda en memoria permanente y se restaura al reiniciar la aplicación.

@@ -2488,3 +2488,12 @@ Cambiado el origen del parsing de `line` a `uri` en `NanoHttpServer.java`. La va
 **La Solución:** 
 1. **SharedPreferences:** Ahora guardamos `osdX` y `osdY` cada vez que el usuario pulsa "GUARDAR" en el editor web.
 2. **Restauración:** Al iniciar `SentinelService`, cargamos estas coordenadas para que el texto aparezca exactamente donde se dejó.
+
+### 🏳️ v3.9.7-dev.50: OSD White Pro Mode
+**El Debate:** ¿Verde Hacker o Blanco Profesional?
+**La Decisión:** Siguiendo la recomendación de expertos (Gemini 3 Pro + Nosotros), el verde, aunque estético, pierde nitidez a 12px debido al submuestreo de color (Chroma Subsampling) de YUV NV21.
+**La Solución Híbrida:**
+1. **Texto Blanco Puro (Luma 255):** Usamos el canal de blanco y negro a máxima potencia para la máxima definición de borde posible.
+2. **Chroma Neutra (UV 128):** Forzamos las componentes de color a gris neutro en los píxeles de texto para evitar bordes "sucios".
+3. **Fondo Preservado:** Mantenemos nuestra lógica de "Sombra Semitransparente" (Luma >> 1) para que el texto blanco sea legible incluso sobre fondos blancos quemados.
+**Resultado:** La legibilidad de una Handycam profesional con la robustez de nuestro motor gráfico.
