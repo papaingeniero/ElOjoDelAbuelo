@@ -2520,3 +2520,53 @@ Tras 50 iteraciones de desarrollo (`dev.0` a `dev.50`), "El Ojo del Abuelo" alca
 
 ### 🎓 Lección de Ingeniería: "Menos es Más"
 Aprendimos que en hardware legacy (Galaxy S i9000), las soluciones complejas (anti-aliasing, sombras gaussianas) fallan. La solución ganadora fue la manipulación directa de bits (Luma/Chroma) y la simplificación visual. **La nitidez no viene de añadir píxeles, sino de purificar los que tienes.**
+
+## 🚀 Phase 39: El Salto a VGA (Nitidez Cristalina)
+**Versión**: v3.9.7-dev.38 | **Fecha**: 30 de Enero de 2026
+
+### 📜 1. La Historia (El Píxel Borroso)
+Aunque el sistema era robusto, el Zoom Digital en el navegador mostraba sus costuras al usar la resolución CIF (352x288). Las matrículas y rostros se convertían en bloques irreconocibles al ampliar la imagen.
+Además, la pantalla del dispositivo (800x480) tenía que interpolar la señal pequeña, resultando en una previsualización borrosa in situ.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Decidimos dar el salto a **VGA (640x480)**.
+*   **Hardware Match**: La resolución vertical (480px) coincide perfectamente con la matriz física del panel LCD del Samsung Galaxy S.
+*   **Triple Densidad**: Pasamos de ~100k a ~300k píxeles.
+
+### 🧠 3. La Teoría del ISP (El Secreto de la Nitidez)
+¿Por qué se ve mejor el Zoom 2x por hardware en VGA que en CIF, si ambos son recortes?
+El Sensor es de 5MP (~2560x1920).
+1.  **En CIF (352x288)**: El ISP coge toda la información y la diezma (tira píxeles) agresivamente.
+2.  **En VGA (640x480)**: El ISP retiene más información original.
+3.  **Al aplicar Zoom HW**: El recorte central (crop) del sensor tiene mucha densidad. Al proyectarlo sobre un lienzo de 352px se pierde detalle. Al proyectarlo sobre 640px, se conserva.
+
+### ⚠️ 4. Análisis de Impacto
+*   **Almacenamiento**: Los vídeos pesarán el triple. (El recolector de basura circular deberá trabajar más).
+*   **Sensibilidad**: Al haber el triple de píxeles, un objeto ocupa el triple de área. El  se vuelve **3x más sensible**. Es posible que requiera ajustar el umbral a la baja (sensibilidad 70 en vez de 90).
+*   **CPU**: Riesgo de sobrecalentamiento. El "Watchdog Térmico" y el "Pintor Vago" serán cruciales.
+
+
+## 🚀 Phase 39: El Salto a VGA (Nitidez Cristalina)
+**Versión**: v3.9.7-dev.38 | **Fecha**: 30 de Enero de 2026
+
+### 📜 1. La Historia (El Píxel Borroso)
+Aunque el sistema era robusto, el Zoom Digital en el navegador mostraba sus costuras al usar la resolución CIF (352x288). Las matrículas y rostros se convertían en bloques irreconocibles al ampliar la imagen.
+Además, la pantalla del dispositivo (800x480) tenía que interpolar la señal pequeña, resultando en una previsualización borrosa in situ.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Decidimos dar el salto a **VGA (640x480)**.
+*   **Hardware Match**: La resolución vertical (480px) coincide perfectamente con la matriz física del panel LCD del Samsung Galaxy S.
+*   **Triple Densidad**: Pasamos de ~100k a ~300k píxeles.
+
+### 🧠 3. La Teoría del ISP (El Secreto de la Nitidez)
+¿Por qué se ve mejor el Zoom 2x por hardware en VGA que en CIF, si ambos son recortes?
+El Sensor es de 5MP (~2560x1920).
+1.  **En CIF (352x288)**: El ISP coge toda la información y la diezma (tira píxeles) agresivamente.
+2.  **En VGA (640x480)**: El ISP retiene más información original.
+3.  **Al aplicar Zoom HW**: El recorte central (crop) del sensor tiene mucha densidad. Al proyectarlo sobre un lienzo de 352px se pierde detalle. Al proyectarlo sobre 640px, se conserva.
+
+### ⚠️ 4. Análisis de Impacto
+*   **Almacenamiento**: Los vídeos pesarán el triple. (El recolector de basura circular deberá trabajar más).
+*   **Sensibilidad**: Al haber el triple de píxeles, un objeto ocupa el triple de área. El MotionDetector se vuelve **3x más sensible**. Es posible que requiera ajustar el umbral a la baja (sensibilidad 70 en vez de 90).
+*   **CPU**: Riesgo de sobrecalentamiento. El "Watchdog Térmico" y el "Pintor Vago" serán cruciales.
+

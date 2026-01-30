@@ -295,8 +295,14 @@ public class SentinelService extends Service {
         }
     }
     // Globals to store actual size
-    private int PREVIEW_WIDTH = 352;
-    private int PREVIEW_HEIGHT = 288;
+    // Vamos a probar resolución un poco mayor para mayor nitidez.
+    // Cambiar esto:
+    // private int PREVIEW_WIDTH = 352;
+    // private int PREVIEW_HEIGHT = 288;
+
+    // Por esto:
+    private int PREVIEW_WIDTH = 640;
+    private int PREVIEW_HEIGHT = 480;
 
     private void setupCameraParameters() {
         Camera.Parameters params = camera.getParameters();
@@ -305,7 +311,7 @@ public class SentinelService extends Service {
         // 1. Buscamos Resolución Nativa (CIF)
         Camera.Size bestSize = null;
         for (Camera.Size size : sizes) {
-            if (size.width == 352 && size.height == 288) {
+            if (size.width == 640 && size.height == 480) {
                 bestSize = size;
                 break;
             }
@@ -314,7 +320,7 @@ public class SentinelService extends Service {
             bestSize = sizes.get(0);
             int minDiff = Integer.MAX_VALUE;
             for (Camera.Size size : sizes) {
-                int diff = Math.abs(size.width * size.height - 352 * 288);
+                int diff = Math.abs(size.width * size.height - 640 * 480);
                 if (diff < minDiff) {
                     minDiff = diff;
                     bestSize = size;

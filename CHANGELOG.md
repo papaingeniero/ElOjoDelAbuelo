@@ -1012,3 +1012,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **fix(web)**: Restaurada clase CSS .thumb perdida en componente parásito.
 - **ui(web)**: Forzada resolución nativa 352x288 en previews MJPEG para evitar distorsión de aspecto.
 - **css**: Añadido object-position: center para unificar recorte de miniaturas.
+
+## [v3.9.7-dev.38] - 2026-01-30
+### Changed
+- **Resolution Upgrade**: Aumento de la resolución de cámara de **352x288 (CIF)** a **640x480 (VGA)**.
+    - **Back-end**: Actualizados parámetros de  y lógica de selección de "Mejor Tamaño" en .
+    - **Visuals**: La imagen en el LCD del dispositivo ahora coincide 1:1 con la resolución vertical física (480px), eliminando el difuminado por interpolación y mejorando drásticamente la nitidez del Zoom Hardware.
+    - **Web**: El Zoom Digital en navegador (x2, x3) se beneficia de la triple densidad de píxeles (~300k vs ~100k).
+
+## [v3.9.7-dev.38] - 2026-01-30
+### Changed
+- **Resolution Upgrade**: Aumento de la resolución de cámara de **352x288 (CIF)** a **640x480 (VGA)**.
+    - **Back-end**: Actualizados parámetros de Camera.Parameters y lógica de selección de "Mejor Tamaño" en SentinelService.
+    - **Visuals**: La imagen en el LCD del dispositivo ahora coincide 1:1 con la resolución vertical física (480px), eliminando el difuminado por interpolación y mejorando drásticamente la nitidez del Zoom Hardware.
+    - **Web**: El Zoom Digital en navegador (x2, x3) se beneficia de la triple densidad de píxeles (~300k vs ~100k).
