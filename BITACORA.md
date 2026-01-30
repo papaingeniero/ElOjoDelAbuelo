@@ -2643,18 +2643,33 @@ Eliminamos `&& !uiAlive` de la condición de optimización.
 ### 🎓 3. Lecciones Aprendidas
 *   **Código Muerto Activo**: Un callback vacío puede ser peor que un error. Si obliga a realizar cálculos costosos "por si acaso", es un vampiro de batería.
 
-## 🚀 Phase 41: Refrigeración Pasiva (UI Optimization)
-**Versión**: v3.9.7-dev.40 | **Fecha**: 30 de Enero de 2026
 
-### 📜 1. La Historia (El Código Vampiro)
-Tras activar el "Short-Circuit JPEG", el móvil seguía caliente si la pantalla estaba encendida.
-El análisis forense detectó que MainActivity estaba suscrita a un callback de frames (onFrame) que no hacía nada (vacío).
-Este callback "dummy" obligaba al Servicio a generar JPEGs pesados incluso cuando no se necesitaban, solo porque uiAlive era true.
+## 🚀 Phase 42: Termodinámica Estricta (Zero-Trust)
+**Versión**: v3.9.7-dev.41 | **Fecha**: 30 de Enero de 2026
 
-### 🛠️ 2. La Solución (Ingeniería)
-Eliminamos && !uiAlive de la condición de optimización.
-*   **Motivo**: Desde la versión **v3.5 (Zero-Copy)**, la pantalla se alimenta directamente del hardware (PUSH_BUFFERS). La MainActivity NO necesita JPEGs para mostrar la cámara.
-*   **Resultado**: Ahora el "Pintor Vago" duerme aunque tengas la app abierta y mirando la cámara en la pantalla del móvil. El consumo de CPU baja a casi cero incluso con el LCD encendido.
+### 📜 1. La Historia (El Falso Frescor)
+A pesar de las optimizaciones previas, el dispositivo seguía reportando picos de 47°C en reposo con la pantalla encendida.
+El análisis profundo reveló dos fugas críticas:
+1.  **OSD Fantasma**: El sistema tatuaba la fecha (`imprintDate`) en frames que luego descartaba, desperdiciando ciclos de CPU 3 veces por segundo.
+2.  **Negacionismo Térmico**: El hilo de procesado (`processFrame`) ignoraba la bandera de sobrecalentamiento activada por el hilo principal, continuando su trabajo ciegamente.
 
-### �� 3. Lecciones Aprendidas
-*   **Código Muerto Activo**: Un callback vacío puede ser peor que un error. Si obliga a realizar cálculos costosos "por si acaso", es un vampiro de batería.
+### 🛠️ 2. La Solución (Ingeniería de Precisión)
+Implementamos un protocolo de **"Confianza Cero"** en el ciclo de vida del frame:
+
+#### A. OSD "Just-in-Time"
+Movimos la inyección de texto (`imprintDate`) al final del pipeline.
+*   **Antes**: Frame -> Pintar Fecha -> ¿Necesito JPEG? -> No -> Tirar Frame. (Gasto inútil).
+*   **Ahora**: Frame -> ¿Necesito JPEG? -> No -> Tirar Frame. (Coste Cero).
+Solo "tatuamos" el frame si estamos grabando o si hay un cliente web mirando.
+
+#### B. Desacople UI Total
+El modo "Pintor Vago" (0.5 FPS) ahora ignora totalmente si la pantalla del móvil está encendida.
+*   La pantalla se refresca por hardware puro (`PUSH_BUFFERS`).
+*   El procesador de fondo duerme profundamente (1950ms de cada 2000ms).
+
+#### C. Freno de Emergencia Redundante
+Añadimos `if (lastOverheatState) return;` al inicio de `processFrame`. Si el sensor térmico pita, el trabajador se declara en huelga inmediata.
+
+### 🎓 3. Lecciones Aprendidas
+*   **El Coste de lo Invisible**: Modificar 300.000 píxeles x 3 veces/segundo para escribir un texto que nadie ve es la definición de ineficiencia.
+*   **Optimización Condicional**: Las operaciones caras (como OSD) deben estar protegidas por "Guard Clauses" estrictas.

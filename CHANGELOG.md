@@ -1039,3 +1039,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Passive Cooling**: Eliminado el requisito `!uiAlive` de la optimización JPEG.
     - **UI Hardware**: Como `MainActivity` usa `PUSH_BUFFERS` y no necesita JPEGs, ahora la compresión se salta incluso si la app está en primer plano y la pantalla encendida.
     - **Impacto**: Reducción drástica de temperatura durante la monitorización local pasiva.
+
+## [v3.9.7-dev.41] - 2026-01-30
+### Fixed
+- **OSD**: La fecha ya no se calcula/dibuja en frames descartados (ahorro CPU masivo).
+- **Thermal Logic**: Corrección crítica en  para respetar la bandera de sobrecalentamiento.
+- **Pintor Vago**: Desacople total de . La pantalla encendida ya no impide el modo de bajo consumo.

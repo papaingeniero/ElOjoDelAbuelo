@@ -595,9 +595,12 @@ public class SentinelService extends Service {
         try {
             boolean uiAlive = (uiPreviewCallback != null);
             
+            // si hay sobrecalentamiento, nos vamos sin procesar nada
+            if (lastOverheatState) return;
+
             // [OPTIMIZACIÓN TÉRMICA ROBUSTA] ❄️
             // Versión PRO: Usamos el cronómetro lastLazyTime
-            if (!isRecording && !uiAlive) {
+            if (!isRecording) {
                  long now = System.currentTimeMillis();
                  // Estrictamente 1 frame cada 2000ms (0.5 FPS)
                  if (now - lastLazyTime < 2000) { 
@@ -616,6 +619,10 @@ public class SentinelService extends Service {
                 return;
             }
             // 👆[FIN BLOQUE NUEVO]
+            
+
+            // [NUEVO] Tatuamos la fecha en los bytes brutos (OSD)
+            imprintDate(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
             
             // --- AQUI EMPIEZA EL GASTO DE CPU ---
             YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
