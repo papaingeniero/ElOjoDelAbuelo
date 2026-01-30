@@ -152,6 +152,7 @@ public class SentinelService extends Service {
         motionSensitivity = prefs.getInt("motionSensitivity", 90);
         recordingTimeout = prefs.getInt("recordingTimeout", 10);
         isDetectorActive = prefs.getBoolean("isDetectorActive", true);
+        logToWeb("🛡️ SENSOR ESTADO: " + (isDetectorActive ? "ACTIVO (Vigilando)" : "INACTIVO (No Vigilando, Solo Cámara)")); // <--- ESTA LÍNEA
         cameraRotation = prefs.getInt("cameraRotation", 0);
 
         defaultZoom = prefs.getFloat("defaultZoom", 1.0f);
@@ -285,7 +286,8 @@ public class SentinelService extends Service {
             // [IMPORTANTE] Aseguramos que al reiniciar se mantenga tu rotación física de 180º
             camera.setDisplayOrientation(180);
 
-            camera.startPreview();
+            //comento temporalmente para ver si se enfría el movil
+            //camera.startPreview();
             logToWeb("Cámara arrancada OK");
 
         } catch (Exception e) {
@@ -808,6 +810,11 @@ public class SentinelService extends Service {
 
     public static void updateSettings(int sens, int time, boolean active, int rot) {
         boolean rotationChanged = (cameraRotation != rot);
+        // --- INICIO INSERCIÓN ---
+        if (isDetectorActive != active) {
+             logToWeb("🛡️ VIGILANDO CAMBIADO: " + (active ? "ACTIVADO (Vigilando)" : "DESACTIVADO (Solo Cámara)"));
+        }
+        // --- FIN INSERCIÓN ---
         motionSensitivity = sens;
         recordingTimeout = time;
         isDetectorActive = active;
@@ -937,7 +944,9 @@ public class SentinelService extends Service {
 
                 // 6. FIX ROTACIÓN y ARRANQUE
                 instance.camera.setDisplayOrientation(180);
-                instance.camera.startPreview(); // <--- 1. ARRANCAMOS PRIMERO (Sin esperar)
+
+                //comento temporalmente para ver si se enfría el movil
+                //instance.camera.startPreview(); // <--- 1. ARRANCAMOS PRIMERO (Sin esperar)
 
                 // [NUEVO] RETARDO TÁCTICO ASÍNCRONO (1.5s) ⏱️
                 // Esperamos a que el driver termine de "lavarse la cara" antes de pedirle el Zoom.
