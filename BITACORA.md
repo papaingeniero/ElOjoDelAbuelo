@@ -2570,3 +2570,59 @@ El Sensor es de 5MP (~2560x1920).
 *   **Sensibilidad**: Al haber el triple de píxeles, un objeto ocupa el triple de área. El MotionDetector se vuelve **3x más sensible**. Es posible que requiera ajustar el umbral a la baja (sensibilidad 70 en vez de 90).
 *   **CPU**: Riesgo de sobrecalentamiento. El "Watchdog Térmico" y el "Pintor Vago" serán cruciales.
 
+
+## 🚀 Phase 40: Operación "Cooling Down" (Eficiencia Térmica en VGA)
+**Versión**: v3.9.7-dev.39 | **Fecha**: 30 de Enero de 2026
+
+### 📜 1. La Historia (El Sofoco)
+Tras el salto a **VGA (640x480)**, el dispositivo entró en estado de alarma térmica, alcanzando rápidamente los **45°C**.
+El diagnóstico fue doble:
+1.  **Detección de Movimiento**: Comparar 300.000 píxeles por frame es demasiado esfuerzo.
+2.  **Compresión JPEG**: Incluso en modo "Reposo", el sistema comprimía 1 frame cada 2 segundos. En VGA, cada compresión JPEG tardaba >100ms, manteniendo la CPU en tensión constante.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Aplicamos un paquete de medidas de enfriamiento en dos frentes:
+
+#### A. Reducción de Muestreo (Stride 30)
+En , aumentamos el  de 10 a 30.
+*   **Lógica**: Al triplicar la resolución (100k -> 300k px), podemos saltar el triple de píxeles para mantener el mismo volumen de trabajo que antes (~10k comparaciones).
+*   **Resultado**: Balance neutro de CPU.
+
+#### B. Optimización del Pintor Vago (Short-Circuit JPEG)
+En , intervenimos el ciclo de vida del frame:
+*   Si **No grabamos** Y **No hay UI** Y **No hay Stream Web**...
+*   **ABORTAMOS** la compresión JPEG ().
+*   Devolvemos el buffer inmediatamente.
+*   **Resultado**: Consumo de CPU cercano a 0% en reposo absoluto. Solo hacemos la matemática ligera del detector de movimiento.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Resolución vs Coste**: Subir resolución no es gratis. El coste de la compresión JPEG crece cuadráticamente con el número de píxeles.
+*   **El Stream Fantasma**: A veces optimizamos el código visible pero olvidamos procesos de fondo (como el servidor web interno) que mantienen la CPU despierta.
+
+## 🚀 Phase 40: Operación "Cooling Down" (Eficiencia Térmica en VGA)
+**Versión**: v3.9.7-dev.39 | **Fecha**: 30 de Enero de 2026
+
+### 📜 1. La Historia (El Sofoco)
+Tras el salto a **VGA (640x480)**, el dispositivo entró en estado de alarma térmica, alcanzando rápidamente los **45°C**.
+El diagnóstico fue doble:
+1.  **Detección de Movimiento**: Comparar 300.000 píxeles por frame es demasiado esfuerzo.
+2.  **Compresión JPEG**: Incluso en modo "Reposo", el sistema comprimía 1 frame cada 2 segundos. En VGA, cada compresión JPEG tardaba >100ms, manteniendo la CPU en tensión constante.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Aplicamos un paquete de medidas de enfriamiento en dos frentes:
+
+#### A. Reducción de Muestreo (Stride 30)
+En MotionDetector.java, aumentamos el STRIDE de 10 a 30.
+*   **Lógica**: Al triplicar la resolución (100k -> 300k px), podemos saltar el triple de píxeles para mantener el mismo volumen de trabajo que antes (~10k comparaciones).
+*   **Resultado**: Balance neutro de CPU.
+
+#### B. Optimización del Pintor Vago (Short-Circuit JPEG)
+En SentinelService.java, intervenimos el ciclo de vida del frame:
+*   Si **No grabamos** Y **No hay UI** Y **No hay Stream Web**...
+*   **ABORTAMOS** la compresión JPEG (yuv.compressToJpeg).
+*   Devolvemos el buffer inmediatamente.
+*   **Resultado**: Consumo de CPU cercano a 0% en reposo absoluto. Solo hacemos la matemática ligera del detector de movimiento.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Resolución vs Coste**: Subir resolución no es gratis. El coste de la compresión JPEG crece cuadráticamente con el número de píxeles.
+*   **El Stream Fantasma**: A veces optimizamos el código visible pero olvidamos procesos de fondo (como el servidor web interno) que mantienen la CPU despierta.

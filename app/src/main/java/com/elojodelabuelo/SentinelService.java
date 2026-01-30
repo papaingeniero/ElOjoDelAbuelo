@@ -609,6 +609,14 @@ public class SentinelService extends Service {
             // [NUEVO] Tatuamos la fecha en los bytes brutos (OSD)
             imprintDate(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
             
+            // [NUEVO BLOQUE AQUI]👇
+            // Si nadie está mirando (ni grabando, ni UI, ni stream web),
+            // nos ahorramos la compresión JPEG que es lo que más calienta.
+            if (!isRecording && !uiAlive && !httpServer.hasLiveClients()) {
+                return;
+            }
+            // 👆[FIN BLOQUE NUEVO]
+            
             // --- AQUI EMPIEZA EL GASTO DE CPU ---
             YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
             ByteArrayOutputStream out = new ByteArrayOutputStream();

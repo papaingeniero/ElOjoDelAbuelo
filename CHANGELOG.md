@@ -1026,3 +1026,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Back-end**: Actualizados parámetros de Camera.Parameters y lógica de selección de "Mejor Tamaño" en SentinelService.
     - **Visuals**: La imagen en el LCD del dispositivo ahora coincide 1:1 con la resolución vertical física (480px), eliminando el difuminado por interpolación y mejorando drásticamente la nitidez del Zoom Hardware.
     - **Web**: El Zoom Digital en navegador (x2, x3) se beneficia de la triple densidad de píxeles (~300k vs ~100k).
+
+## [v3.9.7-dev.39] - 2026-01-30
+### Improved
+- **Thermal Optimization (VGA)**: Ajustes críticos para viabilidad térmica en 640x480.
+    - **MotionDetector**: Aumentado STRIDE de 10 a 30. Compensa el triple de píxeles para mantener la misma carga de CPU que en CIF.
+    - **SentinelService**: Implementado "Short-Circuit" en la compresión JPEG. Si no hay clientes activos (Web/UI/Grabación), se omite totalmente el paso compressToJpeg, reduciendo el consumo en reposo.
+    - **NanoHttpServer**: Expuesto método hasLiveClients para permitir al servicio conocer el estado de la audiencia.

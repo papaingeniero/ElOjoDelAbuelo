@@ -1682,4 +1682,9 @@ public class NanoHttpServer {
                 "     <span id='stat-storage' class='stat-storage'>💾 " + freeStorage + "</span>\n" +
                 "  </div>\n";
     }
+
+    // Añadir esto en NanoHttpServer.java
+    public boolean hasLiveClients() {
+        return !liveStreamClients.isEmpty();
+    }
 }
