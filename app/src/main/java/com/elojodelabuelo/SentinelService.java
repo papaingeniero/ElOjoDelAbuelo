@@ -610,9 +610,9 @@ public class SentinelService extends Service {
             imprintDate(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
             
             // [NUEVO BLOQUE AQUI]👇
-            // Si nadie está mirando (ni grabando, ni UI, ni stream web),
+            // Si nadie está mirando (ni grabando, ni stream web),
             // nos ahorramos la compresión JPEG que es lo que más calienta.
-            if (!isRecording && !uiAlive && !httpServer.hasLiveClients()) {
+            if (!isRecording && !httpServer.hasLiveClients()) {
                 return;
             }
             // 👆[FIN BLOQUE NUEVO]

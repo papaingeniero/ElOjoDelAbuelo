@@ -2626,3 +2626,35 @@ En SentinelService.java, intervenimos el ciclo de vida del frame:
 ### 🎓 3. Lecciones Aprendidas
 *   **Resolución vs Coste**: Subir resolución no es gratis. El coste de la compresión JPEG crece cuadráticamente con el número de píxeles.
 *   **El Stream Fantasma**: A veces optimizamos el código visible pero olvidamos procesos de fondo (como el servidor web interno) que mantienen la CPU despierta.
+
+## 🚀 Phase 41: Refrigeración Pasiva (UI Optimization)
+**Versión**: v3.9.7-dev.40 | **Fecha**: 30 de Enero de 2026
+
+### 📜 1. La Historia (El Código Vampiro)
+Tras activar el "Short-Circuit JPEG", el móvil seguía caliente si la pantalla estaba encendida.
+El análisis forense detectó que `MainActivity` estaba suscrita a un callback de frames () que no hacía nada (vacío).
+Este callback "dummy" obligaba al Servicio a generar JPEGs pesados incluso cuando no se necesitaban, solo porque `uiAlive` era true.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Eliminamos `&& !uiAlive` de la condición de optimización.
+*   **Motivo**: Desde la versión **v3.5 (Zero-Copy)**, la pantalla se alimenta directamente del hardware (`PUSH_BUFFERS`). La `MainActivity` NO necesita JPEGs para mostrar la cámara.
+*   **Resultado**: Ahora el "Pintor Vago" duerme aunque tengas la app abierta y mirando la cámara en la pantalla del móvil. El consumo de CPU baja a casi cero incluso con el LCD encendido.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Código Muerto Activo**: Un callback vacío puede ser peor que un error. Si obliga a realizar cálculos costosos "por si acaso", es un vampiro de batería.
+
+## 🚀 Phase 41: Refrigeración Pasiva (UI Optimization)
+**Versión**: v3.9.7-dev.40 | **Fecha**: 30 de Enero de 2026
+
+### 📜 1. La Historia (El Código Vampiro)
+Tras activar el "Short-Circuit JPEG", el móvil seguía caliente si la pantalla estaba encendida.
+El análisis forense detectó que MainActivity estaba suscrita a un callback de frames (onFrame) que no hacía nada (vacío).
+Este callback "dummy" obligaba al Servicio a generar JPEGs pesados incluso cuando no se necesitaban, solo porque uiAlive era true.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Eliminamos && !uiAlive de la condición de optimización.
+*   **Motivo**: Desde la versión **v3.5 (Zero-Copy)**, la pantalla se alimenta directamente del hardware (PUSH_BUFFERS). La MainActivity NO necesita JPEGs para mostrar la cámara.
+*   **Resultado**: Ahora el "Pintor Vago" duerme aunque tengas la app abierta y mirando la cámara en la pantalla del móvil. El consumo de CPU baja a casi cero incluso con el LCD encendido.
+
+### �� 3. Lecciones Aprendidas
+*   **Código Muerto Activo**: Un callback vacío puede ser peor que un error. Si obliga a realizar cálculos costosos "por si acaso", es un vampiro de batería.

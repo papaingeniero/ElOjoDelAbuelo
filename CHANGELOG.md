@@ -1033,3 +1033,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **MotionDetector**: Aumentado STRIDE de 10 a 30. Compensa el triple de píxeles para mantener la misma carga de CPU que en CIF.
     - **SentinelService**: Implementado "Short-Circuit" en la compresión JPEG. Si no hay clientes activos (Web/UI/Grabación), se omite totalmente el paso compressToJpeg, reduciendo el consumo en reposo.
     - **NanoHttpServer**: Expuesto método hasLiveClients para permitir al servicio conocer el estado de la audiencia.
+
+## [v3.9.7-dev.40] - 2026-01-30
+### Improved
+- **Passive Cooling**: Eliminado el requisito `!uiAlive` de la optimización JPEG.
+    - **UI Hardware**: Como `MainActivity` usa `PUSH_BUFFERS` y no necesita JPEGs, ahora la compresión se salta incluso si la app está en primer plano y la pantalla encendida.
+    - **Impacto**: Reducción drástica de temperatura durante la monitorización local pasiva.
