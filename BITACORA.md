@@ -2673,3 +2673,23 @@ Añadimos `if (lastOverheatState) return;` al inicio de `processFrame`. Si el se
 ### 🎓 3. Lecciones Aprendidas
 *   **El Coste de lo Invisible**: Modificar 300.000 píxeles x 3 veces/segundo para escribir un texto que nadie ve es la definición de ineficiencia.
 *   **Optimización Condicional**: Las operaciones caras (como OSD) deben estar protegidas por "Guard Clauses" estrictas.
+
+## 🚀 Phase 43: Código Rojo (Limpieza y Lazy Rotation)
+**Versión**: v3.9.7-dev.42 | **Fecha**: 30 de Enero de 2026
+
+### 📜 1. La Historia (El Fantasma de la Rotación)
+A pesar de la Phase 42, el dispositivo seguía caliente (45°C) con el detector apagado.
+El culpable era doble:
+1.  **Rotación Incondicional**: En , rotábamos la imagen de 640x480 (300KB) **SIEMPRE**, incluso si el detector estaba apagado y el frame se iba a tirar. Coste masivo de CPU.
+2.  **Thumbnail Inteligente**: Un bloque de código buscaba el "mejor frame" comprimiendo JPEGs durante la grabación, saturando el hilo principal.
+3.  **Ceguera Térmica**: El sensor consideraba 45°C como temperatura "segura" (Umbral 450).
+
+### 🛠️ 2. La Solución (Ingeniería Negativa)
+Aplicamos el bisturí para eliminar grasa:
+*   **Lazy Rotation**: Eliminada la rotación al inicio del frame. Ahora pasamos  cruda al detector (que funciona igual). Solo rotamos la imagen **SI Y SOLO SI** vamos a comprimirla para guardarla en disco.
+*   **Kill Smart Thumbnail**: Eliminado todo el código de  y . Ya no comprimimos JPEGs intermedios.
+*   **Umbral Térmico Ajustado**: Bajamos el límite de pánico de 45.0°C a **43.0°C** ().
+
+### 🎓 3. Lecciones Aprendidas
+*   **La Mejor Línea de Código**: Es la que borras. Menos código, menos bugs, menos calor.
+*   **Agnosticismo Espacial**: Un detector de movimiento funciona igual con la imagen boca abajo. No gastes CPU en rotar lo que solo va a ser analizado matemáticamente.

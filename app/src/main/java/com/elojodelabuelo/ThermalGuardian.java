@@ -8,7 +8,7 @@ import java.io.IOException;
 public class ThermalGuardian {
 
     private static final String TEMP_PATH = "/sys/class/power_supply/battery/temp";
-    private static final int MAX_TEMP = 450; // 45.0 degrees Celsius
+    private static final int MAX_TEMP = 430; // 43.0 degrees Celsius
 
     public boolean isOverheating() {
         File file = new File(TEMP_PATH);

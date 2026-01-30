@@ -1045,3 +1045,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **OSD**: La fecha ya no se calcula/dibuja en frames descartados (ahorro CPU masivo).
 - **Thermal Logic**: Corrección crítica en  para respetar la bandera de sobrecalentamiento.
 - **Pintor Vago**: Desacople total de . La pantalla encendida ya no impide el modo de bajo consumo.
+
+## [v3.9.7-dev.42] - 2026-01-30
+### Fixed
+- **Lazy Rotation**: La imagen ya NO se rota incondicionalmente al recibir el frame.
+- **Detector sin Rotación**: El detector de movimiento ahora trabaja con coordenadas crudas (boca abajo) sin afectar a la precisión.
+- **Smart Thumbnails**: Eliminado todo el bloque  y  que saturaba el hilo principal con compresiones JPEG inútiles.
+- **Umbral Térmico**: Ajustado de 45°C a **43°C** para una protección más agresiva en modo VGA.

@@ -99,6 +99,7 @@ public class SentinelService extends Service {
     // Stats Counters
     private int statsFrameProcessed = 0;
     private int statsFrameSkipped = 0;
+    private int statsJpgGenerated = 0; // <--- AÑADIR ESTO
     private Handler statsHandler;
     private Runnable statsRunnable;
 
@@ -128,9 +129,6 @@ public class SentinelService extends Service {
     // Buffer management
     private static final int NUM_BUFFERS = 3;
 
-    // Smart Thumbnail Logic
-    private int maxMotionScore = -1;
-    private byte[] bestFrameJpeg = null;
 
     // Software Rotation Buffer
     private byte[][] rotationBuffers; // Pool of buffers
@@ -215,11 +213,12 @@ public class SentinelService extends Service {
                 int temp = ThermalGuardian.getBatteryTemperature(getApplicationContext());
                 
                 // 3. Log Resumen
-                logToWeb("📊 HEARTBEAT (60s): Temp: " + temp + "°C | Mem: " + freeMem + "MB Free / " + totalMem + "MB Total | Frames: " + statsFrameProcessed + " OK / " + statsFrameSkipped + " Skip");
+                logToWeb("📊 HEARTBEAT (60s): Temp: " + temp + "°C | Mem: " + freeMem + "MB Free / " + totalMem + "MB Total | Frames: " + statsFrameProcessed + " OK / " + statsFrameSkipped + " Skip | JPEG: " + statsJpgGenerated);
                 
                 // Reset contadores parciales
                 statsFrameProcessed = 0;
                 statsFrameSkipped = 0;
+                statsJpgGenerated = 0; // <--- AÑADIR ESTO
                 
                 // Programar siguiente
                 statsHandler.postDelayed(this, 60000);
@@ -495,11 +494,6 @@ public class SentinelService extends Service {
             }
             // -----------------------------------
 
-            // Software Rotation
-            byte[] processedData = data;
-            if (cameraRotation == 180) {
-                processedData = rotateNV21Degree180(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-            }
 
             // Motion Detection Logic
             if (!isDetectorActive) {
@@ -511,7 +505,7 @@ public class SentinelService extends Service {
                     updateNotification(false);
                 }
             } else {
-                int score = motionDetector.getMotionScore(processedData, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+                int score = motionDetector.getMotionScore(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
                 if (score > currentThreshold) {
                     lastMotionTime = System.currentTimeMillis();
@@ -527,17 +521,6 @@ public class SentinelService extends Service {
                     }
                 }
 
-                if (isRecording) {
-                    if (score > maxMotionScore) {
-                        maxMotionScore = score;
-                        try {
-                            YuvImage yuv = new YuvImage(processedData, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 80, out);
-                            bestFrameJpeg = out.toByteArray();
-                        } catch (Exception e) { e.printStackTrace(); }
-                    }
-                }
 
                 if (isRecording && (System.currentTimeMillis() - lastMotionTime > (recordingTimeout * 1000L))) {
                     isRecording = false;
@@ -550,7 +533,7 @@ public class SentinelService extends Service {
             }
             isRecordingPublic = isRecording;
 
-            final byte[] finalData = processedData;
+            final byte[] finalData = data;
             processingHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -608,10 +591,7 @@ public class SentinelService extends Service {
                  }
                  lastLazyTime = now;
             }
-
-            // [NUEVO] Tatuamos la fecha en los bytes brutos (OSD)
-            imprintDate(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-            
+        
             // [NUEVO BLOQUE AQUI]👇
             // Si nadie está mirando (ni grabando, ni stream web),
             // nos ahorramos la compresión JPEG que es lo que más calienta.
@@ -620,12 +600,20 @@ public class SentinelService extends Service {
             }
             // 👆[FIN BLOQUE NUEVO]
             
+            statsJpgGenerated++; // <--- AÑADIR ESTO AQUÍ 🎯
+
+            // [NUEVO BLOQUE DE ROTACIÓN PEREZOSA] 🐢
+            byte[] dataToCompress = data;
+            if (cameraRotation == 180) {
+                 // Solo rotamos ahora que sabemos que vamos a usar la imagen
+                 dataToCompress = rotateNV21Degree180(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+            }
 
             // [NUEVO] Tatuamos la fecha en los bytes brutos (OSD)
-            imprintDate(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+            imprintDate(dataToCompress, PREVIEW_WIDTH, PREVIEW_HEIGHT);
             
             // --- AQUI EMPIEZA EL GASTO DE CPU ---
-            YuvImage yuv = new YuvImage(data, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
+            YuvImage yuv = new YuvImage(dataToCompress, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             long startEncode = System.currentTimeMillis(); // ⏱️ Inicio Crono
@@ -686,8 +674,6 @@ public class SentinelService extends Service {
 
         try {
             fileOutputStream = new FileOutputStream(currentFile);
-            maxMotionScore = -1;
-            bestFrameJpeg = null;
             frameCount = 0;
             recordingStartTime = System.currentTimeMillis();
             File previewFile = new File(dir, "preview_" + timeStamp + ".mjpeg");
@@ -733,23 +719,6 @@ public class SentinelService extends Service {
                     currentFile = newFile;
             }
             
-            // Guardar Thumbnail
-            if (bestFrameJpeg != null && currentFile != null) {
-                final byte[] jpegToSave = bestFrameJpeg;
-                final File videoFile = currentFile;
-                processingHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            String jpgPath = videoFile.getAbsolutePath().replace(".mjpeg", ".jpg");
-                            FileOutputStream fos = new FileOutputStream(jpgPath);
-                            fos.write(jpegToSave);
-                            fos.close();
-                        } catch (IOException e) {
-                        }
-                    }
-                });
-            }
         }
         logToWeb("File Closed: " + currentFile.getName());
         manageStorage();
