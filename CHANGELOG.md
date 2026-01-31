@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Persistence**: Memoria de configuración.
 - **Stability**: ADB Watchdog y mejoras térmicas.
 
+## [v3.9.8] - 2026-01-31
+### Added
+- **Thermal & Performance Optimization**: "Cool & Efficient" Update.
+    - Reverted to CIF (352x288) for maximum thermal efficiency.
+    - implemented "Short-Circuit JPEG" to abort compression when not needed (0% CPU at idle).
+    - RAW Motion Detection on inverted images to avoid costly rotation.
+    - Conditional OSD rendering.
+    - Removed "Smart Thumbnails" mechanism.
+    - Thermal Guardian threshold set to 44°C.
+
 ## [v3.9.7-dev.50] - 2026-01-30
 ### Changed
 - **OSD Style**: Cambio de estilo a "White Pro Mode".
