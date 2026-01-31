@@ -286,8 +286,7 @@ public class SentinelService extends Service {
             // [IMPORTANTE] Aseguramos que al reiniciar se mantenga tu rotación física de 180º
             camera.setDisplayOrientation(180);
 
-            //comento temporalmente para ver si se enfría el movil
-            //camera.startPreview();
+            camera.startPreview();
             logToWeb("Cámara arrancada OK");
 
         } catch (Exception e) {
@@ -296,14 +295,9 @@ public class SentinelService extends Service {
         }
     }
     // Globals to store actual size
-    // Vamos a probar resolución un poco mayor para mayor nitidez.
-    // Cambiar esto:
-    // private int PREVIEW_WIDTH = 352;
-    // private int PREVIEW_HEIGHT = 288;
+    private int PREVIEW_WIDTH = 352;
+    private int PREVIEW_HEIGHT = 288;
 
-    // Por esto:
-    private int PREVIEW_WIDTH = 640;
-    private int PREVIEW_HEIGHT = 480;
 
     private void setupCameraParameters() {
         Camera.Parameters params = camera.getParameters();
@@ -312,7 +306,7 @@ public class SentinelService extends Service {
         // 1. Buscamos Resolución Nativa (CIF)
         Camera.Size bestSize = null;
         for (Camera.Size size : sizes) {
-            if (size.width == 640 && size.height == 480) {
+            if (size.width == 352 && size.height == 288) {
                 bestSize = size;
                 break;
             }
@@ -321,7 +315,7 @@ public class SentinelService extends Service {
             bestSize = sizes.get(0);
             int minDiff = Integer.MAX_VALUE;
             for (Camera.Size size : sizes) {
-                int diff = Math.abs(size.width * size.height - 640 * 480);
+                int diff = Math.abs(size.width * size.height - 352 * 288);
                 if (diff < minDiff) {
                     minDiff = diff;
                     bestSize = size;
@@ -945,8 +939,7 @@ public class SentinelService extends Service {
                 // 6. FIX ROTACIÓN y ARRANQUE
                 instance.camera.setDisplayOrientation(180);
 
-                //comento temporalmente para ver si se enfría el movil
-                //instance.camera.startPreview(); // <--- 1. ARRANCAMOS PRIMERO (Sin esperar)
+                instance.camera.startPreview(); // <--- 1. ARRANCAMOS PRIMERO (Sin esperar)
 
                 // [NUEVO] RETARDO TÁCTICO ASÍNCRONO (1.5s) ⏱️
                 // Esperamos a que el driver termine de "lavarse la cara" antes de pedirle el Zoom.

@@ -7,8 +7,8 @@ package com.elojodelabuelo;
 public class MotionDetector {
 
     private byte[] previousFrame;
-    // cambio stide de 10 a 30 porque hemos subido la resolucion a 640x480, entonces para saltar lo mismo tenemos que saltar 3 veces más de píxeles
-    private static final int STRIDE = 30;
+    // Cambiamos de stride 30 a stride 10 porque hemos vuelto de VGA a CIF (3 veces menos pixeles)
+    private static final int STRIDE = 10;
     private static final int THRESHOLD = 50; // Pixel difference threshold
     private static final int MOTION_PIXEL_COUNT = 50; // Number of different pixels to trigger motion
 

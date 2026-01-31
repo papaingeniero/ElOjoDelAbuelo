@@ -2693,3 +2693,41 @@ Aplicamos el bisturí para eliminar grasa:
 ### 🎓 3. Lecciones Aprendidas
 *   **La Mejor Línea de Código**: Es la que borras. Menos código, menos bugs, menos calor.
 *   **Agnosticismo Espacial**: Un detector de movimiento funciona igual con la imagen boca abajo. No gastes CPU en rotar lo que solo va a ser analizado matemáticamente.
+
+## 🧪 Phase 43-TEST: Diagnóstico Térmico (Cámara Ciega)
+**Versión**: v3.9.7-dev.43-TEST | **Fecha**: 30 de Enero de 2026
+
+### 🌡️ El Experimento
+Para aislar definitivamente la fuente del calor residual (41-44°C), desactivamos el bombeo de frames del hardware.
+*   **Acción**: Comentadas las llamadas a startPreview() en SentinelService.java.
+*   **Estado**: La cámara se inicializa (open()) pero el sensor NO envía datos. La app está "ciega".
+*   **Resultado Basal**: El móvil baja a **26°C** (Temperatura ambiente). Confirmado: El código Java es eficiente (0% CPU load).
+
+### ☀️ Sub-Test 0: Impacto de la Pantalla
+*   **Condición**: Cámara Ciega + Pantalla Blanca Brillo Máx + Navegador.
+*   **Resultado**: La temperatura sube de 26°C a **38°C**.
+*   **Conclusión**: La pantalla y el renderizado web generan **+12°C**. Esto es comparable a la cámara CIF. Para enfriar de verdad, la pantalla DEBE estar apagada.
+
+
+## 🚀 Phase 44: Ice Stability (Vuelta a CIF + Turbo) 🧊🏎️
+**Versión**: v3.9.7-dev.44 | **Fecha**: 30 de Enero de 2026
+
+### 🌡️ El Diagnóstico Final
+Tras una batería de pruebas forenses, confirmamos:
+1.  **Código Java**: Inocente. Consumo 0% en reposo. Temperatura Basal: 26°C.
+2.  **Pantalla AMOLED**: Culpable menor. Sube 12°C (hasta 38°C) al máximo brillo.
+3.  **Cámara VGA (640x480)**: Culpable mayor. Sube 18°C (hasta 44°C) por puro flujo masivo de datos hardware.
+4.  **Conclusión**: El modo VGA es insostenible térmicamente para vigilancia 24/7 en Galaxy S i9000.
+
+### 🛠️ La Solución Definitiva (Best of Both Worlds)
+Hemos combinado la eficiencia extrema del código que creamos para VGA, pero aplicándola a la resolución ligera (CIF).
+*   **Resolución**: Vuelta a **352x288 (CIF)**.
+*   **Stride Detector**: Reajustado a **10** (para precisión en baja res).
+*   **Optimizaciones Mantenidas**:
+    *   Lazy Rotation (Solo al grabar).
+    *   Kill Smart Thumbnails (Nada de JPEG extra).
+    *   Raw Detection (Matemáticas ciegas).
+
+### 🔮 Predicción
+Con esta combinación, esperamos temperaturas de operación de **30°C - 32°C**, lo que garantiza salud batería eterna.
+
