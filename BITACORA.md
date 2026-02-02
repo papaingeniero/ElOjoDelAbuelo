@@ -2762,3 +2762,45 @@ Con esta combinación, esperamos temperaturas de operación de **30°C - 32°C**
 
 * **👁️ Ajuste de Detección:**
     - Stride reajustado a **10** para mantener precisión en resolución CIF.
+
+## 🚀 Phase 39: El Telegrafista (Integración Telegram)
+**Versión**: v3.9.9-dev.1 | **Fecha**: 02 de Febrero de 2026
+
+### 📜 1. La Historia (El Mensajero)
+Tener un sistema de vigilancia que graba es útil, pero si no te avisa, sirve de poco. El usuario necesitaba recibir las evidencias en su bolsillo (Telegram) al instante.
+El desafío era monumental: Telegram exige **TLS 1.2** para su API, pero nuestro "Abuelo" (Android 2.3/4.4 híbrido) tiene una pila SSL antigua que por defecto usa SSLv3/TLS1.0.
+
+### 🛠️ 2. La Solución (Ingeniería)
+**Seguridad Retroadaptada**:
+*   Implementamos : Una clase que "fuerza" al sistema a usar los protocolos  y  ocultos en las entrañas de Android 4.4, permitiendo hablar con servidores modernos.
+
+**Subida en Dos Tiempos**:
+1.  **Preview (Video)**: Enviamos el archivo  camuflado como video. Telegram lo reproduce automáticamente (Autoplay) sin sonido. Ideal para ver qué pasa rápido.
+2.  **Clip (Documento)**: Enviamos el mismo archivo como "Document File" para evitar compresión y asegurar que se guarde la prueba original forense.
+
+**Gestión de Memoria**:
+*   Redujimos el buffer de red a **8KB**. Nada de cargar el video en RAM. Se lee del disco y se escupe a la red byte a byte ("Streamed Upload").
+
+### 🎓 3. Lecciones Aprendidas
+*   **TLS en Legacy**: Android 4.4 *tiene* TLS 1.2, pero lo tiene apagado. Hay que encenderlo manualmente en los Sockets.
+
+## 🚀 Phase 39: El Telegrafista (Integración Telegram)
+**Versión**: v3.9.9-dev.1 | **Fecha**: 02 de Febrero de 2026
+
+### �� 1. La Historia (El Mensajero)
+Tener un sistema de vigilancia que graba es útil, pero si no te avisa, sirve de poco. El usuario necesitaba recibir las evidencias en su bolsillo (Telegram) al instante.
+El desafío era monumental: Telegram exige **TLS 1.2** para su API, pero nuestro "Abuelo" (Android 2.3/4.4 híbrido) tiene una pila SSL antigua que por defecto usa SSLv3/TLS1.0.
+
+### 🛠️ 2. La Solución (Ingeniería)
+**Seguridad Retroadaptada**:
+*   Implementamos `TLSSocketFactory`: Una clase que "fuerza" al sistema a usar los protocolos `TLSv1.1` y `TLSv1.2` ocultos en las entrañas de Android 4.4, permitiendo hablar con servidores modernos.
+
+**Subida en Dos Tiempos**:
+1.  **Preview (Video)**: Enviamos el archivo `.mjpeg` camuflado como video. Telegram lo reproduce automáticamente (Autoplay) sin sonido. Ideal para ver qué pasa rápido.
+2.  **Clip (Documento)**: Enviamos el mismo archivo como "Document File" para evitar compresión y asegurar que se guarde la prueba original forense.
+
+**Gestión de Memoria**:
+*   Redujimos el buffer de red a **8KB**. Nada de cargar el video en RAM. Se lee del disco y se escupe a la red byte a byte ("Streamed Upload").
+
+### 🎓 3. Lecciones Aprendidas
+*   **TLS en Legacy**: Android 4.4 *tiene* TLS 1.2, pero lo tiene apagado. Hay que encenderlo manualmente en los Sockets.

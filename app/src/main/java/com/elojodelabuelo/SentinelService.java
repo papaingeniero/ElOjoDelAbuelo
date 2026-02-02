@@ -118,6 +118,10 @@ public class SentinelService extends Service {
     public static volatile boolean isDetectorActive = true;
     public static int cameraRotation = 0; // 0 or 180
 
+    // --- TELEGRAM CONFIG ---
+    public static String telegramToken = "";
+    public static String telegramChatId = "";
+
     // View Defaults (Phase 19)
     public static float defaultZoom = 1.0f;
     public static int defaultPanX = 0;
@@ -154,6 +158,9 @@ public class SentinelService extends Service {
         isDetectorActive = prefs.getBoolean("isDetectorActive", true);
         logToWeb("🛡️ SENSOR ESTADO: " + (isDetectorActive ? "ACTIVO (Vigilando)" : "INACTIVO (No Vigilando, Solo Cámara)")); // <--- ESTA LÍNEA
         cameraRotation = prefs.getInt("cameraRotation", 0);
+        
+        telegramToken = prefs.getString("tg_token", "");
+        telegramChatId = prefs.getString("tg_chat_id", "");
 
         defaultZoom = prefs.getFloat("defaultZoom", 1.0f);
         defaultPanX = prefs.getInt("defaultPanX", 0);
@@ -713,6 +720,21 @@ public class SentinelService extends Service {
                 File newFile = new File(currentFile.getAbsolutePath().replace(".mjpeg", "_" + fps + "fps.mjpeg"));
                 if (currentFile.renameTo(newFile))
                     currentFile = newFile;
+
+                // --- INICIO TELEGRAM TRIGGER ---
+                if (!telegramToken.isEmpty() && !telegramChatId.isEmpty() && currentFile.exists()) {
+                    logToWeb("🚀 Subiendo evidencia a Telegram...");
+
+                    // 1. Preview (Silencioso y Autoplay)
+                    // Se envía el mismo archivo, pero como 'video' para que Telegram lo trate como preview rápida
+                    TelegramUplink.enviarPreview(currentFile, telegramToken, telegramChatId);
+
+                    // 2. Clip (Archivo adjunto + Notificación)
+                    // Se envía como documento para preservar calidad y generar alerta
+                    String caption = "🚨 MOVIMIENTO: " + currentFile.getName() + " (" + SystemStats.getBatteryLevel(this) + "%)";
+                    TelegramUplink.enviarClip(currentFile, telegramToken, telegramChatId, caption);
+                }
+                // --- FIN TELEGRAM TRIGGER ---
             }
             
         }
@@ -802,13 +824,16 @@ public class SentinelService extends Service {
             screenLock.release();
     }
 
-    public static void updateSettings(int sens, int time, boolean active, int rot) {
+    public static void updateSettings(int sens, int time, boolean active, int rot, String tgToken, String tgChatId) {
         boolean rotationChanged = (cameraRotation != rot);
         // --- INICIO INSERCIÓN ---
         if (isDetectorActive != active) {
              logToWeb("🛡️ VIGILANDO CAMBIADO: " + (active ? "ACTIVADO (Vigilando)" : "DESACTIVADO (Solo Cámara)"));
         }
         // --- FIN INSERCIÓN ---
+        // Telegram Update
+        telegramToken = tgToken;
+        telegramChatId = tgChatId;
         motionSensitivity = sens;
         recordingTimeout = time;
         isDetectorActive = active;

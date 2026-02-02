@@ -5,15 +5,6 @@ All notable changes to the "El Ojo Del Abuelo" project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v3.9.7] - 2026-01-30
-### Summary
-"The Sharpness Update". Actualización mayor enfocada en la calidad del OSD y la usabilidad del editor.
-
-### Highlights
-- **OSD White Pro**: Texto blanco puro ultra-nítido con fondo semitransparente.
-- **Live Preview CIF**: Editor WYSIWYG real.
-- **Persistence**: Memoria de configuración.
-- **Stability**: ADB Watchdog y mejoras térmicas.
 
 ## [v3.9.8] - 2026-01-31
 ### Added
@@ -24,6 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Conditional OSD rendering.
     - Removed "Smart Thumbnails" mechanism.
     - Thermal Guardian threshold set to 44°C.
+
+## [v3.9.7] - 2026-01-30
+### Summary
+"The Sharpness Update". Actualización mayor enfocada en la calidad del OSD y la usabilidad del editor.
+
+### Highlights
+- **OSD White Pro**: Texto blanco puro ultra-nítido con fondo semitransparente.
+- **Live Preview CIF**: Editor WYSIWYG real.
+- **Persistence**: Memoria de configuración.
+- **Stability**: ADB Watchdog y mejoras térmicas.
+
 
 ## [v3.9.7-dev.50] - 2026-01-30
 ### Changed
@@ -1068,3 +1070,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Reversión a CIF (352x288)**: Por motivos de estabilidad térmica.
 - **Detector Ajustado**: Stride optimizado (10) para la nueva resolución.
 - **Manteniendo Optimizaciones**: Lazy Rotation y Raw Detection siguen activos para máxima eficiencia.
+
+## [v3.9.9-dev.1] - 2026-02-02
+### Added
+- **Telegram Integration**:
+  - : Soporte para conexiones seguras TLS 1.2 en Android 4.4.
+  - : Cliente de subida multipart optimizado para baja memoria (8KB buffer).
+  - UI Web: Campos para configurar Bot Token y Chat ID.
+- **SentinelService**: Hooks para subir preview y clip al cerrar grabación.
+
+## [v3.9.9-dev.1] - 2026-02-02
+### Added
+- **Telegram Integration**:
+  - `TLSSocketFactory`: Soporte para conexiones seguras TLS 1.2 en Android 4.4.
+  - `TelegramUplink`: Cliente de subida multipart optimizado para baja memoria (8KB buffer).
+  - UI Web: Campos para configurar Bot Token y Chat ID.
+- **SentinelService**: Hooks para subir preview y clip al cerrar grabación.

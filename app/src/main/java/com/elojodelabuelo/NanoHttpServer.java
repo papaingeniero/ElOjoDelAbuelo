@@ -429,8 +429,9 @@ public class NanoHttpServer {
             int webPanY = prefs.getInt("webPanY", 0);
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d}",
-                    sens, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX, webPanY);
+                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\"}",
+                    sens, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX, webPanY, 
+                    SentinelService.telegramToken, SentinelService.telegramChatId);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -458,6 +459,9 @@ public class NanoHttpServer {
             float webZoom = 1.0f;
             int webPanX = 0;
             int webPanY = 0;
+            // Telegram Vars
+            String tgToken = "";
+            String tgChatId = "";
 
             try {
                 if (uri.contains("?")) {
@@ -491,6 +495,9 @@ public class NanoHttpServer {
                                 webPanX = Integer.parseInt(val);
                             else if (key.equals("webPanY"))
                                 webPanY = Integer.parseInt(val);
+                            // Telegram Parsing
+                            else if (key.equals("tgToken")) tgToken = val;
+                            else if (key.equals("tgChatId")) tgChatId = val;
                         }
                     }
                 }
@@ -503,7 +510,7 @@ public class NanoHttpServer {
                         .putInt("webPanY", webPanY)
                         .commit();
 
-                SentinelService.updateSettings(sens, time, active, rot);
+                SentinelService.updateSettings(sens, time, active, rot, tgToken, tgChatId);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
             } catch (Exception e) {
                 e.printStackTrace();
