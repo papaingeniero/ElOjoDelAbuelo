@@ -59,18 +59,27 @@ public class NanoHttpServer {
             @Override
             public void run() {
                 try {
+                    SentinelService.logToWeb("🔍 NanoHttpServer: Attempting to bind port " + PORT);
                     serverSocket = new ServerSocket(PORT);
+                    SentinelService.logToWeb("✅ NanoHttpServer: Port " + PORT + " bound successfully!");
+
                     while (isRunning) {
                         try {
                             Socket client = serverSocket.accept();
                             new Thread(new ClientHandler(client)).start();
                         } catch (IOException e) {
-                            if (isRunning)
+                            if (isRunning) {
+                                SentinelService.logToWeb("⚠️ Client Accept Error: " + e.getMessage());
                                 e.printStackTrace();
+                            }
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    SentinelService.logToWeb("❌ FATAL WEB SERVER ERROR: " + e.toString());
+                    // Dump stack trace to log
+                    for(StackTraceElement ste : e.getStackTrace()) {
+                        SentinelService.logToWeb("    at " + ste.toString());
+                    }
                 }
             }
         });
@@ -181,6 +190,25 @@ public class NanoHttpServer {
                     return;
                 }
                 // ---------------------------
+                if (uri.startsWith("/api/test_telegram")) {
+                    java.util.Properties parms = new java.util.Properties();
+                    if (uri.contains("?")) {
+                        String query = uri.substring(uri.indexOf("?") + 1);
+                        String[] pairs = query.split("&");
+                        for (String pair : pairs) {
+                            String[] kv = pair.split("=");
+                            if (kv.length == 2) parms.setProperty(kv[0], java.net.URLDecoder.decode(kv[1], "UTF-8"));
+                        }
+                    }
+                    String token = parms.getProperty("token");
+                    String chat = parms.getProperty("chat");
+                    if(token != null && chat != null) {
+                        SentinelService.logToWeb("🔔 TEST REQUEST: Token=" + token.substring(0,5) + "...");
+                        TelegramUplink.sendTextMessage("🔔 TEST: ¡El Ojo del Abuelo está conectado! 👁️", token, chat);
+                    }
+                    os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
+                    return;
+                }
                 if (uri.equals("/stream")) {
                     SentinelService.logToWeb("📹 STREAM: Cliente conectado (IP: " + socket.getInetAddress() + ")");
                     serveLiveStream(os); // Bloquea el hilo mientras transmite
@@ -511,6 +539,7 @@ public class NanoHttpServer {
                         .commit();
 
                 SentinelService.updateSettings(sens, time, active, rot, tgToken, tgChatId);
+                SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -979,6 +1008,15 @@ public class NanoHttpServer {
                 "      </div>\n" +
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Rota la imagen si aparece al revés (suelo en el techo).</div>\n"
                 +
+                // 4. TELEGRAM SETTINGS
+                "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; margin-top:15px;'>" +
+                "         <h4 style='margin:0 0 10px 0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>" +
+                "         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
+                "         <input type='text' id='tg-token' placeholder='123456:ABC-Def...' style='width:100%; padding:5px; background:#333; color:#fff; border:1px solid #555; margin-bottom:5px;'>" +
+                "         <label style='font-size:12px; color:#aaa;'>Chat ID:</label>" +
+                "         <input type='text' id='tg-chatid' placeholder='12345678' style='width:100%; padding:5px; background:#333; color:#fff; border:1px solid #555;'>" +
+                "         <button onclick='testTelegram()' style='width:100%; margin-top:8px; padding:6px; background:#0288d1; border:none; color:white; border-radius:4px; cursor:pointer;'>🔔 PROBAR CONEXIÓN</button>" +
+                "      </div>\n" +
                 "\n" +
                 "      <h4 style='border-bottom:1px solid #444; margin-top:20px; padding-bottom:5px; color:#c62828; margin-bottom:10px;'>Zona de Peligro</h4>\n"
                 +
@@ -1345,6 +1383,9 @@ public class NanoHttpServer {
                 "        document.getElementById('web-pan-y').value = data.webPanY || 0;\n" +
                 "        updateWebTransform(data.webZoom, data.webPanX||0, data.webPanY||0);\n" +
                 "     }\n" +
+                "     // Telegram Settings\n" +
+                "     if(data.tgToken) document.getElementById('tg-token').value = data.tgToken;\n" +
+                "     if(data.tgChatId) document.getElementById('tg-chatid').value = data.tgChatId;\n" +
                 "     updateSensLabel(data.sens);\n" +
                 "  });\n" +
                 "}\n" +
@@ -1361,17 +1402,27 @@ public class NanoHttpServer {
                 "   var wZoom = document.getElementById('web-zoom').value;\n" +
                 "   var wPanX = document.getElementById('web-pan-x').value || 0;\n" +
                 "   var wPanY = document.getElementById('web-pan-y').value || 0;\n" +
+                "   var tgToken = document.getElementById('tg-token').value;\n" +
+                "   var tgChatId = document.getElementById('tg-chatid').value;\n" +
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "   var qs = '?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
                 "            '&min_free_space=' + minSpace +\n" +
-                "            '&webZoom=' + wZoom + '&webPanX=' + wPanX + '&webPanY=' + wPanY;\n" +
+                "            '&webZoom=' + wZoom + '&webPanX=' + wPanX + '&webPanY=' + wPanY +\n" +
+                "            '&tgToken=' + encodeURIComponent(tgToken) + '&tgChatId=' + encodeURIComponent(tgChatId);\n" +
                 "   fetch('/api/save_settings' + qs, { method: 'POST' })\n" +
                 "   .then(function() { setTimeout(function() { location.reload(); }, 800); });\n" +
                 "}\n" +
-
-                // ------ LAZY LOAD JAVASCRIPT ------
+                "function testTelegram() {\n" +
+                "    var t = document.getElementById('tg-token').value;\n" +
+                "    var c = document.getElementById('tg-chatid').value;\n" +
+                "    if(!t || !c) { alert('Introduce Token y Chat ID primero'); return; }\n" +
+                "    fetch('/api/test_telegram?token=' + encodeURIComponent(t) + '&chat=' + encodeURIComponent(c))\n" +
+                "    .then(function(){ alert('🔔 Mensaje de prueba enviado (Revisa tu Telegram)'); });\n" +
+                "}\n" +
+                "\n" +
+                "                // ------ LAZY LOAD JAVASCRIPT ------\n" +
                 "var currentOffset = 0; var LIMIT = 10; var isLoading = false; var noMoreVideos = false;\n" +
                 "function loadMoreVideos() {\n" +
                 "  if(isLoading || noMoreVideos) return;\n" +

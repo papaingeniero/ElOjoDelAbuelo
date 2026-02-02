@@ -2821,3 +2821,27 @@ El desafío era monumental: Telegram exige **TLS 1.2** para su API, pero nuestro
 **La Solución**: Se ha añadido la **Regla 12** a `legacy_dev_rules.md`.
 **La Regla**: Prohíbe terminantemente desinstalar la app sin permiso explícito si hay riesgo de pérdida de datos. Se fuerza el uso de `adb install -r`.
 **Lección**: La estabilidad del código no justifica la volatilidad de los datos.
+
+### 🛠️ Feature Quirúrgica: Botón de Test Telegram (v3.9.9-dev.1-hotfix)
+**Petición**: El usuario solicitó un botón para verificar la conexión con Telegram sin esperar a una alerta real.
+**Implementación**:
+- **Front**: Botón "🔔 PROBAR CONEXIÓN" en el modal de ajustes.
+- **Back**: Endpoint `/api/test_telegram` que usa `TelegramUplink.sendTextMessage`.
+- **Logic**: Inyección limpia en `NanoHttpServer` (ClientHandler) sin tocar la estructura legacy.
+
+## 🚀 Phase 39: El Telegrafista (Cierre de Integración)
+**Estado**: Completado en `v3.9.9-dev.2`.
+**Resumen**:
+Hemos completado la integración total con Telegram, incluyendo la capacidad de diagnóstico.
+1.  **Core**: `TelegramUplink.java` con soporte Multipart y Text Message.
+2.  **Seguridad**: `TLSSocketFactory` forzando TLS 1.2 para compatibilidad con API Legacy.
+3.  **UI Web**: Inyección quirúrgica del botón "🔔 PROBAR CONEXIÓN" en el modal de ajustes.
+4.  **Logging**: Instrumentación de `NanoHttpServer` en `abuelolog.log` para evitar la ceguera de Logcat rota.
+
+**Lección del Día 🎓**:
+*   *La visibilidad es la primera línea de defensa.* Cuando `logcat` falló en el dispositivo, instrumentar el servidor web para escribir en disco (`abuelolog.log`) fue la única forma de saber que el servidor estaba vivo pero la red fallaba.
+*   *Nunca desinstalar sin preguntar.* (Regla 12 Anti-Wipe aprendida hoy).
+
+**Glosario**:
+*   **Multipart**: Método HTTP para enviar archivos binarios y texto en la misma petición.
+*   **TLS 1.2**: Protocolo de seguridad que Android 4.4 soporta pero no activa por defecto en `HttpsURLConnection`.

@@ -41,6 +41,39 @@ public class TelegramUplink {
             }
         });
     }
+    
+    // 3. TEXT MESSAGE (Prueba de conexión)
+    public static void sendTextMessage(final String msg, final String token, final String chatId) {
+        uploadExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (token == null || token.isEmpty() || chatId == null || chatId.isEmpty()) return;
+                    
+                    URL url = new URL("https://api.telegram.org/bot" + token + "/sendMessage");
+                    HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                    
+                    try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {}
+                    
+                    conn.setRequestMethod("POST");
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    
+                    String params = "chat_id=" + chatId + "&text=" + java.net.URLEncoder.encode(msg, "UTF-8");
+                    DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+                    dos.writeBytes(params);
+                    dos.flush();
+                    dos.close();
+                    
+                    int status = conn.getResponseCode();
+                    SentinelService.logToWeb("TELEGRAM TEST MSG: " + status);
+                    
+                } catch (Exception e) {
+                    SentinelService.logToWeb("TELEGRAM TEST FAIL: " + e.getMessage());
+                }
+            }
+        });
+    }
 
     private static void subirArchivo(final File file, final String fileField, final String endpoint, final String caption, final String token, final String chatId, final boolean silent) {
         try {

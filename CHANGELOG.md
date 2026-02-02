@@ -1089,3 +1089,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Meta
 - **Regla 12 (Anti-Wipe)**: Protocolo obligatorio para evitar la pérdida de datos de usuario durante el debugging (Prohibido `adb uninstall` autónomo).
+
+### Added
+- **Web UI**: Botón "🔔 PROBAR CONEXIÓN" en Ajustes > Telegram para verificar credenciales al instante.
+
+## [v3.9.9-dev.2] - 2026-02-02
+### Added
+- **Feature**: Botón "Probar Conexión" Telegram en Panel Web.
+- **Backend**: Endpoint `/api/test_telegram` para validación de token/chatId.
+- **Fix**: Logging estático en archivo `abuelolog.log` para `NanoHttpServer` (Bypass de Logcat roto).
