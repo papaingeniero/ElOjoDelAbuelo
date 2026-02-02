@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.9-dev.7] - 2026-02-02
+### Fixed
+- **TelegramUplink**: Eliminación total de referencias a `TLSSocketFactory`.
+- **Security**: Ahora `HttpsURLConnection` usa el Provider por defecto (Conscrypt) sin interferencias manuales.
+- **Stability**: Implementada captura de errores detallada (`getErrorStream`) para diagnósticos 4xx/5xx de Telegram.
+
 ## [v3.9.9-dev.6] - 2026-02-02
 ### Engineering & Process
 - **Meta-Ingeniería**: Actualizadas `legacy_dev_rules.md` y `deploy_snapshot.md` para codificar obligación de "Prepend" en Changelog.

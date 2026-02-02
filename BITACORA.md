@@ -2885,3 +2885,15 @@ Hemos modificado el "Cerebro del Agente" (`.agent/rules` y `.agent/workflows`) p
 
 **Resultado Esperado:**
 Mantenimiento autónomo de la documentación sin romper la legibilidad humana.
+
+### 🩹 Hotfix: Limpieza Quirúrgica Telegram | Fecha: 02 de Febrero de 2026
+**Versión:** v3.9.9-dev.7
+
+**El Incidente:**
+Tras integrar Conscrypt (v3.9.9-dev.5), se detectó que `TelegramUplink.java` seguía intentando instanciar `TLSSocketFactory` (que ya había sido eliminada). Además, la intención de usar Conscrypt como provider global quedaba anulada si se forzaba un factory manual a nivel de conexión `Conn`.
+
+**La Corrección:**
+Se ha reescrito `TelegramUplink.java` para ser totalmente "agnóstico". Ya no toca SSLContext ni SocketFactories. Confía ciegamente en que el entorno (`SentinelService` + `Conscrypt`) le provea de seguridad. Se eliminan todas las referencias a la clase muerta `TLSSocketFactory`.
+
+**Resultado:**
+Compilación limpia y uso efectivo del motor Conscrypt para subida de videos y documentos.

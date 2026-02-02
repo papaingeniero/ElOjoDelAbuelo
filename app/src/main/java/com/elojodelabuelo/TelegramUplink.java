@@ -3,7 +3,6 @@ package com.elojodelabuelo;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,24 +15,19 @@ public class TelegramUplink {
     private static final String BOUNDARY = "*****" + System.currentTimeMillis() + "*****";
     private static final String TWO_HYPHENS = "--";
 
-    // Cola de subida serie (Single Thread) para no saturar la red ni la RAM
+    // Cola de subida serie (Single Thread)
     private static final ExecutorService uploadExecutor = Executors.newSingleThreadExecutor();
 
-    // 1. PREVIEW VISUAL (Se reproduce solo, sin sonido, sin notificar)
     public static void enviarPreview(final File file, final String token, final String chatId) {
-        // Encolamos la tarea en segundo plano
         uploadExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                // disable_notification=true para que no vibre dos veces
                 subirArchivo(file, "video", "sendVideo", "", token, chatId, true);
             }
         });
     }
 
-    // 2. EVIDENCIA FULL (Archivo adjunto, alta calidad, ESTE SÍ VIBRA)
     public static void enviarClip(final File file, final String token, final String chatId, final String caption) {
-        // Encolamos la tarea en segundo plano
         uploadExecutor.submit(new Runnable() {
             @Override
             public void run() {
@@ -42,7 +36,6 @@ public class TelegramUplink {
         });
     }
     
-    // 3. TEXT MESSAGE (Prueba de conexión)
     public static void sendTextMessage(final String msg, final String token, final String chatId) {
         uploadExecutor.submit(new Runnable() {
             @Override
@@ -53,9 +46,9 @@ public class TelegramUplink {
                     URL url = new URL("https://api.telegram.org/bot" + token + "/sendMessage");
                     HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                     
-                    try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {} // Keep or remove? Let's remove to use Conscrypt default
-                    // Mejor lo dejamos pero COMENTADO, para confirmar que usamos el del sistema (ConsCrypt)
-                    // try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {}
+                    // --- LIMPIEZA: NO FORZAMOS FACTORY MANUAL ---
+                    // Conscrypt ya está actuando globalmente. No tocar nada.
+                    // ---------------------------------------------
                     
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);
@@ -84,12 +77,11 @@ public class TelegramUplink {
             FileInputStream fileInputStream = new FileInputStream(file);
             URL url = new URL("https://api.telegram.org/bot" + token + "/" + endpoint);
             
-            // Usamos HttpsURLConnection para poder inyectar nuestro Factory
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             
-            // --- INYECCIÓN DE SEGURIDAD ELIMINADA (Usando CONSCRYPT) ---
-            // try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {}
-            // ---------------------------------------------
+            // --- LIMPIEZA: ELIMINADO EL BLOQUE setSSLSocketFactory ---
+            // Confiamos en el Provider Conscrypt inyectado en SentinelService.onCreate()
+            // ---------------------------------------------------------
             
             conn.setDoInput(true);
             conn.setDoOutput(true);
@@ -104,13 +96,11 @@ public class TelegramUplink {
             if (caption != null && !caption.isEmpty()) addTextField(dos, "caption", caption);
             if (silent) addTextField(dos, "disable_notification", "true");
 
-            // Cabecera del archivo
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_FEED);
             dos.writeBytes("Content-Disposition: form-data; name=\"" + fileField + "\"; filename=\"" + file.getName() + "\"" + LINE_FEED);
             dos.writeBytes(LINE_FEED);
 
-            // Envío de bytes (OPTIMIZADO: Buffer de 8KB, no 1MB)
-            // 8KB es el tamaño de página estándar de Linux/Android, muy eficiente.
+            // Buffer de 8KB (Standard Page Size)
             int bytesAvailable = fileInputStream.available();
             int bufferSize = Math.min(bytesAvailable, 8192); 
             byte[] buffer = new byte[bufferSize];
@@ -134,11 +124,21 @@ public class TelegramUplink {
             if (status == 200) {
                 SentinelService.logToWeb("TELEGRAM OK: " + file.getName() + " (" + endpoint + ")");
             } else {
-                SentinelService.logToWeb("TELEGRAM ERROR: " + status + " en " + endpoint);
+                // Leer error del servidor si falla
+                try {
+                    java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getErrorStream()));
+                    String line;
+                    StringBuilder err = new StringBuilder();
+                    while ((line = br.readLine()) != null) err.append(line);
+                    SentinelService.logToWeb("TELEGRAM SERVER ERROR: " + status + " -> " + err.toString());
+                } catch(Exception ex) {
+                    SentinelService.logToWeb("TELEGRAM ERROR: " + status);
+                }
             }
 
         } catch (Exception e) {
             SentinelService.logToWeb("TELEGRAM FAIL: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
