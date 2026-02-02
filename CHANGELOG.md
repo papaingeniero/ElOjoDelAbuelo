@@ -1086,3 +1086,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `TelegramUplink`: Cliente de subida multipart optimizado para baja memoria (8KB buffer).
   - UI Web: Campos para configurar Bot Token y Chat ID.
 - **SentinelService**: Hooks para subir preview y clip al cerrar grabación.
+
+### Meta
+- **Regla 12 (Anti-Wipe)**: Protocolo obligatorio para evitar la pérdida de datos de usuario durante el debugging (Prohibido `adb uninstall` autónomo).

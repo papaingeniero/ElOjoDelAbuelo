@@ -148,3 +148,7 @@ gh issue create --title "[ID] Título" --body "..." --label "enhancement"
 # Cerrar issue
 gh issue close <número> --comment "Resuelto en vX.Y.Z"
 ```
+## 12. Protocolo de Preservación de Datos (Anti-Wipe)
+*   🛑 **PROHIBIDO DESINSTALAR**: Nunca usar `adb uninstall` para solucionar un crash si existen datos de usuario valiosos (SharedPreferences, Bases de Datos) que no son recuperables.
+*   **Alternativa Segura**: Usar siempre `adb install -r` (Reinstall Keeping Data).
+*   **Excepción**: Si el paquete está corrupto (`UID Mismatch`), pedir confirmación explícita al usuario antes de borrar.

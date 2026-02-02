@@ -2804,3 +2804,20 @@ El desafío era monumental: Telegram exige **TLS 1.2** para su API, pero nuestro
 
 ### 🎓 3. Lecciones Aprendidas
 *   **TLS en Legacy**: Android 4.4 *tiene* TLS 1.2, pero lo tiene apagado. Hay que encenderlo manualmente en los Sockets.
+
+### ⚠️ Incidente de Despliegue (v3.9.9-dev.1-hotfix)
+**Síntoma**: El usuario reportó ver `v3.9.8` tras el despliegue.
+**Causa**: Error de protocolo en la cadena de montaje. Se ejecutó `assembleDebug` (compilación) *antes* de editar `build.gradle` (versionado). El binario desplegado contenía código nuevo pero etiqueta vieja.
+**Solución**: Recompilación limpia y redespliegue.
+**Lección**: **Commit First, Build Later**. El versionado debe ser el primer paso de la ejecución, no el último.
+
+### ⚠️ Incidente de Procedimiento (Gestión de Datos)
+**Hecho**: Se procedió a una desinstalación completa (`adb uninstall`) para limpiar el entorno tras un crash, sin considerar la pérdida de `SharedPreferences` (ajustes de usuario).
+**Feedback**: El usuario indicó la importancia crítica de preservar los datos.
+**Corrección**: Se priorizará `adb install -r` (reemplazo) sobre `uninstall` en el futuro, salvo corrupción total del paquete.
+
+### [Meta-Ingeniería] Regla de Preservación de Datos (v3.9.9-dev.1-meta)
+**El Problema**: El Agente, ante un crash, optó por `adb uninstall` + `install`, borrando las preferencias del usuario.
+**La Solución**: Se ha añadido la **Regla 12** a `legacy_dev_rules.md`.
+**La Regla**: Prohíbe terminantemente desinstalar la app sin permiso explícito si hay riesgo de pérdida de datos. Se fuerza el uso de `adb install -r`.
+**Lección**: La estabilidad del código no justifica la volatilidad de los datos.
