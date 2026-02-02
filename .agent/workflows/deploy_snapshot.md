@@ -27,6 +27,7 @@ Sigue el orden estricto.
     - Incluir la "Lección del Día".
 - [ ] Actualizar `CHANGELOG.md`.
     - Resumen técnico breve.
+    - **⚠️ OBLIGATORIO: AÑADIR AL PRINCIPIO (PREPEND)**.
 
 # 5. Git Snapshot
 - [ ] Generar archivo temporal `commit_msg.txt` con el contenido de la Bitácora.

@@ -2871,3 +2871,17 @@ Tras múltiples intentos fallidos de conectar con Telegram ("Handshake Failure")
 **Glosario:**
 *   **Conscrypt:** Librería de Java que empaqueta BoringSSL (la versión de OpenSSL de Google).
 *   **Provider:** Plugin de seguridad en Java. Al ponerlo en posición `1`, anula a los del sistema.
+
+### [Meta-Ingeniería] Corrección de Protocolo de Documentación | Fecha: 02 de Febrero de 2026
+**Versión:** v3.9.9-dev.6
+
+**El Problema:**
+Detectamos una regresión en el mantenimiento del archivo `CHANGELOG.md`. El agente (yo) estaba usando comandos de append (`>>`) que añadían las nuevas versiones al final del archivo, rompiendo el orden cronológico inverso estándar (Lo más nuevo arriba).
+
+**La Solución:**
+Hemos modificado el "Cerebro del Agente" (`.agent/rules` y `.agent/workflows`) para codificar explícitamente la dirección de escritura:
+1.  **Regla 5 actualizada**: Ahora especifica `OBLIGATORIO: AÑADIR AL PRINCIPIO (PREPEND)`.
+2.  **Workflow deploy_snapshot**: Añadida advertencia visual in-situ.
+
+**Resultado Esperado:**
+Mantenimiento autónomo de la documentación sin romper la legibilidad humana.

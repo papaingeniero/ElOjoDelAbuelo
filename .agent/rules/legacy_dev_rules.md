@@ -56,7 +56,7 @@ Como proyecto Open Source didáctico, el historial de Git es nuestro libro de te
 *   **Archivo Maestro**: El archivo `BITACORA.md` en la raíz es nuestro "Pergamino Infinito" acumulativo.
 *   **Proceso**: Al finalizar una tarea, el Agente debe generar un reporte interno didáctico y **AÑADIRLO (APPEND)** al final de `BITACORA.md`. NUNCA sobrescribir el archivo completo.
 *   **Criterio de Inclusión (Trazabilidad Total)**:
-    *   **CHANGELOG.md**: Resumen ejecutivo (Qué cambió). Se registra SIEMPRE, aunque sea algo menor.
+    *   **CHANGELOG.md**: Resumen ejecutivo (Qué cambió). Se registra SIEMPRE, aunque sea algo menor. **OBLIGATORIO: AÑADIR AL PRINCIPIO (PREPEND)** justo después del encabezado, respetando el orden cronológico inverso.
     *   **BITACORA.md**: Memoria detallada del trabajo. Se registra **TODO** cambio, decisión o corrección, independientemente de su magnitud.
         *   **Ya no hay cambios "menores"**: Si merece un commit, merece una línea en la bitácora explicando el porqué.
 *   **Registro de Fallos (La Bitácora de Guerra)**:

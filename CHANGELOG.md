@@ -6,12 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.9-dev.6] - 2026-02-02
+### Engineering & Process
+- **Meta-Ingeniería**: Actualizadas `legacy_dev_rules.md` y `deploy_snapshot.md` para codificar obligación de "Prepend" en Changelog.
+- **Goal**: Prevenir errores de ordenación cronológica en actualizaciones documentales automatizadas.
+
 ## [v3.9.9-dev.5] - 2026-02-02
 ### Added
 - 🧠 **CORE**: Inyección de `Conscrypt` Provider. Soporte nativo para TLS 1.3 y Ciphers modernos (AES-GCM) en Android Legacy.
 - 🛡️ **FIX**: Solucionado el error de conexión con Telegram (Handshake Failure).
 - 🧹 **CLEAN**: Eliminado parche `TLSSocketFactory` (obsoleto).
 - 🐛 **FIX**: Persistencia de credenciales Telegram (Token/ChatID) corregida en `SentinelService`.
+
+
+## [v3.9.9-dev.2] - 2026-02-02
+### Added
+- **Feature**: Botón "Probar Conexión" Telegram en Panel Web.
+- **Backend**: Endpoint `/api/test_telegram` para validación de token/chatId.
+- **Fix**: Logging estático en archivo `abuelolog.log` para `NanoHttpServer` (Bypass de Logcat roto).
+- **v3.9.9-dev.5**:
+  - 🧠 **CORE**: Inyección de `Conscrypt` Provider. Soporte nativo para TLS 1.3 y Ciphers modernos (AES-GCM) en Android Legacy.
+  - 🛡️ **FIX**: Solucionado el error de conexión con Telegram (Handshake Failure).
+  - 🧹 **CLEAN**: Eliminado parche `TLSSocketFactory` (obsoleto).
+  - 🐛 **FIX**: Persistencia de credenciales Telegram (Token/ChatID) corregida en `SentinelService`.
+  
+
+## [v3.9.9-dev.1] - 2026-02-02
+### Added
+- **Telegram Integration**:
+  - `TLSSocketFactory`: Soporte para conexiones seguras TLS 1.2 en Android 4.4.
+  - `TelegramUplink`: Cliente de subida multipart optimizado para baja memoria (8KB buffer).
+  - UI Web: Campos para configurar Bot Token y Chat ID.
+- **SentinelService**: Hooks para subir preview y clip al cerrar grabación.
+
+### Meta
+- **Regla 12 (Anti-Wipe)**: Protocolo obligatorio para evitar la pérdida de datos de usuario durante el debugging (Prohibido `adb uninstall` autónomo).
+
+### Added
+- **Web UI**: Botón "🔔 PROBAR CONEXIÓN" en Ajustes > Telegram para verificar credenciales al instante.
+
+
+
 
 ## [v3.9.8] - 2026-01-31
 ### Added
@@ -1078,35 +1113,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Detector Ajustado**: Stride optimizado (10) para la nueva resolución.
 - **Manteniendo Optimizaciones**: Lazy Rotation y Raw Detection siguen activos para máxima eficiencia.
 
-## [v3.9.9-dev.1] - 2026-02-02
-### Added
-- **Telegram Integration**:
-  - : Soporte para conexiones seguras TLS 1.2 en Android 4.4.
-  - : Cliente de subida multipart optimizado para baja memoria (8KB buffer).
-  - UI Web: Campos para configurar Bot Token y Chat ID.
-- **SentinelService**: Hooks para subir preview y clip al cerrar grabación.
-
-## [v3.9.9-dev.1] - 2026-02-02
-### Added
-- **Telegram Integration**:
-  - `TLSSocketFactory`: Soporte para conexiones seguras TLS 1.2 en Android 4.4.
-  - `TelegramUplink`: Cliente de subida multipart optimizado para baja memoria (8KB buffer).
-  - UI Web: Campos para configurar Bot Token y Chat ID.
-- **SentinelService**: Hooks para subir preview y clip al cerrar grabación.
-
-### Meta
-- **Regla 12 (Anti-Wipe)**: Protocolo obligatorio para evitar la pérdida de datos de usuario durante el debugging (Prohibido `adb uninstall` autónomo).
-
-### Added
-- **Web UI**: Botón "🔔 PROBAR CONEXIÓN" en Ajustes > Telegram para verificar credenciales al instante.
-
-## [v3.9.9-dev.2] - 2026-02-02
-### Added
-- **Feature**: Botón "Probar Conexión" Telegram en Panel Web.
-- **Backend**: Endpoint `/api/test_telegram` para validación de token/chatId.
-- **Fix**: Logging estático en archivo `abuelolog.log` para `NanoHttpServer` (Bypass de Logcat roto).
-- **v3.9.9-dev.5**:
-  - 🧠 **CORE**: Inyección de `Conscrypt` Provider. Soporte nativo para TLS 1.3 y Ciphers modernos (AES-GCM) en Android Legacy.
-  - 🛡️ **FIX**: Solucionado el error de conexión con Telegram (Handshake Failure).
-  - 🧹 **CLEAN**: Eliminado parche `TLSSocketFactory` (obsoleto).
-  - 🐛 **FIX**: Persistencia de credenciales Telegram (Token/ChatID) corregida en `SentinelService`.
