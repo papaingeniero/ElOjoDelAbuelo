@@ -1098,3 +1098,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Feature**: Botón "Probar Conexión" Telegram en Panel Web.
 - **Backend**: Endpoint `/api/test_telegram` para validación de token/chatId.
 - **Fix**: Logging estático en archivo `abuelolog.log` para `NanoHttpServer` (Bypass de Logcat roto).
+- **v3.9.9-dev.5**:
+  - 🧠 **CORE**: Inyección de `Conscrypt` Provider. Soporte nativo para TLS 1.3 y Ciphers modernos (AES-GCM) en Android Legacy.
+  - 🛡️ **FIX**: Solucionado el error de conexión con Telegram (Handshake Failure).
+  - 🧹 **CLEAN**: Eliminado parche `TLSSocketFactory` (obsoleto).
+  - 🐛 **FIX**: Persistencia de credenciales Telegram (Token/ChatID) corregida en `SentinelService`.

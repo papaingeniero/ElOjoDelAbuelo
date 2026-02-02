@@ -16,6 +16,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
+import org.conscrypt.Conscrypt; // Brain Upgrade
+import java.security.Security;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -149,6 +151,16 @@ public class SentinelService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // --- LA MAGIA: Inyectar OpenSSL Moderno (Conscrypt) ---
+        try {
+            Security.insertProviderAt(Conscrypt.newProvider(), 1);
+            logToWeb("🔐 CONSCRYPT: Motor SSL moderno inyectado con éxito.");
+        } catch (Exception e) {
+            logToWeb("❌ CONSCRYPT ERROR: " + e.getMessage());
+        }
+        // ------------------------------------------
+
         logToWeb(">>> SENTINEL SERVICE CREATING... (Inicio Sistema)");
 
         // Load Preferences
@@ -850,6 +862,10 @@ public class SentinelService extends Service {
             editor.putInt("recordingTimeout", time);
             editor.putBoolean("isDetectorActive", active);
             editor.putInt("cameraRotation", rot);
+            // --- FIX PERSISTENCIA TELEGRAM (v3.9.9-dev.3) ---
+            editor.putString("tg_token", tgToken);
+            editor.putString("tg_chat_id", tgChatId);
+            // ------------------------------------------------
             editor.apply();
 
             if (rotationChanged && instance.processingHandler != null) {

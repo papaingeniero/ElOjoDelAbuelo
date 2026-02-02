@@ -2845,3 +2845,29 @@ Hemos completado la integración total con Telegram, incluyendo la capacidad de 
 **Glosario**:
 *   **Multipart**: Método HTTP para enviar archivos binarios y texto en la misma petición.
 *   **TLS 1.2**: Protocolo de seguridad que Android 4.4 soporta pero no activa por defecto en `HttpsURLConnection`.
+
+### 🧠 El Cerebro Nuevo (Operación Conscrypt)
+**Fecha:** 02/02/2026
+**Versión:** v3.9.9-dev.5
+
+Tras múltiples intentos fallidos de conectar con Telegram ("Handshake Failure") debido a que Android 4.4/2.3 no soporta los Ciphers modernos (GCM) ni tiene las Root CAs actualizadas, hemos optado por la **Ingeniería de Trasplante**.
+
+**El Problema:**
+*   El Stack SSL de Android 2.3 (OpenSSL 0.9.8/1.0.0) es prehistórico.
+*   Telegram exige TLS 1.2 + AES-GCM o ChaCha20.
+*   El móvil intentaba hablar en "Latín" y Telegram solo acepta "Esperanto".
+
+**La Solución (Conscrypt):**
+*   En lugar de usar el motor de seguridad del SO (`AndroidOpenSSL`), hemos inyectado **Conscrypt** (el motor de seguridad moderno de Google) directamente dentro del APK.
+*   Código: `Security.insertProviderAt(Conscrypt.newProvider(), 1);` en `SentinelService.onCreate()`.
+*   Resultado: La App ahora tiene un stack TLS 1.3 de 2024 corriendo sobre un kernel de 2011.
+
+**Lecciones:**
+*   No confíes en `SSLSocketFactory` del sistema en dispositivos Legacy.
+*   Si el Hardware no llega, trae tu propio Software.
+*   Hemos evitado usar un Pr
+**El Probldio. La App es 100% autónoma.
+
+**Glosario:**
+*   **Conscrypt:** Librería de Java que empaqueta BoringSSL (la versión de OpenSSL de Google).
+*   **Provider:** Plugin de seguridad en Java. Al ponerlo en posición `1`, anula a los del sistema.

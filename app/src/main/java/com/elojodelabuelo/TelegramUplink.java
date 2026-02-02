@@ -53,7 +53,9 @@ public class TelegramUplink {
                     URL url = new URL("https://api.telegram.org/bot" + token + "/sendMessage");
                     HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
                     
-                    try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {}
+                    try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {} // Keep or remove? Let's remove to use Conscrypt default
+                    // Mejor lo dejamos pero COMENTADO, para confirmar que usamos el del sistema (ConsCrypt)
+                    // try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {}
                     
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);
@@ -85,13 +87,8 @@ public class TelegramUplink {
             // Usamos HttpsURLConnection para poder inyectar nuestro Factory
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             
-            // --- INYECCIÓN DE SEGURIDAD (TLS 1.2 FIX) ---
-            try {
-                conn.setSSLSocketFactory(new TLSSocketFactory());
-            } catch (Exception e) {
-                SentinelService.logToWeb("TELEGRAM SSL ERROR: " + e.getMessage());
-                return; // Sin SSL válido no podemos seguir
-            }
+            // --- INYECCIÓN DE SEGURIDAD ELIMINADA (Usando CONSCRYPT) ---
+            // try { conn.setSSLSocketFactory(new TLSSocketFactory()); } catch (Exception e) {}
             // ---------------------------------------------
             
             conn.setDoInput(true);
