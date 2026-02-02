@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.9-dev.5] - 2026-02-02
+### Added
+- 🧠 **CORE**: Inyección de `Conscrypt` Provider. Soporte nativo para TLS 1.3 y Ciphers modernos (AES-GCM) en Android Legacy.
+- 🛡️ **FIX**: Solucionado el error de conexión con Telegram (Handshake Failure).
+- 🧹 **CLEAN**: Eliminado parche `TLSSocketFactory` (obsoleto).
+- 🐛 **FIX**: Persistencia de credenciales Telegram (Token/ChatID) corregida en `SentinelService`.
+
 ## [v3.9.8] - 2026-01-31
 ### Added
 - **Thermal & Performance Optimization**: "Cool & Efficient" Update.
