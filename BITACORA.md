@@ -2991,3 +2991,8 @@ Despliegue de validación para confirmar que el "Ajuste Quirúrgico" funciona: s
 #### 🛠️ Checkpoint
 *   **Version**: `v3.9.9-dev.14`
 *   **Objetivo**: Verificar en Telegram que solo llega 1 mensaje (el preview MP4/AVI) por movimiento.
+
+#### ⏱️ Anexo de Rendimiento (Post-Release Analysis)
+*   **Tiempo de Proceso**: Reducción drástica de **12-25s** (transcodificación full) a **1.5-3s** (transcodificación preview).
+*   **Eficiencia Funcional**: El preview a 1 FPS actúa como un contenedor de "fotos clave" (1 por segundo). Permite usar el PAUSE para examinar detalles fotograma a fotograma sin la carga de CPU/Datos de un vídeo de 15 FPS.
+*   **Impacto**: La CPU se libera 20 segundos antes, enfriando el dispositivo más rápido entre eventos.
