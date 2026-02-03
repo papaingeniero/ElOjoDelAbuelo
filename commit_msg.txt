@@ -1,0 +1,12 @@
+### 🐞 v3.9.9-dev.13 Fix: El Caso del Preview Huérfano
+
+#### 📜 El Problema
+Detectamos que  estaba recibiendo  (el vídeo pesado completo) en lugar del archivo  (el timelapse ligero a 1FPS). Esto provocaba que se subiera el vídeo grande DOS VECES (una como video MP4/AVI y otra como documento), ignorando por completo el timelapse optimizado que generábamos en segundo plano.
+
+#### 🛠️ La Solución
+1.  **Promoción de Variable**:  deja de ser una variable local en  y pasa a ser propiedad de clase .
+2.  **Inyección Correcta**: En , pasamos explícitamente  a .
+
+#### 🎓 Lecciones Aprendidas
+*   *Variable Scope Blindness*: Cuidado con definir variables importantes dentro de métodos si luego las necesitas en el cierre.
+*   Ahora sí: **Preview = Timelapse (1 FPS)** --> Transcodificación Rápida --> Subida Ligera.

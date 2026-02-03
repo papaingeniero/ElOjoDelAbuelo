@@ -78,6 +78,7 @@ public class SentinelService extends Service {
     private boolean isRecording = false;
     private long lastMotionTime = 0;
     private File currentFile;
+    private File currentPreviewFile; // [CORRECTION] Persist preview path
     private FileOutputStream fileOutputStream;
     private FileOutputStream previewOutputStream; // For mini-mjpeg
     private long lastPreviewTime = 0;
@@ -691,8 +692,8 @@ public class SentinelService extends Service {
             fileOutputStream = new FileOutputStream(currentFile);
             frameCount = 0;
             recordingStartTime = System.currentTimeMillis();
-            File previewFile = new File(dir, "preview_" + timeStamp + ".mjpeg");
-            previewOutputStream = new FileOutputStream(previewFile);
+            currentPreviewFile = new File(dir, "preview_" + timeStamp + ".mjpeg");
+            previewOutputStream = new FileOutputStream(currentPreviewFile);
             lastPreviewTime = 0;
         } catch (IOException e) {
             e.printStackTrace();
@@ -738,8 +739,10 @@ public class SentinelService extends Service {
                     logToWeb("🚀 Subiendo evidencia a Telegram...");
 
                     // 1. Preview (Silencioso y Autoplay)
-                    // Se envía el mismo archivo, pero como 'video' para que Telegram lo trate como preview rápida
-                    TelegramUplink.enviarPreview(currentFile, telegramToken, telegramChatId);
+                    // Se envía el archivo TIMELAPSE (1 FPS) para que Telegram lo trate como preview rápida
+                    if (currentPreviewFile != null && currentPreviewFile.exists()) {
+                         TelegramUplink.enviarPreview(currentPreviewFile, telegramToken, telegramChatId);
+                    }
 
                     // 2. Clip (Archivo adjunto + Notificación)
                     // Se envía como documento para preservar calidad y generar alerta

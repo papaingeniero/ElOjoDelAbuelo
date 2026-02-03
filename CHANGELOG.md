@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.9-dev.13] - 2026-02-03
+### Fixed
+- **Sentinel Logic**: Corregido bug donde se subía el vídeo completo como preview en lugar del timelapse ligero 1FPS.
+
 ## [v3.9.9-dev.12] - 2026-02-03
 ### Changed
 - **Snapshot**: Incremento de versión para despliegue de pruebas.
