@@ -2925,3 +2925,21 @@ Modificamos `TelegramUplink` para que, en el momento de la subida, renombre "al 
 
 **El Resultado**:
 Telegram y iOS ven un archivo `.avi`. Al pulsar "Compartir", iOS detecta una extensión de video estándar y habilita "Abrir en VLC". VLC o Infuse, siendo omnívoros, ignoran que le falta la cabecera RIFF AVI y reproducen el stream MJPEG sin rechistar.
+
+### 🚀 v3.9.9-dev.11 Implementando Transcodificación MP4 para Previews
+
+#### 📜 El Problema
+Los videos "Preview" (timelapses rápidos) en MJPEG (`.mjpeg`) no se reproducían automáticamente en Telegram ni en iOS/VLC sin renombrarlos manualmente. Queríamos aprovechar el "Autoplay" de Telegram para ver el resumen del movimiento sin dar "Play" explícitamente.
+
+#### 🛠️ La Solución
+Implementada lógica de transcodificación justo antes de la subida en `TelegramUplink`:
+1.  **Detección**: `enviarPreview` ahora invoca a `MjpegToMp4.convert`.
+2.  **Transcodificación**: Genera un archivo `.mp4` temporal usando H.264 (si es soportado) o fallback.
+3.  **Subida Inteligente**:
+    *   Si hay MP4: Se usa `sendVideo`. ¡Autoplay garantizado! 🎬
+    *   Si falla MP4: Se hace fallback al MJPEG original renombrado a `.avi` (el truco clásico de la v3.9.9-dev.10) usando `sendDocument`.
+4.  **Limpieza**: El archivo MP4 temporal se borra inmediatamente.
+
+#### 🎓 Lecciones Aprendidas
+*   La inyección de dependencias (pasar el archivo `file` correcto) es clave. Confirmamos con el usuario que el objetivo era el *preview* y no el clip completo.
+*   Mantener el fallback es vital en este hardware (i9000) donde el encoder podría fallar por falta de RAM o recursos.

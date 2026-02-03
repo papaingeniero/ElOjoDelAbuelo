@@ -34,9 +34,37 @@ public class TelegramUplink {
     // ---------------------------------
 
     public static void enviarPreview(final File file, final String token, final String chatId) {
-        // DESACTIVADO POR CONFIGURACIÓN DE USUARIO
-        // No subimos preview, ahorramos datos y batería.
-        SentinelService.logToWeb("ℹ️ Uplink: Preview omitido (Configuración Ahorro).");
+        if (file == null || !file.exists()) return;
+
+        uploadExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                File mp4File = null;
+                try {
+                    // INTENTO 1: Transcodificar a MP4 (Autoplay)
+                    SentinelService.logToWeb("🎥 Uplink: Generando Preview MP4...");
+                    mp4File = MjpegToMp4.convert(file, file.getParentFile());
+
+                    if (mp4File != null && mp4File.exists() && mp4File.length() > 0) {
+                        SentinelService.logToWeb("🚀 Uplink: Subiendo Preview MP4 (Autoplay)...");
+                        subirArchivo(mp4File, "video", "sendVideo", "🎥 Preview Rápido", token, chatId, true);
+                    } else {
+                        throw new RuntimeException("Transcoding returned null or empty file");
+                    }
+
+                } catch (Exception e) {
+                    // FALLBACK: Enviar MJPEG original (como AVI para VLC) dobles
+                    SentinelService.logToWeb("⚠️ Uplink: Falló Transcoding (" + e.getMessage() + "). Usando Fallback.");
+                    subirArchivo(file, "document", "sendDocument", "⚠️ Preview (MJPEG Original)", token, chatId, true);
+
+                } finally {
+                    // Limpieza: Borrar el MP4 temporal para no llenar la SD
+                    if (mp4File != null && mp4File.exists()) {
+                        mp4File.delete();
+                    }
+                }
+            }
+        });
     }
 
     public static void enviarClip(final File file, final String token, final String chatId, final String caption) {
@@ -201,7 +229,14 @@ public class TelegramUplink {
 
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_FEED);
             String fieldName = endpoint.equals("sendDocument") ? "document" : fileField;
-            String remoteFilename = file.getName().replace(".mjpeg", ".avi");
+            
+            // --- LOGICA EXTENSIÓN INTELIGENTE ---
+            String remoteFilename = file.getName();
+            if (remoteFilename.endsWith(".mjpeg")) {
+                // HACK iOS: Si es MJPEG, lo disfrazamos de AVI para que VLC lo abra
+                remoteFilename = remoteFilename.replace(".mjpeg", ".avi");
+            }
+            
             dos.writeBytes("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + remoteFilename + "\"" + LINE_FEED);
             dos.writeBytes(LINE_FEED);
 
