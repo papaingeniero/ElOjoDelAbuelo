@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.1] - 2026-02-04
+### Changed
+- **Encoder Tuning**: Ajuste fino de parámetros H.264 (3 FPS, 125kbps) para mayor fluidez y menor tamaño en previews.
+
 ## [v3.9.9] - 2026-02-03
 ### Added
 - **MP4 Transcoding**: Conversión on-device de MJPEG a MP4 para soporte de Autoplay en Telegram.

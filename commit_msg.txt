@@ -1,0 +1,12 @@
+*   **Eficiencia Funcional**: El preview a 1 FPS actúa como un contenedor de "fotos clave" (1 por segundo). Permite usar el PAUSE para examinar detalles fotograma a fotograma sin la carga de CPU/Datos de un vídeo de 15 FPS.
+*   **Impacto**: La CPU se libera 20 segundos antes, enfriando el dispositivo más rápido entre eventos.
+
+### 🛠️ v3.9.10-dev.1 Tuning: Frecuencia Cardíaca Visual
+
+#### 📜 El Contexto
+El usuario ha detectado que 5 FPS era un poco excesivo para un "Preview Rápido". Bajamos a **3 FPS** y **125kbps**.
+
+#### 🎯 Objetivo
+*   **Fluidez**: 3 FPS es suficiente para ver movimiento humano sin efecto "diapositiva".
+*   **Tamaño**: Menos frames = Menor bitrate necesario = Archivo aún más ligero.
+*   **Seeking**: Mantenemos 1 keyframe por segundo para poder pausar con precisión.

@@ -25,9 +25,9 @@ public class MjpegToMp4 {
 
     private static final String TAG = "MjpegToMp4";
     private static final String MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
-    private static final int FRAME_RATE = 5; // 5 FPS para que el timelapse se vea fluido
+    private static final int FRAME_RATE = 3; // bajo de 5 a 3 FPS para que el timelapse se vea fluido
     private static final int IFRAME_INTERVAL = 1; // 1 segundo entre keyframes (para seeking rápido)
-    private static final int BIT_RATE = 150000; // 150kbps (Optimizado: ~0.3 bits/pixel para CIF @ 5FPS)
+    private static final int BIT_RATE = 125000; // bajo un poco de 150kbps a 125kbps al bajar los fps 
 
     public static File convert(File inputFile, File outputDir) {
         String outputName = inputFile.getName().replace(".mjpeg", ".mp4");
