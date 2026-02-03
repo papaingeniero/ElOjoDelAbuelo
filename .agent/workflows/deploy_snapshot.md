@@ -18,7 +18,7 @@ Sigue el orden estricto.
 # 3. Compilación y Despliegue
 - [ ] Ejecutar `./gradlew assembleDebug`.
 - [ ] Instalar APK: `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
-- [ ] (Opcional) Lanzar app: `adb shell am start -n com.elojodelabuelo/.MainActivity`.
+- [ ] (Opcional) Lanzar app: `adb shell am start -n com.elojodelabuelo.rescue/com.elojodelabuelo.MainActivity`.
 
 # 4. Documentación (Bitácora)
 - [ ] Actualizar `BITACORA.md`.
