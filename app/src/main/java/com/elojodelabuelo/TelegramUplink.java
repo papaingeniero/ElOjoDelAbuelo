@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext; // [RESTORED] NATIVE SSL Support
 
 public class TelegramUplink {
 
@@ -17,6 +18,20 @@ public class TelegramUplink {
 
     // Executor mono-hilo para asegurar orden cronológico y no saturar la CPU
     private static final ExecutorService uploadExecutor = Executors.newSingleThreadExecutor();
+
+    // --- [RESTORED] EXPLICIT CONSCRYPT HELPER ---
+    // Vital para Android 4.4, ya que HttpsURLConnection ignora el orden de Providers
+    private static javax.net.ssl.SSLSocketFactory getConscryptSocketFactory() {
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS", "Conscrypt");
+            sslContext.init(null, null, null);
+            return sslContext.getSocketFactory();
+        } catch (Exception e) {
+            SentinelService.logToWeb("⚠️ Conscrypt Explicit Fail: " + e.getMessage() + ". Using Default.");
+            return null;
+        }
+    }
+    // ---------------------------------
 
     public static void enviarPreview(final File file, final String token, final String chatId) {
         // DESACTIVADO POR CONFIGURACIÓN DE USUARIO
@@ -31,19 +46,14 @@ public class TelegramUplink {
                 SentinelService.logToWeb("🚀 Uplink: Iniciando subida dual (Foto + Video)...");
 
                 // PASO 1: Extraer y enviar la MEJOR FOTO (La más pesada)
-                // Esto da una visualización inmediata en el chat.
                 byte[] bestFrame = extractBestFrame(file);
                 if (bestFrame != null) {
-                    // Enviamos la foto con el caption (los emojis se verán aquí)
                     subirBytesComoFoto(bestFrame, "sendPhoto", caption, token, chatId, false);
                 } else {
-                    // Si falla la extracción, mandamos al menos el texto de alerta
                     sendTextMessage("🚨 " + caption, token, chatId);
                 }
                 
                 // PASO 2: Enviar el VÍDEO COMPLETO como Documento
-                // Se envía sin caption redundante (o uno breve) para no ensuciar el chat.
-                // Usamos sendDocument para evitar errores de reproducción en Telegram.
                 subirArchivo(file, "document", "sendDocument", "📁 Evidencia Completa (MJPEG)", token, chatId, true);
             }
         });
@@ -52,14 +62,11 @@ public class TelegramUplink {
     /**
      * ALGORITMO: "El Peso Manda"
      * Escanea el archivo y extrae el frame JPEG que ocupa más bytes.
-     * Mayor tamaño = Más detalle/movimiento (habitualmente).
      */
     private static byte[] extractBestFrame(File mjpegFile) {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(mjpegFile);
-            // Leemos el archivo entero en memoria (Cuidado: MJPEGs grandes pueden dar OOM,
-            // pero los clips de seguridad suelen ser < 5MB).
             byte[] fileData = new byte[(int) mjpegFile.length()];
             int totalRead = fis.read(fileData);
             
@@ -69,23 +76,17 @@ public class TelegramUplink {
             int bestLen = 0;
             int currentStart = -1;
             
-            // Escaneo de bytes buscando cabeceras JPG (FF D8 ... FF D9)
             for (int i = 0; i < totalRead - 1; i++) {
-                // Detectar Inicio (SOI): FF D8
                 if ((fileData[i] & 0xFF) == 0xFF && (fileData[i+1] & 0xFF) == 0xD8) {
                     currentStart = i;
                 }
-                
-                // Detectar Fin (EOI): FF D9
                 if (currentStart != -1 && (fileData[i] & 0xFF) == 0xFF && (fileData[i+1] & 0xFF) == 0xD9) {
                     int currentLen = (i + 2) - currentStart;
-                    
-                    // ¿Es este el frame más gordo hasta ahora?
                     if (currentLen > bestLen) {
                         bestLen = currentLen;
                         bestStart = currentStart;
                     }
-                    currentStart = -1; // Reset para buscar el siguiente
+                    currentStart = -1;
                 }
             }
 
@@ -97,19 +98,24 @@ public class TelegramUplink {
 
         } catch (Exception e) {
             SentinelService.logToWeb("⚠️ Snapshot Error: " + e.getMessage());
-            return null; // Fallamos silenciosamente y subimos solo el vídeo
+            return null;
         } finally {
             try { if (fis != null) fis.close(); } catch (Exception e) {}
         }
     }
 
-    // --- MÉTODOS DE RED (Optimizados: Streaming + UTF-8) ---
+    // --- MÉTODOS DE RED (Optimizados: Streaming + UTF-8 + SSL EXPLICITO) ---
 
     public static void sendTextMessage(final String msg, final String token, final String chatId) {
         try {
             if (token == null || token.isEmpty()) return;
             URL url = new URL("https://api.telegram.org/bot" + token + "/sendMessage");
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            
+            // [FIX] Inyección SSL
+            javax.net.ssl.SSLSocketFactory csFactory = getConscryptSocketFactory();
+            if (csFactory != null) conn.setSSLSocketFactory(csFactory);
+
             conn.setConnectTimeout(10000);
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
@@ -121,7 +127,7 @@ public class TelegramUplink {
             dos.writeBytes(params);
             dos.flush();
             dos.close();
-            conn.getResponseCode();
+            conn.getResponseCode(); // Trigger request
         } catch (Exception e) {}
     }
 
@@ -130,9 +136,11 @@ public class TelegramUplink {
             URL url = new URL("https://api.telegram.org/bot" + token + "/" + endpoint);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             
-            // STREAMING MODE: Vital para no duplicar memoria
+            // [FIX] Inyección SSL
+            javax.net.ssl.SSLSocketFactory csFactory = getConscryptSocketFactory();
+            if (csFactory != null) conn.setSSLSocketFactory(csFactory);
+
             conn.setChunkedStreamingMode(4096); 
-            
             conn.setDoInput(true);
             conn.setDoOutput(true);
             conn.setUseCaches(false);
@@ -149,7 +157,6 @@ public class TelegramUplink {
             dos.writeBytes("Content-Disposition: form-data; name=\"photo\"; filename=\"snapshot.jpg\"" + LINE_FEED);
             dos.writeBytes(LINE_FEED);
 
-            // Escribir bytes de la imagen
             dos.write(data);
 
             dos.writeBytes(LINE_FEED);
@@ -162,6 +169,7 @@ public class TelegramUplink {
 
         } catch (Exception e) {
             SentinelService.logToWeb("TELEGRAM PHOTO FAIL: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -172,7 +180,11 @@ public class TelegramUplink {
             URL url = new URL("https://api.telegram.org/bot" + token + "/" + endpoint);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             
-            conn.setChunkedStreamingMode(4096); // Streaming vital
+            // [FIX] Inyección SSL
+            javax.net.ssl.SSLSocketFactory csFactory = getConscryptSocketFactory();
+            if (csFactory != null) conn.setSSLSocketFactory(csFactory);
+
+            conn.setChunkedStreamingMode(4096); 
             conn.setConnectTimeout(30000);
             conn.setReadTimeout(30000);
             conn.setDoInput(true);
@@ -188,7 +200,6 @@ public class TelegramUplink {
             if (silent) addTextField(dos, "disable_notification", "true");
 
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_FEED);
-            // Forzamos nombre "document" si el endpoint es sendDocument
             String fieldName = endpoint.equals("sendDocument") ? "document" : fileField;
             dos.writeBytes("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + file.getName() + "\"" + LINE_FEED);
             dos.writeBytes(LINE_FEED);
@@ -210,16 +221,15 @@ public class TelegramUplink {
 
         } catch (Exception e) {
             SentinelService.logToWeb("TELEGRAM VIDEO FAIL: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private static void addTextField(DataOutputStream dos, String name, String value) throws Exception {
         dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_FEED);
         dos.writeBytes("Content-Disposition: form-data; name=\"" + name + "\"" + LINE_FEED);
-        // Header explícito para UTF-8
         dos.writeBytes("Content-Type: text/plain; charset=UTF-8" + LINE_FEED); 
         dos.writeBytes(LINE_FEED);
-        // Escribimos bytes UTF-8 para soportar emojis 🚨
         dos.write(value.getBytes("UTF-8"));
         dos.writeBytes(LINE_FEED);
     }

@@ -2897,3 +2897,16 @@ Se ha reescrito `TelegramUplink.java` para ser totalmente "agnóstico". Ya no to
 
 **Resultado:**
 Compilación limpia y uso efectivo del motor Conscrypt para subida de videos y documentos.
+
+### 🩹 Hotfix: Regresión SSL por Edición Manual | Fecha: 03 de Febrero de 2026
+**Versión:** v3.9.9-dev.9
+
+**El Incidente:**
+El usuario modificó a mano `TelegramUplink.java` para introducir *SmartSnap* y *Dual Uplink*. Al hacerlo, eliminó accidentalmente el bloque de **Inyección Explícita de Conscrypt**.
+Consecuencia: El log volvió a mostrar `SSLProtocolException` porque Android 4.4 volvió a tomar el control con su stack SSL obsoleto.
+
+**La Solución:**
+He fusionado ambas lógicas:
+1.  **Mantenemos SmartSnap** (Algoritmo de selección de foto).
+2.  **Restauramos `getConscryptSocketFactory()`**: Se inyecta explícitamente el contexto TLS moderno en cada conexión (`subirBytesComoFoto`, `subirArchivo`, `sendTextMessage`).
+3.  **Resultado**: Funcionalidad avanzada + Seguridad robusta.
