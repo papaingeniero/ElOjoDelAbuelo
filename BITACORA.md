@@ -2943,3 +2943,15 @@ Implementada lógica de transcodificación justo antes de la subida en `Telegram
 #### 🎓 Lecciones Aprendidas
 *   La inyección de dependencias (pasar el archivo `file` correcto) es clave. Confirmamos con el usuario que el objetivo era el *preview* y no el clip completo.
 *   Mantener el fallback es vital en este hardware (i9000) donde el encoder podría fallar por falta de RAM o recursos.
+
+### 🚀 v3.9.9-dev.12 Snapshot Deployment
+
+#### 📜 El Contexto
+Version bump rutinario para realizar pruebas de campo (Snapshot) tras la implementación de la transcodificación MJPEG->MP4.
+
+#### 🛠️ Cambios
+*   **Version Bump**: `dev.11` -> `dev.12` para diferenciar la build instalada.
+*   **Objetivo**: Validar que el APK instala y corre en el dispositivo real tras los cambios de `MjpegToMp4`.
+
+#### 🎓 Estado
+Snapshot desplegada para verificación manual.
