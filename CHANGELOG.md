@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v3.9.9-dev.14] - 2026-02-03
 ### Changed
-- **Bandwidth Optimization**: Desactivada la subida automática del vídeo completo (evidencia). Ahora solo se sube el Preview (Timelapse).
+- **Snapshot**: Despliegue de validación (Preview Only Mode).
 
 ## [v3.9.9-dev.13] - 2026-02-03
 ### Fixed
