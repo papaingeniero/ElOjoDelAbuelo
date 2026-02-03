@@ -744,10 +744,10 @@ public class SentinelService extends Service {
                          TelegramUplink.enviarPreview(currentPreviewFile, telegramToken, telegramChatId);
                     }
 
-                    // 2. Clip (Archivo adjunto + Notificación)
+                    // 2. Clip (Archivo adjunto + Notificación) -> DESACTIVADO POR PETICIÓN DE USUARIO
                     // Se envía como documento para preservar calidad y generar alerta
-                    String caption = "🚨 MOVIMIENTO: " + currentFile.getName() + " (" + SystemStats.getBatteryLevel(this) + "%)";
-                    TelegramUplink.enviarClip(currentFile, telegramToken, telegramChatId, caption);
+                    // String caption = "🚨 MOVIMIENTO: " + currentFile.getName() + " (" + SystemStats.getBatteryLevel(this) + "%)";
+                    // TelegramUplink.enviarClip(currentFile, telegramToken, telegramChatId, caption);
                 }
                 // --- FIN TELEGRAM TRIGGER ---
             }

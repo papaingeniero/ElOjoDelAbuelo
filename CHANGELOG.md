@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.9-dev.14] - 2026-02-03
+### Changed
+- **Bandwidth Optimization**: Desactivada la subida automática del vídeo completo (evidencia). Ahora solo se sube el Preview (Timelapse).
+
 ## [v3.9.9-dev.13] - 2026-02-03
 ### Fixed
 - **Sentinel Logic**: Corregido bug donde se subía el vídeo completo como preview en lugar del timelapse ligero 1FPS.
