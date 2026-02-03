@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.9] - 2026-02-03
+### Added
+- **MP4 Transcoding**: Conversión on-device de MJPEG a MP4 para soporte de Autoplay en Telegram.
+- **Bandwidth Saver**: Optimización mayor de ancho de banda (95% ahorro) enviando solo previews.
+
+### Security
+- **Strict Uplink**: Eliminada la redundancia de envío de clips pesados.
+
 ## [v3.9.9-dev.14] - 2026-02-03
 ### Changed
 - **Snapshot**: Despliegue de validación (Preview Only Mode).
