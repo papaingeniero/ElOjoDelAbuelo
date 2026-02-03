@@ -201,7 +201,8 @@ public class TelegramUplink {
 
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_FEED);
             String fieldName = endpoint.equals("sendDocument") ? "document" : fileField;
-            dos.writeBytes("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + file.getName() + "\"" + LINE_FEED);
+            String remoteFilename = file.getName().replace(".mjpeg", ".avi");
+            dos.writeBytes("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + remoteFilename + "\"" + LINE_FEED);
             dos.writeBytes(LINE_FEED);
 
             byte[] buffer = new byte[8192];

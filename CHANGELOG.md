@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.9-dev.10] - 2026-02-03
+### Changed
+- **UX**: (Telegram) Cambiada extensión de subida de .mjpeg a .avi en tiempo real para habilitar "Compartir con VLC" en iOS (Share Sheet Compatibility).
+
 ## [v3.9.9-dev.9] - 2026-02-03
 ### Fixed
 - **SSL Regression**: Restaurada la inyección explícita de `Conscrypt` que se perdió durante la implementación manual de SmartSnap.

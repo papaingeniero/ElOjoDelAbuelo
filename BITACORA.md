@@ -2910,3 +2910,18 @@ He fusionado ambas lógicas:
 1.  **Mantenemos SmartSnap** (Algoritmo de selección de foto).
 2.  **Restauramos `getConscryptSocketFactory()`**: Se inyecta explícitamente el contexto TLS moderno en cada conexión (`subirBytesComoFoto`, `subirArchivo`, `sendTextMessage`).
 3.  **Resultado**: Funcionalidad avanzada + Seguridad robusta.
+
+### 🍏 UX: Compatibilidad Nativa iOS/VLC (v3.9.9-dev.10)
+**Fecha:** 03 de Febrero de 2026
+
+**El Problema**:
+El ecosistema Apple (iOS) es restrictivo con las extensiones de archivo en el menú "Compartir".
+Al enviar los videos como `.mjpeg` (su formato real), iOS no reconoce que VLC pueda reproducirlos y no lo ofrece como opción, obligando al usuario a dar vueltas innecesarias.
+
+**La Solución (Camuflaje de Contenedor)**:
+Modificamos `TelegramUplink` para que, en el momento de la subida, renombre "al vuelo" el archivo en la cabecera `Content-Disposition`.
+*   Formato Real (Disco): `video.mjpeg`
+*   Formato Virtual (Telegram): `video.avi`
+
+**El Resultado**:
+Telegram y iOS ven un archivo `.avi`. Al pulsar "Compartir", iOS detecta una extensión de video estándar y habilita "Abrir en VLC". VLC o Infuse, siendo omnívoros, ignoran que le falta la cabecera RIFF AVI y reproducen el stream MJPEG sin rechistar.
