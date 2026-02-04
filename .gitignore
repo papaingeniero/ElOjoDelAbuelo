@@ -7,3 +7,4 @@ build/
 .externalNativeBuild/
 *.iml
 .vscode/
+commit_msg.txt
