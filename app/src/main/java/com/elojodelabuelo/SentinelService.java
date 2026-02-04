@@ -534,6 +534,11 @@ public class SentinelService extends Service {
                         synchronized (statusLock) { statusLock.notifyAll(); }
                         updateNotification(true);
                         logToWeb("MOTION DETECTED! Rec Started. Score: " + score);
+
+                        // 🔔 ALERTA TEMPRANA: Avisar a Telegram YA (Vibración)
+                        if (!telegramToken.isEmpty() && !telegramChatId.isEmpty()) {
+                            TelegramUplink.sendTextMessage("🚨 ¡Movimiento! Grabando...", telegramToken, telegramChatId);
+                        }
                     }
                 }
 

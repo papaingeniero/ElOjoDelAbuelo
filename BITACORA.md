@@ -3006,3 +3006,13 @@ El usuario ha detectado que 5 FPS era un poco excesivo para un "Preview Rápido"
 *   **Fluidez**: 3 FPS es suficiente para ver movimiento humano sin efecto "diapositiva".
 *   **Tamaño**: Menos frames = Menor bitrate necesario = Archivo aún más ligero.
 *   **Seeking**: Mantenemos 1 keyframe por segundo para poder pausar con precisión.
+
+### 🔔 v3.9.10-dev.2 Feature: Vibración Instantánea
+
+#### 📜 El Contexto
+Esperar a que termine la transcodificación (Video) para recibir el primer aviso es demasiado lento (~5s + red). El usuario necesita saber **YA** que algo se mueve.
+
+#### 🛠️ La Solución
+Se ha inyectado una llamada a  justo en el momento de la detección (T=0s).
+*   **Mensaje**: "🚨 ¡Movimiento! Grabando..."
+*   **Efecto**: Vibración/Sonido inmediato en el móvil del vigilante.
