@@ -135,28 +135,39 @@ public class TelegramUplink {
     // --- MÉTODOS DE RED (Optimizados: Streaming + UTF-8 + SSL EXPLICITO) ---
 
     public static void sendTextMessage(final String msg, final String token, final String chatId) {
-        try {
-            if (token == null || token.isEmpty()) return;
-            URL url = new URL("https://api.telegram.org/bot" + token + "/sendMessage");
-            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            
-            // [FIX] Inyección SSL
-            javax.net.ssl.SSLSocketFactory csFactory = getConscryptSocketFactory();
-            if (csFactory != null) conn.setSSLSocketFactory(csFactory);
+        uploadExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (token == null || token.isEmpty()) return;
+                    URL url = new URL("https://api.telegram.org/bot" + token + "/sendMessage");
+                    HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                    
+                    // [FIX] Inyección SSL
+                    javax.net.ssl.SSLSocketFactory csFactory = getConscryptSocketFactory();
+                    if (csFactory != null) conn.setSSLSocketFactory(csFactory);
 
-            conn.setConnectTimeout(10000);
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            
-            String params = "chat_id=" + chatId + "&text=" + java.net.URLEncoder.encode(msg, "UTF-8");
-            
-            DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
-            dos.writeBytes(params);
-            dos.flush();
-            dos.close();
-            conn.getResponseCode(); // Trigger request
-        } catch (Exception e) {}
+                    conn.setConnectTimeout(10000);
+                    conn.setRequestMethod("POST");
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    
+                    String params = "chat_id=" + chatId + "&text=" + java.net.URLEncoder.encode(msg, "UTF-8");
+                    
+                    DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+                    dos.writeBytes(params);
+                    dos.flush();
+                    dos.close();
+                    
+                    int status = conn.getResponseCode(); // Trigger request
+                    if (status != 200) {
+                        SentinelService.logToWeb("⚠️ Telegram ALERT Error: HTTP " + status);
+                    }
+                } catch (Exception e) {
+                    SentinelService.logToWeb("❌ Telegram ALERT Fail: " + e.getMessage());
+                }
+            }
+        });
     }
 
     private static void subirBytesComoFoto(final byte[] data, final String endpoint, final String caption, final String token, final String chatId, final boolean silent) {

@@ -3016,3 +3016,15 @@ Esperar a que termine la transcodificación (Video) para recibir el primer aviso
 Se ha inyectado una llamada a  justo en el momento de la detección (T=0s).
 *   **Mensaje**: "🚨 ¡Movimiento! Grabando..."
 *   **Efecto**: Vibración/Sonido inmediato en el móvil del vigilante.
+
+### 🐛 v3.9.10-dev.3 Fix: La Alerta Silenciosa
+
+#### 📜 El Problema
+En la versión .2, la alerta instantánea "🚨 Grabando..." no llegaba.
+Al revisar el código, encontramos dos fallos críticos en :
+1.  **Race Condition**: Se ejecutaba en el hilo de procesamiento de cámara (). Una llamada de red ahí bloquea la cámara o es matada por el sistema.
+2.  **Swallowed Exception**: El bloque  estaba vacío. Si fallaba, nadie se enteraba.
+
+#### 🛠️ La Solución
+*   **Async**: Envolvemos la llamada en  (el mismo pool que usa el video).
+*   **Logging**: Añadimos  en el catch para ver si es un error de SSL, DNS o Timeout.
