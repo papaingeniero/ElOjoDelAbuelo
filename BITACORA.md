@@ -3028,3 +3028,19 @@ Al revisar el código, encontramos dos fallos críticos en :
 #### 🛠️ La Solución
 *   **Async**: Envolvemos la llamada en  (el mismo pool que usa el video).
 *   **Logging**: Añadimos  en el catch para ver si es un error de SSL, DNS o Timeout.
+
+## 🚀 Phase X: Thermal Safety Upgrade (Anti-Zombie)
+**Versión**: v3.9.10-dev.4 | **Fecha**: 06 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+El usuario planteó una hipótesis inquietante: _"Si el móvil se calienta mientras graba, ¿se para la grabación?"_.
+Al revisar el código, encontramos un monstruo. La protección térmica (`isOverheating`) provocaba un `return` temprano en el bucle de cámara para enfriar la CPU.
+**El Bug**: Al salir prematuramente de la función, el código **nunca llegaba a ejecutar la comprobación de Timeout**.
+**Consecuencia**: El móvil entra en un estado "Zombie". Cree que está grabando (`isRecording=true`), mantiene la pantalla encendida y el procesador despierto (`WakeLock`), pero no escribe datos. Esto genera un **Deadlock Térmico**: el mecanismo de enfriamiento provoca que el móvil se quede encendido indefinidamente al máximo consumo.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos una **Válvula de Seguridad (Safety Stop)** dentro del chequeo térmico.
+Antes de abandonar el barco por calor:
+1.  Verificamos si hay una grabación activa.
+2.  Si la hay, ejecutamos `closeRecordingFile()` **inmediatamente**.
+3.  Esto libera los candados de energía (`ScreenLock`, `WakeLock`), permitiendo que el hardware entre en reposo real y se enfríe.

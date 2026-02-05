@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.4] - 2026-02-06
+### Fixed
+- **Thermal Logic**: Critical fix for "Zombie Recording" deadlock. Overheating protection now forcefully stops any active recording and releases WakeLocks before throttling the CPU.
+
 ## [v3.9.10-dev.3] - 2026-02-04
 ### Fixed
 - **Instant Alert Async**: Movida la alerta a un hilo secundario (`uploadExecutor`) para evitar congelar la cámara.

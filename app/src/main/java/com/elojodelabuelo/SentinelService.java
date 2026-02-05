@@ -503,10 +503,22 @@ public class SentinelService extends Service {
             
             lastOverheatState = isNowOverheating; // Actualizamos la memoria
 
-            // Si está caliente, abortamos frame (como antes)
+            // Si está caliente, abortamos frame (como antes) PERO PRIMERO ASEGURAMOS
             if (isNowOverheating) {
+                // [CORRECCIÓN CRÍTICA DE DEADLOCK TÉRMICO] 🛑
+                // Si nos vamos a ir por 'return', hay que asegurarse de no dejar
+                // la grabación encendida (Zombi).
+                if (isRecording) {
+                    logToWeb("🔥 SAFETY STOP: Parada forzosa por calor en onPreviewFrame.");
+                    isRecording = false;
+                    isRecordingPublic = false;
+                    closeRecordingFile(); // Libera WakeLock, ScreenLock y cierra fichero
+                    synchronized (statusLock) { statusLock.notifyAll(); }
+                    updateNotification(false);
+                }
+                
                 camera.addCallbackBuffer(data);
-                return;
+                return; // Ahora sí podemos irnos tranquilos
             }
             // -----------------------------------
 
@@ -537,7 +549,7 @@ public class SentinelService extends Service {
 
                         // 🔔 ALERTA TEMPRANA: Avisar a Telegram YA (Vibración)
                         if (!telegramToken.isEmpty() && !telegramChatId.isEmpty()) {
-                            TelegramUplink.sendTextMessage("🚨 ¡Movimiento! Grabando...", telegramToken, telegramChatId);
+                            TelegramUplink.sendTextMessage("🚨 ¡Movimiento detectado! Grabando...", telegramToken, telegramChatId);
                         }
                     }
                 }
