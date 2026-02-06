@@ -1031,7 +1031,7 @@ public class NanoHttpServer {
                 "         <button class='btn-cancel' onclick='closeSettings()'>CANCELAR</button>\n" +
                 "      </div>\n" +
                 "      <!-- Opción B: Footer Diagnóstico -->\n" +
-                "      <div style='margin-top:20px; text-align:center;'>\n" +
+                "      <div style='margin-top:20px; text-align:center; padding-bottom:40px;'>\n" +
                 "         <a href='#' onclick=\"window.open('/api/debug'); return false;\" style='color:#ef5350; text-decoration:none; font-size:12px; border-bottom:1px dotted #ef5350;'>⚠️ VER LOGS DE DEBUG</a>\n" +
                 "      </div>\n" +
                 "  </div>\n" +
