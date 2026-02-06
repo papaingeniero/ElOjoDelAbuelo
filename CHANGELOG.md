@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.11] - 2026-02-06
+### Changed
+- **UI Modernization**: Reemplazado checkbox nativo de Telegram por un Toggle Switch CSS animado estilo "Blue Sentinel".
+
 ## [v3.9.10-dev.10] - 2026-02-06
 ### Added
 - **Telegram Master Switch**: Interruptor en Ajustes para activar/desactivar globalmente el envío a Telegram sin borrar el Token.

@@ -3100,3 +3100,9 @@ Implementado Switch ON/OFF en ajustes para Telegram.
 *   **Antes**: Para desactivar, había que borrar el Token.
 *   **Ahora**: Checkbox "Activar" que corta la señal en `SentinelService` preservando las credenciales.
 *   **Estrategia**: Variable estática volátil `isTelegramActive` chequeada antes de invocar `TelegramUplink`.
+
+### 🎨 UI (dev.11): Modern Toggle Telegram
+Mejora estética solicitada para el "Telegram Master Switch".
+*   **Implementación**: CSS puro inyectado en `NanoHttpServer`.
+*   **Estilo**: Toggle slider con transición suave (0.4s) y color `#29b6f6` (Light Blue) al activarse.
+*   **Objetivo**: Feedback visual superior y consistencia con el estilo "Cyber-Sentinel".

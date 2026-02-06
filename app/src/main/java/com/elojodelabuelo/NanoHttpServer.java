@@ -854,6 +854,13 @@ public class NanoHttpServer {
                 +
                 ".zoom-controls { display: flex; gap: 10px; margin-top: 5px; }\n" +
                 "label { font-size: 16px; }\n" +
+                "/* Switch Toggle */\n" +
+                ".switch { position: relative; display: inline-block; width: 42px; height: 24px; }\n" +
+                ".switch input { opacity: 0; width: 0; height: 0; }\n" +
+                ".slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }\n" +
+                ".slider:before { position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;box-shadow: 0 2px 4px rgba(0,0,0,0.2); }\n" +
+                "input:checked + .slider { background-color: #29b6f6; }\n" +
+                "input:checked + .slider:before { transform: translateX(18px); }\n" +
                 "</style>\n" +
                 "</head><body>\n" +
                 "\n" +
@@ -1017,9 +1024,13 @@ public class NanoHttpServer {
                 "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; margin-top:15px;'>" +
                 "         <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>\n" +
                 "             <h4 style='margin:0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>\n" +
-                "             <label style='font-size:12px; display:flex; align-items:center; gap:5px;'>\n" +
-                "                 Activar <input type='checkbox' id='tg-active' checked>\n" +
-                "             </label>\n" +
+                "             <div style='display:flex; align-items:center;'>\n" +
+                "                 <span style='font-size:12px; margin-right:10px; color:#ddd;'>Activar</span>\n" +
+                "                 <label class='switch'>\n" +
+                "                     <input type='checkbox' id='tg-active' checked>\n" +
+                "                     <span class='slider'></span>\n" +
+                "                 </label>\n" +
+                "             </div>\n" +
                 "         </div>\n" +
                 "         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
                 "         <div style='display:flex; align-items:center; margin-bottom:5px;'>" +
