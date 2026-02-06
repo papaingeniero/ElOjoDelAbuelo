@@ -3074,3 +3074,15 @@ input { flex: 1; } /* Ocupa el espacio restante */
 icon { margin-left: 8px; } /* Se sitúa al lado, no encima */
 ```
 Esto garantiza que el input y el icono coexistan pacíficamente en la misma línea sin desbordar el ancho total.
+
+## 📜 Phase AA: Thermal Precision (Dynamic Logs)
+**Versión**: v3.9.10-dev.7 | **Fecha**: 06 de Febrero de 2026
+
+### 📝 El Cambio
+Hemos enriquecido los logs de la "Thermal Guardian".
+Hasta ahora, solo decían "¡Alerta!" o "Normalizado".
+Ahora, dicen la verdad completa: `🔥 ¡SOBRECALENTAMIENTO! (48°C)` o `❄️ Normalizado (42°C)`.
+
+### 🧠 Por qué importa
+El contexto numérico es vital para el diagnóstico. No es lo mismo un trigger a 44°C (falso positivo marginal) que a 55°C (fuego inminente).
+Esta transparencia permite diferenciar un pico transitorio de un problema estructural de disipación.

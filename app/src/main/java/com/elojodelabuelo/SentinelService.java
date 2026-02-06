@@ -494,11 +494,13 @@ public class SentinelService extends Service {
 
             // Si antes estaba bien y ahora NO -> ALERTA DE CALOR
             if (isNowOverheating && !lastOverheatState) {
-                logToWeb("🔥 THERMAL: ¡SOBRECALENTAMIENTO! (Overheat TRIGGERED) - Pausando visión.");
+                int currentTemp = ThermalGuardian.getBatteryTemperature(this);
+                logToWeb("🔥 THERMAL: ¡SOBRECALENTAMIENTO! (" + currentTemp + "°C) - Pausando visión.");
             } 
             // Si antes estaba mal y ahora SÍ -> ALERTA DE ENFRIAMIENTO
             else if (!isNowOverheating && lastOverheatState) {
-                logToWeb("❄️ THERMAL: Temperatura normalizada (Overheat CLEARED) - Reanudando visión.");
+                int currentTemp = ThermalGuardian.getBatteryTemperature(this);
+                logToWeb("❄️ THERMAL: Temperatura normalizada (" + currentTemp + "°C) - Reanudando visión.");
             }
             
             lastOverheatState = isNowOverheating; // Actualizamos la memoria

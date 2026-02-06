@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.7] - 2026-02-06
+### Added
+- **Thermal Logs**: Ahora los mensajes de "Sobrecalentamiento" y "Estabilización" incluyen la temperatura exacta en grados.
+
 ## [v3.9.10-dev.6] - 2026-02-06
 ### Fixed
 - **UI Tweaks**: Corrección de layout en el input de Token de Telegram (Flexbox) para evitar desbordamiento y solapamiento del icono.
