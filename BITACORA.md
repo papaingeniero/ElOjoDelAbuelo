@@ -3086,3 +3086,7 @@ Ahora, dicen la verdad completa: `🔥 ¡SOBRECALENTAMIENTO! (48°C)` o `❄️ 
 ### 🧠 Por qué importa
 El contexto numérico es vital para el diagnóstico. No es lo mismo un trigger a 44°C (falso positivo marginal) que a 55°C (fuego inminente).
 Esta transparencia permite diferenciar un pico transitorio de un problema estructural de disipación.
+
+### 🩹 Hotfix (dev.8): Contexto Térmico
+Al intentar acceder a `getBatteryTemperature` desde dentro del callback de cámara (`previewCallback`), el puntero `this` referenciaba a la clase anónima, no al Servicio.
+**Solución**: Usar `SentinelService.this`.
