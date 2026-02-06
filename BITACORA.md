@@ -3094,3 +3094,9 @@ Al intentar acceder a `getBatteryTemperature` desde dentro del callback de cáma
 ### 🛋️ UI Polish (dev.9): Espacio Vital
 Se ha añadido un `padding-bottom: 40px` al pie de la ventana de configuración.
 El enlace "VER LOGS DE DEBUG" estaba peligrosamente cerca del borde inferior del navegador móvil, provocando toques fantasma o dificiles. Ahora respira.
+
+### 🎛️ Feature (dev.10): Interruptor Maestro Telegram
+Implementado Switch ON/OFF en ajustes para Telegram.
+*   **Antes**: Para desactivar, había que borrar el Token.
+*   **Ahora**: Checkbox "Activar" que corta la señal en `SentinelService` preservando las credenciales.
+*   **Estrategia**: Variable estática volátil `isTelegramActive` chequeada antes de invocar `TelegramUplink`.

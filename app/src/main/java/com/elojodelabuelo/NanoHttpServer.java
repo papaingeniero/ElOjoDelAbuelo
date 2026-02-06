@@ -457,9 +457,9 @@ public class NanoHttpServer {
             int webPanY = prefs.getInt("webPanY", 0);
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\"}",
+                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
                     sens, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX, webPanY, 
-                    SentinelService.telegramToken, SentinelService.telegramChatId);
+                    SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -526,6 +526,11 @@ public class NanoHttpServer {
                             // Telegram Parsing
                             else if (key.equals("tgToken")) tgToken = val;
                             else if (key.equals("tgChatId")) tgChatId = val;
+                            else if (key.equals("tgActive")) {
+                                boolean isActive = Boolean.parseBoolean(val);
+                                SentinelService.isTelegramActive = isActive;
+                                context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE).edit().putBoolean("telegramActive", isActive).commit();
+                            }
                         }
                     }
                 }
@@ -1010,8 +1015,13 @@ public class NanoHttpServer {
                 +
                 // 4. TELEGRAM SETTINGS
                 "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; margin-top:15px;'>" +
-                "         <h4 style='margin:0 0 10px 0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>" +
-                "         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
+                "         <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
+             <h4 style='margin:0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>
+             <label style='font-size:12px; display:flex; align-items:center; gap:5px;'>
+                 Activar <input type='checkbox' id='tg-active' checked>
+             </label>
+         </div>
+         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
                 "         <div style='display:flex; align-items:center; margin-bottom:5px;'>" +
                 "             <input type='password' id='tg-token' placeholder='123456:ABC-Def...' style='flex:1; padding:5px; background:#333; color:#fff; border:1px solid #555;'>" +
                 "             <span onclick='toggleTgToken()' style='margin-left:8px; cursor:pointer; font-size:18px; user-select:none;'>👁️</span>" +
@@ -1388,7 +1398,8 @@ public class NanoHttpServer {
                 "     }\n" +
                 "     // Telegram Settings\n" +
                 "     if(data.tgToken) document.getElementById('tg-token').value = data.tgToken;\n" +
-                "     if(data.tgChatId) document.getElementById('tg-chatid').value = data.tgChatId;\n" +
+                "     if(data.tgChatId) document.getElementById('tg-chatid').value = data.tgChatId;
+     if(data.tgActive !== undefined) document.getElementById('tg-active').checked = data.tgActive;\n" +
                 "     updateSensLabel(data.sens);\n" +
                 "  });\n" +
                 "}\n" +
@@ -1406,14 +1417,15 @@ public class NanoHttpServer {
                 "   var wPanX = document.getElementById('web-pan-x').value || 0;\n" +
                 "   var wPanY = document.getElementById('web-pan-y').value || 0;\n" +
                 "   var tgToken = document.getElementById('tg-token').value;\n" +
-                "   var tgChatId = document.getElementById('tg-chatid').value;\n" +
+                "   var tgChatId = document.getElementById('tg-chatid').value;
+   var tgActive = document.getElementById('tg-active').checked;\n" +
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "   var qs = '?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
                 "            '&min_free_space=' + minSpace +\n" +
                 "            '&webZoom=' + wZoom + '&webPanX=' + wPanX + '&webPanY=' + wPanY +\n" +
-                "            '&tgToken=' + encodeURIComponent(tgToken) + '&tgChatId=' + encodeURIComponent(tgChatId);\n" +
+                "            '&tgToken=' + encodeURIComponent(tgToken) + '&tgChatId=' + encodeURIComponent(tgChatId) + '&tgActive=' + tgActive;\n" +
                 "   fetch('/api/save_settings' + qs, { method: 'POST' })\n" +
                 "   .then(function() { setTimeout(function() { location.reload(); }, 800); });\n" +
                 "}\n" +

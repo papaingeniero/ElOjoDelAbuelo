@@ -124,6 +124,7 @@ public class SentinelService extends Service {
     // --- TELEGRAM CONFIG ---
     public static String telegramToken = "";
     public static String telegramChatId = "";
+    public static volatile boolean isTelegramActive = true;
 
     // View Defaults (Phase 19)
     public static float defaultZoom = 1.0f;
@@ -174,6 +175,7 @@ public class SentinelService extends Service {
         
         telegramToken = prefs.getString("tg_token", "");
         telegramChatId = prefs.getString("tg_chat_id", "");
+        isTelegramActive = prefs.getBoolean("telegramActive", true);
 
         defaultZoom = prefs.getFloat("defaultZoom", 1.0f);
         defaultPanX = prefs.getInt("defaultPanX", 0);
@@ -754,7 +756,7 @@ public class SentinelService extends Service {
                     currentFile = newFile;
 
                 // --- INICIO TELEGRAM TRIGGER ---
-                if (!telegramToken.isEmpty() && !telegramChatId.isEmpty() && currentFile.exists()) {
+                if (isTelegramActive && !telegramToken.isEmpty() && !telegramChatId.isEmpty() && currentFile.exists()) {
                     logToWeb("🚀 Subiendo evidencia a Telegram...");
 
                     // 1. Preview (Silencioso y Autoplay)
