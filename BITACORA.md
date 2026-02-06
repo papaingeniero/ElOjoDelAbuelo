@@ -3058,3 +3058,19 @@ Si alguien mira tu pantalla mientras configuras, podría copiarlo.
 
 ### 🎓 3. Lecciones Aprendidas
 *   **Privacidad por Diseño**: Incluso en apps caseras, las credenciales no deben ser visibles por defecto.
+
+## 🎨 Phase Z: UI Polish (Token Layout)
+**Versión**: v3.9.10-dev.6 | **Fecha**: 06 de Febrero de 2026
+
+### 📜 1. El Problema
+La implementación inicial del campo "Token" usaba posición absoluta dentro de un input `width:100%`.
+El resultado visual era defectuoso en iOS/Safari: el input desbordaba el contenedor padre y el icono del ojo se solapaba con el texto.
+
+### 🛠️ 2. La Solución (Flexbox)
+Reemplazamos el contenedor `relative` por un layout `flex`:
+```css
+display: flex; align-items: center;
+input { flex: 1; } /* Ocupa el espacio restante */
+icon { margin-left: 8px; } /* Se sitúa al lado, no encima */
+```
+Esto garantiza que el input y el icono coexistan pacíficamente en la misma línea sin desbordar el ancho total.
