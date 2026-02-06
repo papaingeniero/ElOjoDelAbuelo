@@ -1015,13 +1015,13 @@ public class NanoHttpServer {
                 +
                 // 4. TELEGRAM SETTINGS
                 "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; margin-top:15px;'>" +
-                "         <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>
-             <h4 style='margin:0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>
-             <label style='font-size:12px; display:flex; align-items:center; gap:5px;'>
-                 Activar <input type='checkbox' id='tg-active' checked>
-             </label>
-         </div>
-         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
+                "         <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>\n" +
+                "             <h4 style='margin:0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>\n" +
+                "             <label style='font-size:12px; display:flex; align-items:center; gap:5px;'>\n" +
+                "                 Activar <input type='checkbox' id='tg-active' checked>\n" +
+                "             </label>\n" +
+                "         </div>\n" +
+                "         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
                 "         <div style='display:flex; align-items:center; margin-bottom:5px;'>" +
                 "             <input type='password' id='tg-token' placeholder='123456:ABC-Def...' style='flex:1; padding:5px; background:#333; color:#fff; border:1px solid #555;'>" +
                 "             <span onclick='toggleTgToken()' style='margin-left:8px; cursor:pointer; font-size:18px; user-select:none;'>👁️</span>" +
@@ -1398,8 +1398,8 @@ public class NanoHttpServer {
                 "     }\n" +
                 "     // Telegram Settings\n" +
                 "     if(data.tgToken) document.getElementById('tg-token').value = data.tgToken;\n" +
-                "     if(data.tgChatId) document.getElementById('tg-chatid').value = data.tgChatId;
-     if(data.tgActive !== undefined) document.getElementById('tg-active').checked = data.tgActive;\n" +
+                "     if(data.tgChatId) document.getElementById('tg-chatid').value = data.tgChatId;\n" +
+                "     if(data.tgActive !== undefined) document.getElementById('tg-active').checked = data.tgActive;\n" +
                 "     updateSensLabel(data.sens);\n" +
                 "  });\n" +
                 "}\n" +
@@ -1417,8 +1417,8 @@ public class NanoHttpServer {
                 "   var wPanX = document.getElementById('web-pan-x').value || 0;\n" +
                 "   var wPanY = document.getElementById('web-pan-y').value || 0;\n" +
                 "   var tgToken = document.getElementById('tg-token').value;\n" +
-                "   var tgChatId = document.getElementById('tg-chatid').value;
-   var tgActive = document.getElementById('tg-active').checked;\n" +
+                "   var tgChatId = document.getElementById('tg-chatid').value;\n" +
+                "   var tgActive = document.getElementById('tg-active').checked;\n" +
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "   var qs = '?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
