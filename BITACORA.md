@@ -3044,3 +3044,17 @@ Antes de abandonar el barco por calor:
 1.  Verificamos si hay una grabación activa.
 2.  Si la hay, ejecutamos `closeRecordingFile()` **inmediatamente**.
 3.  Esto libera los candados de energía (`ScreenLock`, `WakeLock`), permitiendo que el hardware entre en reposo real y se enfríe.
+
+## 🔐 Phase Y: Telegram Security UI
+**Versión**: v3.9.10-dev.5 | **Fecha**: 06 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+El Token de Telegram es una llave maestra. Hasta ahora se mostraba en texto plano en la configuración.
+Si alguien mira tu pantalla mientras configuras, podría copiarlo.
+
+### 🛠️ 2. La Solución (UI/UX)
+*   **Input Masking**: Convertimos el campo a `type="password"`.
+*   **Toggle Visibilidad**: Añadimos un icono de ojo (👁️) que permite alternar entre ver/ocultar mediante un script JS inyectado `toggleTgToken()`.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Privacidad por Diseño**: Incluso en apps caseras, las credenciales no deben ser visibles por defecto.

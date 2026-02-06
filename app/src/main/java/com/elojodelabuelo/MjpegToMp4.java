@@ -25,7 +25,7 @@ public class MjpegToMp4 {
 
     private static final String TAG = "MjpegToMp4";
     private static final String MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
-    private static final int FRAME_RATE = 3; // bajo de 5 a 3 FPS para que el timelapse se vea fluido
+    private static final int FRAME_RATE = 4; // bajo de 5 a 3 FPS para que el timelapse se vea fluido
     private static final int IFRAME_INTERVAL = 1; // 1 segundo entre keyframes (para seeking rápido)
     private static final int BIT_RATE = 125000; // bajo un poco de 150kbps a 125kbps al bajar los fps 
 
@@ -154,7 +154,7 @@ public class MjpegToMp4 {
             }
 
             long duration = System.currentTimeMillis() - startTime;
-            SentinelService.logToWeb("✅ MP4 GENERADO: " + outputFile.getName() + " (" + (outputFile.length()/1024) + "KB) en " + duration + "ms");
+            SentinelService.logToWeb("🔄 ✅ TRANSCODING: MP4 GENERADO: " + outputFile.getName() + " (" + (outputFile.length()/1024) + "KB) en " + duration + "ms");
             
             return outputFile;
 

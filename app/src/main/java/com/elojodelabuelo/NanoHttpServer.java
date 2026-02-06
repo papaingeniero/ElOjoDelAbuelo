@@ -1012,7 +1012,10 @@ public class NanoHttpServer {
                 "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; margin-top:15px;'>" +
                 "         <h4 style='margin:0 0 10px 0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>" +
                 "         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
-                "         <input type='text' id='tg-token' placeholder='123456:ABC-Def...' style='width:100%; padding:5px; background:#333; color:#fff; border:1px solid #555; margin-bottom:5px;'>" +
+                "         <div style='position:relative; margin-bottom:5px;'>" +
+                "             <input type='password' id='tg-token' placeholder='123456:ABC-Def...' style='width:100%; padding:5px 35px 5px 5px; background:#333; color:#fff; border:1px solid #555;'>" +
+                "             <span onclick='toggleTgToken()' style='position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:16px; user-select:none;'>👁️</span>" +
+                "         </div>" +
                 "         <label style='font-size:12px; color:#aaa;'>Chat ID:</label>" +
                 "         <input type='text' id='tg-chatid' placeholder='12345678' style='width:100%; padding:5px; background:#333; color:#fff; border:1px solid #555;'>" +
                 "         <button onclick='testTelegram()' style='width:100%; margin-top:8px; padding:6px; background:#0288d1; border:none; color:white; border-radius:4px; cursor:pointer;'>🔔 PROBAR CONEXIÓN</button>" +
@@ -1719,6 +1722,12 @@ public class NanoHttpServer {
                 "       }).catch(e => console.log('Soft error cleanup', e)); // ANULADO el reload \n" +
                 "   }, 1500);\n" +
                 "}\n" +
+
+                "function toggleTgToken() {\n" +
+                "    var x = document.getElementById('tg-token');\n" +
+                "    x.type = (x.type === 'password') ? 'text' : 'password';\n" +
+                "}\n" +
+
 
                 "</script>\n" +
                 "</body></html>";
