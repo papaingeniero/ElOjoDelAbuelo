@@ -154,6 +154,10 @@ public class NanoHttpServer {
 
                 // 2. Route Request
                 // --- RUTAS OSD (V3.9.7) ---
+                if (uri.equals("/lab")) {
+                    sendStringResponse(os, "text/html", WebMotionLab.getHtml());
+                    return;
+                }
                 if (uri.equals("/config/osd")) {
                     sendStringResponse(os, "text/html", WebOsdEditor.getHtml());
                     return;
@@ -492,10 +496,7 @@ public class NanoHttpServer {
             String tgChatId = "";
 
             try {
-                if (uri.equals("/lab")) {
-                    sendStringResponse(os, "text/html", WebMotionLab.getHtml());
-                    return;
-                }
+
 
                 if (uri.contains("?")) {
                     String query = uri.substring(uri.indexOf("?") + 1);

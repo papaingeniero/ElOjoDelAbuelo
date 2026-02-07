@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.15] - 2026-02-07
+### Fixed
+- **NanoHttpServer**: Moved `/lab` route to main `ClientHandler` dispatch logic. Corrects redirection bug to dashboard.
+
 ## [v3.9.10-dev.14] - 2026-02-07
 ### Added
 - **Web Motion Lab**: Herramienta de análisis forense en `/lab`. Permite visualizar zonas de detección y simular ajustes de sensibilidad sobre videos grabados (Client-Side JS).
