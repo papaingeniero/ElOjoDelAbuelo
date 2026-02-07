@@ -3264,3 +3264,12 @@ Potenciamos el panel lateral del Lab:
 *   **Grid Rojo**: Ahora, al activar "Debug", el canvas se repinta con los píxeles modificados `(255,0,0)` por el motor de movimiento, permitiendo ver exactamente qué zonas activan la alarma.
 *   **Indicador Smart Filter**: Añadido feedback visual (texto naranja "💡 CAMBIO DE LUZ") cuando se detecta un cambio global de iluminación que es ignorado por el algoritmo, replicando el comportamiento de "Flash protection" de la app.
 *   **Corrección Lógica Reference Frame**: Ahora el `prevFrame` NO se actualiza si el Smart Filter salta (para evitar que la luz encendida se convierta inmediatamente en el nuevo fondo normal; esperamos a que se estabilice). *Nota: Esto difiere levemente de Java que actualiza referencia, revisaremos si causa loops.*
+
+### 🎛️ UI (v3.9.10-dev.32): Controles Reactivos
+*   **Ajuste de Umbral (Threshold)**: Rango actualizado a `0-100` (defecto `50`) para coincidir con la lógica del algoritmo. Etiqueta renombrada a "Umbral" para precisión técnica.
+*   **Min Pixels**: Rango actualizado a `5-200` (defecto `50`) para permitir un ajuste fino de falsos positivos.
+*   **Limpieza**: Eliminada función `drawMotionGrid` obsoleta, ya que la visualización ahora es pixel-perfect integrada en el motor.
+
+### 🐛 Fix (v3.9.10-dev.33): Feedback Smart Filter en Videoplayer
+*   **Problema**: El indicador naranja de "Cambio de Luz" no aparecía en el reproductor MJPEG porque la lógica de UI no se había actualizado en la función `loadVideo`.
+*   **Solución**: Sincronizada la lógica de `onFrame` en `loadVideo` para manejar `result.filtered` y mostrar el estado correcto.

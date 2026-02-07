@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.33] - 2026-02-07
+### Fixed
+- **Web Motion Lab**: Asegurado que el feedback visual del **Smart Filter** ("💡 CAMBIO DE LUZ") se muestre correctamente en el reproductor.
+
+## [v3.9.10-dev.32] - 2026-02-07
+### Changed
+- **Web Motion Lab**: actualizados rangos y valores por defecto de los controles (Umbral 50, Min Pixels 50) para coincidir con el motor Java. Eliminado código muerto de visualización antigua.
+
 ## [v3.9.10-dev.31] - 2026-02-07
 ### Added
 - **Web Motion Lab**: Implementado **Visual Debugging**. Ahora se puede ver una rejilla roja sobre el video indicando los píxeles de movimiento y alertas específicas para el "Smart Filter" (cambios de luz).

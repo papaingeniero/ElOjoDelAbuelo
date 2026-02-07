@@ -76,13 +76,13 @@ public class WebMotionLab {
                "                <button onclick=\"togglePlay()\" id=\"btnPlay\">⏯ Play/Pause</button>\n" +
                "                \n" +
                "                <div class=\"param-group\">\n" +
-               "                    <label>Sensibilidad: <span id=\"val-sens\">15</span>%</label>\n" +
-               "                    <input type=\"range\" min=\"0\" max=\"50\" value=\"15\" oninput=\"updateParam('sens', this.value)\">\n" +
+               "                    <label>Umbral (Threshold): <span id=\"val-sens\">50</span></label>\n" +
+               "                    <input type=\"range\" min=\"0\" max=\"100\" value=\"50\" oninput=\"updateParam('sens', this.value)\">\n" +
                "                </div>\n" +
                "                \n" +
                "                <div class=\"param-group\">\n" +
-               "                    <label>Min Pixels: <span id=\"val-pix\">20</span></label>\n" +
-               "                    <input type=\"range\" min=\"5\" max=\"100\" value=\"20\" oninput=\"updateParam('pix', this.value)\">\n" +
+               "                    <label>Min Pixels: <span id=\"val-pix\">50</span></label>\n" +
+               "                    <input type=\"range\" min=\"5\" max=\"200\" value=\"50\" oninput=\"updateParam('pix', this.value)\">\n" +
                "                </div>\n" +
                "                \n" +
                "                <div class=\"param-group\">\n" +
@@ -392,11 +392,17 @@ public class WebMotionLab {
                "            window.mjpegPlayer.onFrame = (data) => {\n" +
                "                if (engine) {\n" +
                "                    var result = engine.process(data);\n" +
-               "                    if (result.motion) {\n" +
-               "                       document.getElementById('status').textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n" +
-               "                       drawMotionGrid(result.grid);\n" +
+               "                    const statusEl = document.getElementById('status');\n" +
+               "                    \n" +
+               "                    if (result.filtered) {\n" +
+               "                       statusEl.textContent = '💡 CAMBIO DE LUZ (Ignorado)';\n" +
+               "                       statusEl.style.color = '#FFA500'; // Orange\n" +
+               "                    } else if (result.motion) {\n" +
+               "                       statusEl.textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n" +
+               "                       statusEl.style.color = '#FF0000'; // Red\n" +
                "                    } else {\n" +
-               "                       document.getElementById('status').textContent = '...';\n" +
+               "                       statusEl.textContent = '...';\n" +
+               "                       statusEl.style.color = '#888';\n" +
                "                    }\n" +
                "                }\n" +
                "            };\n" +
@@ -456,13 +462,8 @@ public class WebMotionLab {
                "            document.getElementById('btnDebug').classList.toggle('active');\n" +
                "        }\n" +
                "\n" +
-               "        function drawMotionGrid(grid) {\n" +
-               "            if(!debugMode) return;\n" +
-               "            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';\n" +
-               "            var blockSize = 16;\n" +
-               "            // Simple viz (would need real grid data logic here, simplified for now)\n" +
-               "            ctx.fillRect(10, 10, 20, 20); // Placeholder\n" +
-               "        }\n" +
+               "        // Deprecated: Viz is now pixel-level in MotionEngine\n" +
+               "        function drawMotionGrid(grid) {}\n" +
                "        \n" +
                "        function log(msg) {\n" +
                "            var term = document.getElementById('terminal');\n" +
