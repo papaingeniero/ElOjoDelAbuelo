@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.25] - 2026-02-07
+### Changed
+- **Web Motion Lab**: Aumentada la resolución de las miniaturas de video de 60x40 a 320x240 para evitar pixelado extremo.
+
 ## [v3.9.10-dev.24] - 2026-02-07
 ### Fixed
 - **Web Motion Lab**: Corregido error 404 en reproducción de video causado por doble prefijo en la URL (`/video_video_...`).

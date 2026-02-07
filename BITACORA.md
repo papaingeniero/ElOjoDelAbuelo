@@ -3227,3 +3227,8 @@ Potenciamos el panel lateral del Lab:
 *   **Problema**: Los videos daban error 404 al intentar reproducirse en el Workbench.
 *   **Causa**: La función `loadVideo` añadía el prefijo `/video_` manualmente, pero el nombre del archivo (obtenido de la API) ya incluía `video_`. Resultado: `/video_video_2026...`.
 *   **Solución**: Se eliminó la concatenación redundante. Ahora se solicita `/' + filename` (ej: `/video_2026...`), lo cual es correctamente interceptado por el router `startsWith("/video_")` de `NanoHttpServer`.
+
+### 🎨 Feature (v3.9.10-dev.25): High-Res Previews
+*   **Problema**: Las previews en la galería se veían muy pixeladas.
+*   **Causa**: El elemento `<canvas>` tenía un tamaño hardcoded de **60x40** píxeles, lo cual forzaba un downscaling agresivo y luego un upscaling borroso por CSS.
+*   **Solución**: Se aumentó la resolución interna del canvas a **320x240** (QVGA), que coincide mejor con la resolución nativa de los videos MJPEG, ofreciendo una imagen nítida en la galería.
