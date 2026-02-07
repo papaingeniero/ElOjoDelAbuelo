@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.21] - 2026-02-07
+### Fixed
+- **Web Motion Lab**: Corregido solapamiento de tarjetas en la galería usando "padding-hack" CSS para emular `aspect-ratio` en navegadores antiguos (Android 4.4).
+
 ## [v3.9.10-dev.20] - 2026-02-07
 ### Changed
 - **Web Motion Lab**: Interfaz dividida en dos pantallas (Galería vs Laboratorio) para maximizar el espacio de trabajo. Routing por URL params.

@@ -3204,3 +3204,11 @@ Potenciamos el panel lateral del Lab:
     1.  **Galería (Home)**: Grid a pantalla completa para previsualización masiva.
     2.  **Laboratorio (Detail)**: Focus total en el video seleccionado.
 *   **Mecánica**: Routing vía `URLSearchParams`. `?video=filename.mjpeg` carga directamente el laboratorio.
+
+### 🐛 Fix (v3.9.10-dev.21): Layout Galería Legacy
+*   **Problema**: Las tarjetas de la galería se mostraban colapsadas y solapadas en Android 4.4.
+*   **Causa**: El WebView de Android 4.4 (Chrome 30/33) no soporta la propiedad CSS `aspect-ratio: 16/9`.
+*   **Solución**: Se implementó el clásico "Padding Hack".
+    *   Contenedor `.media-container` con `width: 100%` y `padding-bottom: 56.25%` (ratio 16:9).
+    *   Canvas/Imagen con `position: absolute; top:0; left:0; width:100%; height:100%`.
+*   **Resultado**: Las tarjetas ahora ocupan el espacio vertical correcto independientemente del soporte de CSS moderno.
