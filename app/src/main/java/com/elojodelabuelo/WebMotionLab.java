@@ -200,7 +200,7 @@ public class WebMotionLab {
                 "                    let mediaHtml = '';\n" +
                 "                    if (v.preview) {\n" +
                 "                         // Autoplay video preview (muted, loop)\n" +
-                "                         mediaHtml = `<img src=\"/preview_${v.preview}\" class=\"v-thumb\" style=\"object-fit:cover\">`;\n" +
+                "                         mediaHtml = `<img src=\"/${v.preview}\" class=\"v-thumb\" style=\"object-fit:cover\">`;\n" +
                 "                    } else if (v.thumb) {\n" +
                 "                         mediaHtml = `<img src=\"/thumbnails/${v.thumb}\" class=\"v-thumb\">`;\n" +
                 "                    } else {\n" +
