@@ -507,7 +507,6 @@ public class NanoHttpServer {
                             else if (key.equals("smartFilter")) 
                                 SentinelService.updateSmartFilter(Boolean.parseBoolean(val));
                             else if (key.equals("time"))
-                            else if (key.equals("time"))
                                 time = Integer.parseInt(val);
                             else if (key.equals("active"))
                                 active = Boolean.parseBoolean(val);

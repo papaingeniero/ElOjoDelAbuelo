@@ -3126,3 +3126,8 @@ Implementamos el **Smart Light Filter (Filtro Anti-Luces)**:
 
 ### 🎓 3. Lecciones Aprendidas
 *   **Discriminación Estadística**: A veces, "demasiado movimiento" significa "ningún movimiento". Un intruso real rara vez altera el 100% de los píxeles simultáneamente; una bombilla sí.
+
+### ❌ Intento Fallido (v3.9.10-dev.12): Error de Sintaxis
+**Síntoma**: La compilación falló con `error: 'else' without 'if'`.
+**Causa**: Al inyectar el código del filtro inteligente en `NanoHttpServer.java`, se duplicó accidentalmente la línea `else if (key.equals("time"))` debido a un error de copiado automátizado.
+**Solución**: Eliminada la línea redundante en `v3.9.10-dev.13`.
