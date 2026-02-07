@@ -3246,3 +3246,8 @@ Potenciamos el panel lateral del Lab:
 *   **Problema**: El reproductor MJPEG manual (`MJPEGPlayer`) fallaba con `ReferenceError: Cannot access 'MJPEGPlayer' before initialization`.
 *   **Causa**: Las clases en JS no tienen *hoisting*. El código de inicialización/routing se ejecutaba *antes* de que la clase estuviera definida.
 *   **Solución**: Se movió el bloque de lógica de routing (`if(videoParam)...`) al final del script, asegurando que todas las clases y funciones estén cargadas antes de usarse.
+
+### 🐛 Fix (v3.9.10-dev.29): Syntax Error Cleanup
+*   **Problema**: La aplicación web se quedaba en blanco y fallaba al cargar.
+*   **Causa**: Error de sintaxis en `WebMotionLab.java`. Al mover el bloque de inicialización, quedó un fragmento de código huérfano (`} else { showGallery(); }`) que rompía el parseo del script JS.
+*   **Solución**: Eliminado el código residual.

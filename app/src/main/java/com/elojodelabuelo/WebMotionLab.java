@@ -108,10 +108,7 @@ public class WebMotionLab {
                "        var animationId;\n" +
                "        var debugMode = false;\n" +
                "\n" +
-               "        /* --- ROUTING & INIT --- */\n        // Moved to bottom to fix Hoisting\n  showWorkbench(videoParam);\n" +
-               "        } else {\n" +
-               "            showGallery();\n" +
-               "        }\n" +
+               "        /* --- ROUTING & INIT --- */\n        // Moved to bottom to fix Hoisting\n" +
                "\n" +
                "        function showGallery() {\n" +
                "            document.getElementById('gallery-page').style.display = 'flex';\n" +
