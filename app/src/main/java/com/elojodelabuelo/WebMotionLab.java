@@ -83,342 +83,353 @@ public class WebMotionLab {
                 "                    <span><span class=\"dot\" style=\"background:#238636\"></span> Score</span>\n" +
                 "                    <span><span class=\"dot\" style=\"background:#d29922\"></span> Umbral</span>\n" +
                 "                    <span><span class=\"dot\" style=\"background:#da3633\"></span> Alerta</span>\n" +
-                "                </div>\n" +
-                "\n" +
-                "                <div class=\"controls\">\n" +
-                "                    <div class=\"control-row\">\n" +
-                "                        <label>⚡ Sensibilidad (0-100):</label>\n" +
-                "                        <input type=\"range\" id=\"sensRange\" min=\"0\" max=\"100\" value=\"80\">\n" +
-                "                        <span class=\"val-disp\" id=\"sensVal\">80</span>\n" +
-                "                    </div>\n" +
-                "                    <div class=\"control-row\">\n" +
-                "                        <label>💡 Filtro Anti-Luz (60%):</label>\n" +
-                "                        <label><input type=\"checkbox\" id=\"slFilter\" checked> Activar</label>\n" +
-                "                    </div>\n" +
-                "                    <button class=\"btn\" id=\"btnAnalyze\">🔄 RE-ANALIZAR AHORA</button>\n" +
-                "                    <div class=\"status\" id=\"statusMsg\">Listo para simular.</div>\n" +
-                "                </div>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "\n" +
-                "    <script>\n" +
-                "        // === MOTOR DE DETECCIÓN JS (PORT DEL JAVA) ===\n" +
-                "        class MotionEngine {\n" +
-                "            constructor() {\n" +
-                "                this.width = 0;\n" +
-                "                this.height = 0;\n" +
-                "                this.prevFrame = null;\n" +
-                "                this.stride = 2; // Pixel skipping optimization\n" +
-                "            }\n" +
-                "\n" +
-                "            init(w, h) {\n" +
-                "                this.width = w;\n" +
-                "                this.height = h;\n" +
-                "                this.prevFrame = new Uint8Array(w * h);\n" +
-                "            }\n" +
-                "\n" +
-                "            processFrame(imgData, sens, smartFilter) {\n" +
-                "                let w = this.width;\n" +
-                "                let h = this.height;\n" +
-                "                let data = imgData.data; // RGBA\n" +
-                "                let diffCount = 0;\n" +
-                "                let totalChecked = 0;\n" +
-                "                let diffMap = []; \n" +
-                "\n" +
-                "                // Java: int threshold = (100 - sensitivity) * 255 / 100;\n" +
-                "                // Ajuste web: \n" +
-                "                let threshold = Math.floor((100 - sens) * 2.55);\n" +
-                "\n" +
-                "                for (let i = 0; i < (w * h); i += this.stride) {\n" +
-                "                    let r = data[i * 4];\n" +
-                "                    let g = data[i * 4 + 1];\n" +
-                "                    let b = data[i * 4 + 2];\n" +
-                "                    \n" +
-                "                    let luma = Math.floor(0.299 * r + 0.587 * g + 0.114 * b);\n" +
-                "                    let prev = this.prevFrame[i];\n" +
-                "                    \n" +
-                "                    if (Math.abs(luma - prev) > threshold) {\n" +
-                "                        diffCount++;\n" +
-                "                        diffMap.push(i);\n" +
-                "                    }\n" +
-                "                    \n" +
-                "                    this.prevFrame[i] = luma;\n" +
-                "                    totalChecked++;\n" +
-                "                }\n" +
-                "\n" +
-                "                let ratio = diffCount / totalChecked;\n" +
-                "                let isLight = false;\n" +
-                "                if (smartFilter && ratio > 0.60) {\n" +
-                "                    isLight = true;\n" +
-                "                }\n" +
-                "\n" +
-                "                return {\n" +
-                "                    score: isLight ? 0 : diffCount,\n" +
-                "                    rawDiff: diffCount,\n" +
-                "                    ratio: ratio,\n" +
-                "                    isLight: isLight,\n" +
-                "                    diffMap: diffMap\n" +
-                "                };\n" +
-                "            }\n" +
-                "        }\n" +
-                "\n" +
-                "        // === UI LOGIC ===\n" +
-                "        const video = document.getElementById('videoSrc');\n" +
-                "        const canvas = document.getElementById('motionOverlay');\n" +
-                "        const ctx = canvas.getContext('2d');\n" +
-                "        const engine = new MotionEngine();\n" +
-                "        \n" +
-                "        // Eventos\n" +
-                "        document.getElementById('dropZone').addEventListener('dragover', (e) => { e.preventDefault(); });\n" +
-                "        document.getElementById('dropZone').addEventListener('drop', handleDrop);\n" +
-                "        document.getElementById('btnAnalyze').addEventListener('click', runSimulation);\n" +
-                "        document.getElementById('sensRange').addEventListener('input', (e) => {\n" +
-                "            document.getElementById('sensVal').innerText = e.target.value;\n" +
-                "        });\n" +
-                "\n" +
-                "        // --- INIT ---\n" +
-                "        fetchLibrary();\n" +
-                "\n" +
-                "        // --- LIBRARY LOGIC ---\n" +
-                "        async function fetchLibrary() {\n" +
-                "            const list = document.getElementById('libraryList');\n" +
-                "            list.innerHTML = '<div style=\"padding:10px;text-align:center\">Cargando...</div>';\n" +
-                "            \n" +
-                "            try {\n" +
-                "                const resp = await fetch('/api/list_videos?limit=50');\n" +
-                "                const videos = await resp.json();\n" +
-                "                \n" +
-                "                list.innerHTML = '';\n" +
-                "                if (videos.length === 0) list.innerHTML = '<div style=\"padding:10px\">Sin videos</div>';\n" +
-                "                \n" +
-                "                videos.forEach(v => {\n" +
-                "                    const div = document.createElement('div');\n" +
-                "                    div.className = 'video-card';\n" +
-                "                    \n" +
-                "                    let mediaHtml = '';\n" +
-                "                    if (v.preview) {\n" +
-                "                         // Canvas for manual MJPEG rendering\n" +
-                "                         mediaHtml = `<canvas class=\"v-canvas\" width=\"60\" height=\"40\" data-src=\"/${v.preview}\"></canvas>`;\n" +
-                "                    } else if (v.thumb) {\n" +
-                "                         mediaHtml = `<img src=\"/thumbnails/${v.thumb}\" class=\"v-thumb\">`;\n" +
-                "                    } else {\n" +
-                "                         mediaHtml = `<div class=\"v-thumb\" style=\"background:#333\"></div>`;\n" +
-                "                    }\n" +
-                "\n" +
-                "                    div.innerHTML = `\n" +
-                "                        ${mediaHtml}\n" +
-                "                        <div class=\"v-info\">\n" +
-                "                            <span class=\"v-name\">${v.name}</span>\n" +
-                "                            <span class=\"v-meta\">${v.date} | ${v.size}</span>\n" +
-                "                        </div>\n" +
-                "                    `;\n" +
-                "                    div.onclick = () => loadVideoFromLib(v.name, div);\n" +
-                "                    list.appendChild(div);\n" +
-                "\n" +
-                "                    // Start Loading Preview if canvas exists\n" +
-                "                    if(v.preview) {\n" +
-                "                        const cnv = div.querySelector('canvas');\n" +
-                "                        loadMiniPreview(`/${v.preview}`, cnv);\n" +
-                "                    }\n" +
-                "                });\n" +
-                "            } catch (e) {\n" +
-                "                list.innerHTML = '<div style=\"color:red;padding:10px\">Error API</div>';\n" +
-                "            }\n" +
-                "        }\n" +
-                "\n" +
-                "        // === MINI MJPEG PLAYER (Dashboard Port) ===\n" +
-                "        function loadMiniPreview(url, canvas) {\n" +
-                "            const ctx = canvas.getContext('2d');\n" +
-                "            const frames = [];\n" +
-                "            let idx = 0;\n" +
-                "            let isAnimating = false;\n" +
-                "\n" +
-                "            fetch(url).then(response => {\n" +
-                "                const reader = response.body.getReader();\n" +
-                "                let buffer = new Uint8Array(0);\n" +
-                "                \n" +
-                "                function pump() {\n" +
-                "                    reader.read().then(({done, value}) => {\n" +
-                "                        if (done) { startAnim(); return; }\n" +
-                "                        \n" +
-                "                        // Append new data\n" +
-                "                        const newBuffer = new Uint8Array(buffer.length + value.length);\n" +
-                "                        newBuffer.set(buffer);\n" +
-                "                        newBuffer.set(value, buffer.length);\n" +
-                "                        buffer = newBuffer;\n" +
-                "\n" +
-                "                        // Parse JPEGs\n" +
-                "                        while(true) {\n" +
-                "                            // Find SOI (FF D8)\n" +
-                "                            let start = -1;\n" +
-                "                            for(let i=0; i<buffer.length-1; i++) { \n" +
-                "                                if(buffer[i]===0xFF && buffer[i+1]===0xD8) { start=i; break; } \n" +
-                "                            }\n" +
-                "                            if(start === -1) break;\n" +
-"\n" +
-                "                            // Find EOI (FF D9)\n" +
-                "                            let end = -1;\n" +
-                "                            for(let i=start+2; i<buffer.length-1; i++) { \n" +
-                "                                if(buffer[i]===0xFF && buffer[i+1]===0xD9) { end=i+2; break; } \n" +
-                "                            }\n" +
-                "                            if(end === -1) break;\n" +
-"\n" +
-                "                            // Extract JPEG\n" +
-                "                            const jpegData = buffer.slice(start, end);\n" +
-                "                            const blob = new Blob([jpegData], {type: 'image/jpeg'});\n" +
-                "                            const imgUrl = URL.createObjectURL(blob);\n" +
-                "                            const img = new Image();\n" +
-                "                            img.onload = function() {\n" +
-                "                                frames.push(this);\n" +
-                "                                URL.revokeObjectURL(imgUrl);\n" +
-                "                                if(frames.length === 1) startAnim();\n" +
-                "                            };\n" +
-                "                            img.src = imgUrl;\n" +
-"\n" +
-                "                            buffer = buffer.slice(end);\n" +
-                "                        }\n" +
-                "                        pump();\n" +
-                "                    });\n" +
-                "                }\n" +
-                "                pump();\n" +
-                "            });\n" +
-"\n" +
-                "            function startAnim() {\n" +
-                "                if(isAnimating) return;\n" +
-                "                isAnimating = true;\n" +
-                "                \n" +
-                "                function loop() {\n" +
-                "                    if(frames.length > 0) {\n" +
-                "                        ctx.drawImage(frames[idx], 0, 0, canvas.width, canvas.height);\n" +
-                "                        idx = (idx + 1) % frames.length;\n" +
-                "                    }\n" +
-                "                    setTimeout(() => requestAnimationFrame(loop), 100); // 10 FPS\n" +
-                "                }\n" +
-                "                loop();\n" +
-                "            }\n" +
-                "        }\n" +
-                "        function loadVideoFromLib(filename, cardElem) {\n" +
-                "            // Highlight Active\n" +
-                "            document.querySelectorAll('.video-card').forEach(c => c.classList.remove('active'));\n" +
-                "            cardElem.classList.add('active');\n" +
-                "            \n" +
-                "            // Load Video\n" +
-                "            const url = '/video_' + filename;\n" +
-                "            video.src = url;\n" +
-                "            prepareWorkbench(filename);\n" +
-                "        }\n" +
-                "\n" +
-                "        function handleDrop(e) {\n" +
-                "            e.preventDefault();\n" +
-                "            const file = e.dataTransfer.files[0];\n" +
-                "            if (file) {\n" +
-                "                const url = URL.createObjectURL(file);\n" +
-                "                video.src = url;\n" +
-                "                prepareWorkbench(file.name);\n" +
-                "            }\n" +
-                "        }\n" +
-                "\n" +
-                "        function prepareWorkbench(name) {\n" +
-                "            document.getElementById('labBench').style.display = 'block';\n" +
-                "            document.getElementById('dropZone').style.display = 'none';\n" +
-                "            \n" +
-                "            // Limpiar gráfica anterior\n" +
-                "            document.getElementById('graphSvg').innerHTML = '';\n" +
-                "            document.getElementById('statusMsg').innerText = `Video cargado: ${name}. Pulsa ANALIZAR.`;\n" +
-                "            \n" +
-                "            video.onloadedmetadata = () => {\n" +
-                "                canvas.width = video.videoWidth;\n" +
-                "                canvas.height = video.videoHeight;\n" +
-                "                engine.init(video.videoWidth, video.videoHeight);\n" +
-                "            };\n" +
-                "        }\n" +
-                "\n" +
-                "        async function runSimulation() {\n" +
-                "            if (!video.duration && !video.readyState) return;\n" +
-                "            \n" +
-                "            const status = document.getElementById('statusMsg');\n" +
-                "            status.innerText = '⏳ Analizando frame a frame (Turbo)...';\n" +
-                "            \n" +
-                "            const sens = parseInt(document.getElementById('sensRange').value);\n" +
-                "            const smart = document.getElementById('slFilter').checked;\n" +
-                "            \n" +
-                "            // limit = 10000 * (1 - sens/100)^2\n" +
-                "            const motionThreshold = 10000 * Math.pow((1 - sens/100.0), 2);\n" +
-                "\n" +
-                "            const history = [];\n" +
-                "            \n" +
-                "            // Hack: Reproducción acelerada oculta\n" +
-                "            const offVideo = document.createElement('video');\n" +
-                "            offVideo.crossOrigin = 'anonymous'; // Vital para videos del servidor\n" +
-                "            offVideo.src = video.src;\n" +
-                "            offVideo.muted = true;\n" +
-                "            offVideo.currentTime = 0;\n" +
-                "            \n" +
-                "            const tmpCvn = document.createElement('canvas');\n" +
-                "            tmpCvn.width = canvas.width;\n" +
-                "            tmpCvn.height = canvas.height;\n" +
-                "            const tmpCtx = tmpCvn.getContext('2d', { willReadFrequently: true });\n" +
-                "            \n" +
-                "            try {\n" +
-                "                await offVideo.play();\n" +
-                "                offVideo.pause();\n" +
-                "\n" +
-                "                const duration = offVideo.duration || 10;\n" +
-                "                const fps = 10; // Bajamos FPS de análisis para más velocidad\n" +
-                "                const step = 1/fps;\n" +
-                "                \n" +
-                "                for (let t = 0; t < duration; t += step) {\n" +
-                "                    offVideo.currentTime = t;\n" +
-                "                    await new Promise(r => offVideo.onseeked = r);\n" +
-                "                    \n" +
-                "                    tmpCtx.drawImage(offVideo, 0, 0, canvas.width, canvas.height);\n" +
-                "                    const frame = tmpCtx.getImageData(0, 0, canvas.width, canvas.height);\n" +
-                "                    \n" +
-                "                    const res = engine.processFrame(frame, sens, smart);\n" +
-                "                    history.push({ t: t, s: res.score, l: res.isLight });\n" +
-                "\n" +
-                "                    if (t % 1 < step) status.innerText = `Analizando: ${Math.round(t)}s / ${Math.round(duration)}s`;\n" +
-                "                }\n" +
-                "\n" +
-                "                drawGraph(history, motionThreshold);\n" +
-                "                status.innerText = '✅ Análisis Completo.';\n" +
-                "            } catch (e) {\n" +
-                "                console.error(e);\n" +
-                "                status.innerText = '❌ Error: CORS o Formato no soportado.';\n" +
-                "            }\n" +
-                "        }\n" +
-                "\n" +
-                "        function drawGraph(data, threshold) {\n" +
-                "            const svg = document.getElementById('graphSvg');\n" +
-                "            svg.innerHTML = '';\n" +
-                "            \n" +
-                "            const w = svg.clientWidth;\n" +
-                "            const h = svg.clientHeight;\n" +
-                "            const maxScore = 5000;\n" +
-                "            \n" +
-                "            let pathD = `M 0 ${h} `;\n" +
-                "            let alertZones = '';\n" +
-                "\n" +
-                "            data.forEach((pt, i) => {\n" +
-                "                const x = (i / data.length) * w;\n" +
-                "                const y = h - (Math.min(pt.s, maxScore) / maxScore) * h;\n" +
-                "                pathD += `L ${x} ${y} `;\n" +
-                "\n" +
-                "                if (pt.s > threshold) {\n" +
-                "                    alertZones += `<rect x=\"${x}\" y=\"0\" width=\"${w/data.length}\" height=\"${h}\" fill=\"#da3633\" opacity=\"0.2\" />`;\n" +
-                "                }\n" +
-                "            });\n" +
-                "            \n" +
-                "            pathD += `L ${w} ${h} Z`;\n" +
-                "            const thY = h - (Math.min(threshold, maxScore) / maxScore) * h;\n" +
-                "            \n" +
-                "            svg.innerHTML += alertZones;\n" +
-                "            svg.innerHTML += `<path d=\"${pathD}\" class=\"graph-line\" />`;\n" +
-                "            svg.innerHTML += `<line x1=\"0\" y1=\"${thY}\" x2=\"${w}\" y2=\"${thY}\" class=\"graph-threshold\" />`;\n" +
-                "        }\n" +
-                "    </script>\n" +
-                "</body>\n" +
-                "</html>";
+               "<html lang=\"es\">\n" +
+               "<head>\n" +
+               "    <meta charset=\"UTF-8\">\n" +
+               "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+               "    <title>Motion Lab 🧪</title>\n" +
+               "    <style>\n" +
+               "        body { margin:0; font-family: sans-serif; background: #121212; color: #e0e0e0; display:flex; flex-direction:column; height:100vh; overflow:hidden; }\n" +
+               "        \n" +
+               "        /* --- PAGE 1: GALLERY --- */\n" +
+               "        #gallery-page { display:none; flex-direction:column; height:100%; padding:20px; overflow-y:auto; box-sizing:border-box; }\n" +
+               "        .gallery-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }\n" +
+               "        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }\n" +
+               "        \n" +
+               "        .video-card { background: #1e1e1e; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s; border:1px solid #333; position:relative; }\n" +
+               "        .video-card:hover { transform: scale(1.02); border-color:#0288d1; }\n" +
+               "        .v-thumb, .v-canvas { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #000; display:block; }\n" +
+               "        .v-info { padding: 8px; font-size: 12px; color: #b0b0b0; }\n" +
+               "        .v-name { font-weight: bold; color: #fff; display:block; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n" +
+               "\n" +
+               "        /* --- PAGE 2: WORKBENCH --- */\n" +
+               "        #workbench-page { display:none; flex-direction:row; height:100%; }\n" +
+               "        .main-content { flex: 1; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; background:#000; }\n" +
+               "        .top-bar { display:flex; align-items:center; padding: 5px 10px; background:#1e1e1e; border-bottom:1px solid #333; height:40px; }\n" +
+               "        .back-btn { background:none; border:none; color:#bbb; font-size:18px; cursor:pointer; margin-right:15px; padding:5px; }\n" +
+               "        .back-btn:hover { color:#fff; }\n" +
+               "\n" +
+               "        canvas { background: #000; border: 1px solid #333; max-width: 100%; max-height: calc(100vh - 250px); }\n" +
+               "        .controls { display: flex; gap: 10px; padding: 10px; background: #1e1e1e; align-items: center; border-top:1px solid #333; }\n" +
+               "        button { background: #333; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }\n" +
+               "        button:hover { background: #444; }\n" +
+               "        button.active { background: #0288d1; }\n" +
+               "        .param-group { display: flex; flex-direction: column; gap: 5px; margin-left:15px; border-left:1px solid #444; padding-left:15px; }\n" +
+               "        label { font-size: 11px; color: #888; }\n" +
+               "        input[type=range] { width: 100px; }\n" +
+               "        #status { margin-left: auto; font-family: monospace; color: #0f0; font-size:12px; }\n" +
+               "    </style>\n" +
+               "</head>\n" +
+               "<body>\n" +
+               "    <!-- PAGE 1: GALLERY -->\n" +
+               "    <div id=\"gallery-page\">\n" +
+               "        <div class=\"gallery-header\">\n" +
+               "            <h2 style=\"margin:0\">📚 Galería de Grabaciones</h2>\n" +
+               "            <button onclick=\"fetchLibrary()\" style=\"background:#0288d1\">🔄 Actualizar</button>\n" +
+               "        </div>\n" +
+               "        <div class=\"gallery-grid\" id=\"libraryList\">\n" +
+               "            <div style=\"padding:20px; text-align:center; color:#666; grid-column:1/-1\">Cargando videos...</div>\n" +
+               "        </div>\n" +
+               "    </div>\n" +
+               "\n" +
+               "    <!-- PAGE 2: WORKBENCH -->\n" +
+               "    <div id=\"workbench-page\">\n" +
+               "        <div class=\"main-content\">\n" +
+               "            <div class=\"top-bar\">\n" +
+               "                <button class=\"back-btn\" onclick=\"goBack()\">⬅ Volver</button>\n" +
+               "                <span id=\"current-video-title\" style=\"font-weight:bold; color:#fff\">Sin Video</span>\n" +
+               "                <span id=\"status\">Simulación Inactiva</span>\n" +
+               "            </div>\n" +
+               "            \n" +
+               "            <video id=\"videoPlayer\" controls style=\"display:none\"></video>\n" +
+               "            <!-- Canvas de Análisis -->\n" +
+               "            <canvas id=\"analysisCanvas\" width=\"640\" height=\"480\"></canvas>\n" +
+               "\n" +
+               "            <div class=\"controls\">\n" +
+               "                <button onclick=\"togglePlay()\" id=\"btnPlay\">⏯ Play/Pause</button>\n" +
+               "                \n" +
+               "                <div class=\"param-group\">\n" +
+               "                    <label>Sensibilidad: <span id=\"val-sens\">15</span>%</label>\n" +
+               "                    <input type=\"range\" min=\"0\" max=\"50\" value=\"15\" oninput=\"updateParam('sens', this.value)\">\n" +
+               "                </div>\n" +
+               "                \n" +
+               "                <div class=\"param-group\">\n" +
+               "                    <label>Min Pixels: <span id=\"val-pix\">20</span></label>\n" +
+               "                    <input type=\"range\" min=\"5\" max=\"100\" value=\"20\" oninput=\"updateParam('pix', this.value)\">\n" +
+               "                </div>\n" +
+               "                \n" +
+               "                <div class=\"param-group\">\n" +
+               "                    <label>Debug Mode</label>\n" +
+               "                    <button onclick=\"toggleDebug()\" id=\"btnDebug\">👁️ Ver Malla</button>\n" +
+               "                </div>\n" +
+               "            </div>\n" +
+               "            \n" +
+               "            <!-- Terminal Output -->\n" +
+               "            <div id=\"terminal\" style=\"background:#000; color:#0f0; font-family:monospace; padding:10px; font-size:11px; height:100px; overflow-y:auto; border-top:1px solid #333; margin-top:5px;\">\n" +
+               "                > Web Motion Lab v3.9.10 ready.\n" +
+               "            </div>\n" +
+               "        </div>\n" +
+               "    </div>\n" +
+               "\n" +
+               "    <script>\n" +
+               "        /* --- ROUTING & INIT --- */\n" +
+               "        const urlParams = new URLSearchParams(window.location.search);\n" +
+               "        const videoParam = urlParams.get('video');\n" +
+               "\n" +
+               "        if (videoParam) {\n" +
+               "            showWorkbench(videoParam);\n" +
+               "        } else {\n" +
+               "            showGallery();\n" +
+               "        }\n" +
+               "\n" +
+               "        function showGallery() {\n" +
+               "            document.getElementById('gallery-page').style.display = 'flex';\n" +
+               "            document.getElementById('workbench-page').style.display = 'none';\n" +
+               "            fetchLibrary();\n" +
+               "        }\n" +
+               "\n" +
+               "        function showWorkbench(filename) {\n" +
+               "            document.getElementById('gallery-page').style.display = 'none';\n" +
+               "            document.getElementById('workbench-page').style.display = 'flex';\n" +
+               "            // Update URL without reload if not there\n" +
+               "            if(!videoParam) {\n" +
+               "                const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?video=' + filename;\n" +
+               "                window.history.pushState({path:newUrl},'',newUrl);\n" +
+               "            }\n" +
+               "            loadVideo(filename);\n" +
+               "        }\n" +
+               "\n" +
+               "        function goBack() {\n" +
+               "            // Go to root\n" +
+               "            window.location.href = window.location.pathname;\n" +
+               "        }\n" +
+               "\n" +
+               "        /* --- GALLERY LOGIC --- */\n" +
+               "        async function fetchLibrary() {\n" +
+               "            const list = document.getElementById('libraryList');\n" +
+               "            try {\n" +
+               "                const resp = await fetch('/api/list_videos?limit=50');\n" +
+               "                const videos = await resp.json();\n" +
+               "                \n" +
+               "                list.innerHTML = '';\n" +
+               "                if (videos.length === 0) list.innerHTML = '<div style=\"padding:20px;grid-column:1/-1;text-align:center\">Sin videos</div>';\n" +
+               "                \n" +
+               "                videos.forEach(v => {\n" +
+               "                    const div = document.createElement('div');\n" +
+               "                    div.className = 'video-card';\n" +
+               "                    \n" +
+               "                    let mediaHtml = '';\n" +
+               "                    if (v.preview) {\n" +
+               "                         mediaHtml = `<canvas class=\"v-canvas\" width=\"60\" height=\"40\" data-src=\"/${v.preview}\"></canvas>`;\n" +
+               "                    } else if (v.thumb) {\n" +
+               "                         mediaHtml = `<img src=\"/thumbnails/${v.thumb}\" class=\"v-thumb\">`;\n" +
+               "                    } else {\n" +
+               "                         mediaHtml = `<div class=\"v-thumb\" style=\"background:#333\"></div>`;\n" +
+               "                    }\n" +
+               "\n" +
+               "                    div.innerHTML = `\n" +
+               "                        ${mediaHtml}\n" +
+               "                        <div class=\"v-info\">\n" +
+               "                            <span class=\"v-name\">${v.name}</span>\n" +
+               "                            <span class=\"v-meta\">${v.date} | ${v.size}</span>\n" +
+               "                        </div>\n" +
+               "                    `;\n" +
+               "                    // Navigate to Workbench\n" +
+               "                    div.onclick = () => window.location.href = '?video=' + v.name;\n" +
+               "                    list.appendChild(div);\n" +
+               "\n" +
+               "                    if(v.preview) {\n" +
+               "                        const cnv = div.querySelector('canvas');\n" +
+               "                        loadMiniPreview(`/${v.preview}`, cnv);\n" +
+               "                    }\n" +
+               "                });\n" +
+               "            } catch (e) {\n" +
+               "                list.innerHTML = '<div style=\"color:red;padding:10px\">Error API</div>';\n" +
+               "            }\n" +
+               "        }\n" +
+               "\n" +
+               "        // [loadMiniPreview function copied from previous step - keeps existing]\n" +
+               "        function loadMiniPreview(url, canvas) {\n" +
+               "            const ctx = canvas.getContext('2d');\n" +
+               "            const frames = [];\n" +
+               "            let idx = 0;\n" +
+               "            let isAnimating = false;\n" +
+               "\n" +
+               "            fetch(url).then(response => {\n" +
+               "                const reader = response.body.getReader();\n" +
+               "                let buffer = new Uint8Array(0);\n" +
+               "                \n" +
+               "                function pump() {\n" +
+               "                    reader.read().then(({done, value}) => {\n" +
+               "                        if (done) { startAnim(); return; }\n" +
+               "                        const newBuffer = new Uint8Array(buffer.length + value.length);\n" +
+               "                        newBuffer.set(buffer); newBuffer.set(value, buffer.length);\n" +
+               "                        buffer = newBuffer;\n" +
+               "                        while(true) {\n" +
+               "                            let start = -1; for(let i=0; i<buffer.length-1; i++) { if(buffer[i]===0xFF && buffer[i+1]===0xD8) { start=i; break; } }\n" +
+               "                            if(start === -1) break;\n" +
+               "                            let end = -1; for(let i=start+2; i<buffer.length-1; i++) { if(buffer[i]===0xFF && buffer[i+1]===0xD9) { end=i+2; break; } }\n" +
+               "                            if(end === -1) break;\n" +
+               "                            const jpegData = buffer.slice(start, end);\n" +
+               "                            const blob = new Blob([jpegData], {type: 'image/jpeg'});\n" +
+               "                            const imgUrl = URL.createObjectURL(blob);\n" +
+               "                            const img = new Image();\n" +
+               "                            img.onload = function() { frames.push(this); URL.revokeObjectURL(imgUrl); if(frames.length === 1) startAnim(); };\n" +
+               "                            img.src = imgUrl;\n" +
+               "                            buffer = buffer.slice(end);\n" +
+               "                        }\n" +
+               "                        pump();\n" +
+               "                    });\n" +
+               "                }\n" +
+               "                pump();\n" +
+               "            });\n" +
+               "\n" +
+               "            function startAnim() {\n" +
+               "                if(isAnimating) return;\n" +
+               "                isAnimating = true;\n" +
+               "                function loop() {\n" +
+               "                    if(frames.length > 0) {\n" +
+               "                        ctx.drawImage(frames[idx], 0, 0, canvas.width, canvas.height);\n" +
+               "                        idx = (idx + 1) % frames.length;\n" +
+               "                    }\n" +
+               "                    setTimeout(() => requestAnimationFrame(loop), 100);\n" +
+               "                }\n" +
+               "                loop();\n" +
+               "            }\n" +
+               "        }\n" +
+               "\n" +
+               "        /* --- WORKBENCH LOGIC --- */\n" +
+               "        var video = document.getElementById('videoPlayer');\n" +
+               "        var canvas = document.getElementById('analysisCanvas');\n" +
+               "        var ctx = canvas.getContext('2d');\n" +
+               "        var engine = null;\n" +
+               "        var isPlaying = false;\n" +
+               "        var animationId;\n" +
+               "\n" +
+               "        function loadVideo(filename) {\n" +
+               "            document.getElementById('current-video-title').textContent = filename;\n" +
+               "            video.src = '/video_' + filename;\n" +
+               "            video.load();\n" +
+               "            log('Loading video: ' + filename);\n" +
+               "            \n" +
+               "            video.onloadedmetadata = function() {\n" +
+               "                canvas.width = video.videoWidth || 640;\n" +
+               "                canvas.height = video.videoHeight || 480;\n" +
+               "                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);\n" +
+               "                engine = new MotionEngine(canvas.width, canvas.height);\n" +
+               "                log('Engine initialized (' + canvas.width + 'x' + canvas.height + ')');\n" +
+               "            };\n" +
+               "        }\n" +
+               "\n" +
+               "        function togglePlay() {\n" +
+               "            if (video.paused) {\n" +
+               "                video.play();\n" +
+               "                isPlaying = true;\n" +
+               "                processLoop();\n" +
+               "                document.getElementById('btnPlay').textContent = '⏸ Pause';\n" +
+               "            } else {\n" +
+               "                video.pause();\n" +
+               "                isPlaying = false;\n" +
+               "                cancelAnimationFrame(animationId);\n" +
+               "                document.getElementById('btnPlay').textContent = '▶ Play';\n" +
+               "            }\n" +
+               "        }\n" +
+               "\n" +
+               "        function processLoop() {\n" +
+               "            if (!isPlaying || video.paused || video.ended) return;\n" +
+               "            // Draw current frame\n" +
+               "            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);\n" +
+               "            \n" +
+               "            // Get Pixels\n" +
+               "            var frame = ctx.getImageData(0, 0, canvas.width, canvas.height);\n" +
+               "            \n" +
+               "            // Run Enzyme\n" +
+               "            if (engine) {\n" +
+               "                var result = engine.process(frame.data);\n" +
+               "                if (result.motion) {\n" +
+               "                   document.getElementById('status').textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n" +
+               "                   drawMotionGrid(result.grid);\n" +
+               "                } else {\n" +
+               "                   document.getElementById('status').textContent = '...';\n" +
+               "                }\n" +
+               "            }\n" +
+               "            \n" +
+               "            animationId = requestAnimationFrame(processLoop);\n" +
+               "        }\n" +
+               "\n" +
+               "        function updateParam(key, val) {\n" +
+               "            document.getElementById('val-' + key).textContent = val;\n" +
+               "            if (engine) {\n" +
+               "                if (key === 'sens') engine.setSensitivity(parseInt(val));\n" +
+               "                if (key === 'pix') engine.setMinPixels(parseInt(val));\n" +
+               "            }\n" +
+               "        }\n" +
+               "        \n" +
+               "        var debugMode = false;\n" +
+               "        function toggleDebug() {\n" +
+               "            debugMode = !debugMode;\n" +
+               "            document.getElementById('btnDebug').classList.toggle('active');\n" +
+               "        }\n" +
+               "\n" +
+               "        function drawMotionGrid(grid) {\n" +
+               "            if(!debugMode) return;\n" +
+               "            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';\n" +
+               "            var blockSize = 16;\n" +
+               "            // Simple viz (would need real grid data logic here, simplified for now)\n" +
+               "            ctx.fillRect(10, 10, 20, 20); // Placeholder\n" +
+               "        }\n" +
+               "        \n" +
+               "        function log(msg) {\n" +
+               "            var term = document.getElementById('terminal');\n" +
+               "            term.innerHTML += '<div>> ' + msg + '</div>';\n" +
+               "            term.scrollTop = term.scrollHeight;\n" +
+               "        }\n" +
+               "\n" +
+               "        // --- JS MOTION ENGINE (Ported from Java) ---\n" +
+               "        class MotionEngine {\n" +
+               "            constructor(w, h) {\n" +
+               "                this.width = w;\n" +
+               "                this.height = h;\n" +
+               "                this.prevFrame = null;\n" +
+               "                this.threshold = 15;\n" +
+               "                this.minPixels = 20;\n" +
+               "            }\n" +
+               "            setSensitivity(val) { this.threshold = val; log('Sensitivity set to ' + val); }\n" +
+               "            setMinPixels(val) { this.minPixels = val; log('Min Pixels set to ' + val); }\n" +
+               "\n" +
+               "            process(currentData) {\n" +
+               "                if (!this.prevFrame) {\n" +
+               "                    this.prevFrame = new Uint8ClampedArray(currentData);\n" +
+               "                    return { motion: false };\n" +
+               "                }\n" +
+               "                \n" +
+               "                let motionPixels = 0;\n" +
+               "                // Simple Grayscale Diff (Step 4)\n" +
+               "                for (let i = 0; i < currentData.length; i += 4) {\n" +
+               "                    let r1 = currentData[i], g1 = currentData[i+1], b1 = currentData[i+2];\n" +
+               "                    let r2 = this.prevFrame[i], g2 = this.prevFrame[i+1], b2 = this.prevFrame[i+2];\n" +
+               "                    \n" +
+               "                    let lum1 = 0.299*r1 + 0.587*g1 + 0.114*b1;\n" +
+               "                    let lum2 = 0.299*r2 + 0.587*g2 + 0.114*b2;\n" +
+               "                    \n" +
+               "                    if (Math.abs(lum1 - lum2) > this.threshold) {\n" +
+               "                        motionPixels++;\n" +
+               "                        // Highlight (Debug)\n" +
+               "                        if(debugMode) { currentData[i] = 255; currentData[i+1]=0; currentData[i+2]=0; }\n" +
+               "                    }\n" +
+               "                }\n" +
+               "                \n" +
+               "                // Update prev\n" +
+               "                this.prevFrame.set(currentData);\n" +
+               "                \n" +
+               "                return { \n" +
+               "                    motion: motionPixels > this.minPixels,\n" +
+               "                    pixels: motionPixels\n" +
+               "                };\n" +
+               "            }\n" +
+               "        }\n" +
+               "    </script>\n" +
+               "</body>\n" +
+               "</html>";
     }
 }

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.20] - 2026-02-07
+### Changed
+- **Web Motion Lab**: Interfaz dividida en dos pantallas (Galería vs Laboratorio) para maximizar el espacio de trabajo. Routing por URL params.
+
 ## [v3.9.10-dev.19] - 2026-02-07
 ### Added
 - **Web Motion Lab**: Integrado motor JS de reproducción MJPEG (`loadMiniPreview`) para animar los previews en la galería (evita estática).

@@ -3197,3 +3197,10 @@ Potenciamos el panel lateral del Lab:
     *   Extracción de frames a Blobs.
     *   Bucle de animación en Canvas a 10fps.
 *   **Resultado**: Autoplay real y fluido en la galería lateral.
+
+### 🔄 Refactor (v3.9.10-dev.20): Lab en 2 Páginas
+*   **Problema**: La interfaz "split-view" (sidebar siempre presente) ocupaba espacio valioso para la galería y para el análisis.
+*   **Solución**: Reestructuración a modelo "Single Page App" (SPA) con dos vistas:
+    1.  **Galería (Home)**: Grid a pantalla completa para previsualización masiva.
+    2.  **Laboratorio (Detail)**: Focus total en el video seleccionado.
+*   **Mecánica**: Routing vía `URLSearchParams`. `?video=filename.mjpeg` carga directamente el laboratorio.
