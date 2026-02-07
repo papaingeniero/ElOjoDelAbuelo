@@ -196,11 +196,10 @@ public class WebMotionLab {
                 "                    const div = document.createElement('div');\n" +
                 "                    div.className = 'video-card';\n" +
                 "                    \n" +
-                "                    // Show Preview (Autoplay) if available, else Thumbnail\n" +
                 "                    let mediaHtml = '';\n" +
                 "                    if (v.preview) {\n" +
-                "                         // Autoplay video preview (muted, loop)\n" +
-                "                         mediaHtml = `<img src=\"/${v.preview}\" class=\"v-thumb\" style=\"object-fit:cover\">`;\n" +
+                "                         // Canvas for manual MJPEG rendering\n" +
+                "                         mediaHtml = `<canvas class=\"v-canvas\" width=\"60\" height=\"40\" data-src=\"/${v.preview}\"></canvas>`;\n" +
                 "                    } else if (v.thumb) {\n" +
                 "                         mediaHtml = `<img src=\"/thumbnails/${v.thumb}\" class=\"v-thumb\">`;\n" +
                 "                    } else {\n" +
@@ -216,12 +215,89 @@ public class WebMotionLab {
                 "                    `;\n" +
                 "                    div.onclick = () => loadVideoFromLib(v.name, div);\n" +
                 "                    list.appendChild(div);\n" +
+                "\n" +
+                "                    // Start Loading Preview if canvas exists\n" +
+                "                    if(v.preview) {\n" +
+                "                        const cnv = div.querySelector('canvas');\n" +
+                "                        loadMiniPreview(`/${v.preview}`, cnv);\n" +
+                "                    }\n" +
                 "                });\n" +
                 "            } catch (e) {\n" +
                 "                list.innerHTML = '<div style=\"color:red;padding:10px\">Error API</div>';\n" +
                 "            }\n" +
                 "        }\n" +
                 "\n" +
+                "        // === MINI MJPEG PLAYER (Dashboard Port) ===\n" +
+                "        function loadMiniPreview(url, canvas) {\n" +
+                "            const ctx = canvas.getContext('2d');\n" +
+                "            const frames = [];\n" +
+                "            let idx = 0;\n" +
+                "            let isAnimating = false;\n" +
+                "\n" +
+                "            fetch(url).then(response => {\n" +
+                "                const reader = response.body.getReader();\n" +
+                "                let buffer = new Uint8Array(0);\n" +
+                "                \n" +
+                "                function pump() {\n" +
+                "                    reader.read().then(({done, value}) => {\n" +
+                "                        if (done) { startAnim(); return; }\n" +
+                "                        \n" +
+                "                        // Append new data\n" +
+                "                        const newBuffer = new Uint8Array(buffer.length + value.length);\n" +
+                "                        newBuffer.set(buffer);\n" +
+                "                        newBuffer.set(value, buffer.length);\n" +
+                "                        buffer = newBuffer;\n" +
+                "\n" +
+                "                        // Parse JPEGs\n" +
+                "                        while(true) {\n" +
+                "                            // Find SOI (FF D8)\n" +
+                "                            let start = -1;\n" +
+                "                            for(let i=0; i<buffer.length-1; i++) { \n" +
+                "                                if(buffer[i]===0xFF && buffer[i+1]===0xD8) { start=i; break; } \n" +
+                "                            }\n" +
+                "                            if(start === -1) break;\n" +
+"\n" +
+                "                            // Find EOI (FF D9)\n" +
+                "                            let end = -1;\n" +
+                "                            for(let i=start+2; i<buffer.length-1; i++) { \n" +
+                "                                if(buffer[i]===0xFF && buffer[i+1]===0xD9) { end=i+2; break; } \n" +
+                "                            }\n" +
+                "                            if(end === -1) break;\n" +
+"\n" +
+                "                            // Extract JPEG\n" +
+                "                            const jpegData = buffer.slice(start, end);\n" +
+                "                            const blob = new Blob([jpegData], {type: 'image/jpeg'});\n" +
+                "                            const imgUrl = URL.createObjectURL(blob);\n" +
+                "                            const img = new Image();\n" +
+                "                            img.onload = function() {\n" +
+                "                                frames.push(this);\n" +
+                "                                URL.revokeObjectURL(imgUrl);\n" +
+                "                                if(frames.length === 1) startAnim();\n" +
+                "                            };\n" +
+                "                            img.src = imgUrl;\n" +
+"\n" +
+                "                            buffer = buffer.slice(end);\n" +
+                "                        }\n" +
+                "                        pump();\n" +
+                "                    });\n" +
+                "                }\n" +
+                "                pump();\n" +
+                "            });\n" +
+"\n" +
+                "            function startAnim() {\n" +
+                "                if(isAnimating) return;\n" +
+                "                isAnimating = true;\n" +
+                "                \n" +
+                "                function loop() {\n" +
+                "                    if(frames.length > 0) {\n" +
+                "                        ctx.drawImage(frames[idx], 0, 0, canvas.width, canvas.height);\n" +
+                "                        idx = (idx + 1) % frames.length;\n" +
+                "                    }\n" +
+                "                    setTimeout(() => requestAnimationFrame(loop), 100); // 10 FPS\n" +
+                "                }\n" +
+                "                loop();\n" +
+                "            }\n" +
+                "        }\n" +
                 "        function loadVideoFromLib(filename, cardElem) {\n" +
                 "            // Highlight Active\n" +
                 "            document.querySelectorAll('.video-card').forEach(c => c.classList.remove('active'));\n" +

@@ -3183,3 +3183,17 @@ Potenciamos el panel lateral del Lab:
 
 ### 🎓 3. Lecciones Aprendidas
 *   **MJPEG como GIF**: MJPEG es un formato antiguo pero gloriosamente simple para web. No necesita `<video>`, codecs, ni buffering complejo. Un simple `<img>` tag te da "live streaming" o "preview animada" con cero coste de CPU en cliente.
+
+### 🐛 Bugfix (v3.9.10-dev.18): Preview 404
+*   **Problema**: La galería intentaba cargar imágenes con URL `/preview_preview_...`.
+*   **Causa**: `NanoHttpServer` devuelve el nombre completo del archivo (que ya incluye `preview_`), y `WebMotionLab.js` le añadía otro prefijo `preview_` innecesariamente.
+*   **Solución**: Eliminado el prefijo redundante en el JS. Ahora construye la ruta como `/<filename>`.
+
+### 🔧 Feature (v3.9.10-dev.19): JS MJPEG Player
+*   **Problema**: Los navegadores no soportan nativamente "autoplay infinite loop" de archivos `.mjpeg` estáticos servidos sin headers multipart. El dashboard usa un motor JS propio para esto.
+*   **Solución**: Portamos el motor `loadMiniPreview` del Dashboard al Laboratorio (`WebMotionLab`):
+    *   Fetch del archivo binario.
+    *   Parsing manual de bytes buscando cabeceras JPEG (`FF D8` ... `FF D9`).
+    *   Extracción de frames a Blobs.
+    *   Bucle de animación en Canvas a 10fps.
+*   **Resultado**: Autoplay real y fluido en la galería lateral.
