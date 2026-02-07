@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.27] - 2026-02-07
+### Fixed
+- **Web Motion Lab**: Implementado reproductor MJPEG manual en JS (`MJPEGPlayer`) para solucionar la pantalla negra en navegadores que no soportan MJPEG en etiquetas `<video>`.
+
 ## [v3.9.10-dev.26] - 2026-02-07
 ### Fixed
 - **Web Motion Lab**: Re-aplicado el aumento de resolución de miniaturas a 320x240 (el intento anterior falló en aplicarse al código fuente).

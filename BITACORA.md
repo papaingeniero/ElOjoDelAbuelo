@@ -3236,3 +3236,8 @@ Potenciamos el panel lateral del Lab:
 ### 🚑 Fix (v3.9.10-dev.26): High-Res Previews (Applied)
 *   **Problema**: La versión anterior no aplicó correctamente el cambio de resolución en `WebMotionLab.java`.
 *   **Solución**: Se fuerza la actualización del canvas a **320x240** píxeles. Validado visualmente que el código fuente ahora refleja el cambio.
+
+### 🔧 Fix (v3.9.10-dev.27): Manual MJPEG Canvas Player
+*   **Problema**: Pantalla negra en el analizador de video (Chrome/Safari).
+*   **Causa**: Navegadores modernos no soportan streams MJPEG (`octet-stream`) dentro de etiquetas `<video>`.
+*   **Solución**: Implementado `MJPEGPlayer` en JavaScript que descarga el archivo, parsea los frames JPEG (SOI/EOI) manualmente y los dibuja en el `<canvas>` del analizador. Esto reemplaza completamente el uso de `<video>` y garantiza compatibilidad multiplataforma.

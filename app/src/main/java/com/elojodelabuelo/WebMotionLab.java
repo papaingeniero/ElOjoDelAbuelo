@@ -186,6 +186,154 @@ public class WebMotionLab {
                "            }\n" +
                "        }\n" +
                "\n" +
+               "        // --- MJPEG PLAYER (Dashboard Port) ---\n" +
+               "        class MJPEGPlayer {\n" +
+               "            constructor(url, canvas) {\n" +
+               "                this.url = url;\n" +
+               "                this.canvas = canvas;\n" +
+               "                this.ctx = canvas.getContext('2d');\n" +
+               "                this.frames = [];\n" +
+               "                this.frameIdx = 0;\n" +
+               "                this.isPlaying = false;\n" +
+               "                this.abortController = null;\n" +
+               "                this.loopId = null;\n" +
+               "                this.onFrame = null; // Callback for MotionEngine\n" +
+               "            }\n" +
+               "\n" +
+               "            async load() {\n" +
+               "                this.stop();\n" +
+               "                this.frames = [];\n" +
+               "                this.frameIdx = 0;\n" +
+               "                this.abortController = new AbortController();\n" +
+               "                log('Fetching MJPEG: ' + this.url);\n" +
+               "\n" +
+               "                try {\n" +
+               "                    const response = await fetch(this.url, { signal: this.abortController.signal });\n" +
+               "                    if (!response.ok) throw new Error('Network response was not ok');\n" +
+               "                    \n" +
+               "                    const reader = response.body.getReader();\n" +
+               "                    let buffer = new Uint8Array(0);\n" +
+               "                    let validFrames = 0;\n" +
+               "\n" +
+               "                    const processBuffer = async () => {\n" +
+               "                        while (true) {\n" +
+               "                            // Find SOI FFD8\n" +
+               "                            let start = -1;\n" +
+               "                            for (let i = 0; i < buffer.length - 1; i++) {\n" +
+               "                                if (buffer[i] === 0xFF && buffer[i + 1] === 0xD8) { start = i; break; }\n" +
+               "                            }\n" +
+               "                            if (start === -1) break; // Need more data\n" +
+               "\n" +
+               "                            // Find EOI FFD9\n" +
+               "                            let end = -1;\n" +
+               "                            for (let i = start + 2; i < buffer.length - 1; i++) {\n" +
+               "                                if (buffer[i] === 0xFF && buffer[i + 1] === 0xD9) { end = i + 2; break; }\n" +
+               "                            }\n" +
+               "                            if (end === -1) break; // Need more data\n" +
+               "\n" +
+               "                            // Extract Frame\n" +
+               "                            const jpegData = buffer.slice(start, end);\n" +
+               "                            buffer = buffer.slice(end); // Advance buffer\n" +
+               "\n" +
+               "                            // Create Image Bitmap (Async)\n" +
+               "                            const blob = new Blob([jpegData], { type: 'image/jpeg' });\n" +
+               "                            const bmp = await createImageBitmap(blob);\n" +
+               "                            this.frames.push(bmp);\n" +
+               "                            validFrames++;\n" +
+               "                            \n" +
+               "                            // Auto-Start on first frame? No, wait for user or buffer some\n" +
+               "                            if (validFrames === 1) {\n" +
+               "                                this.drawFrame(0);\n" +
+               "                                if (engine) {\n" +
+               "                                    engine.width = bmp.width;\n" +
+               "                                    engine.height = bmp.height;\n" +
+               "                                    log('Engine initialized (' + bmp.width + 'x' + bmp.height + ')');\n" +
+               "                                }\n" +
+               "                            }\n" +
+               "                        }\n" +
+               "                    };\n" +
+               "\n" +
+               "                    const pump = async () => {\n" +
+               "                        const { done, value } = await reader.read();\n" +
+               "                        if (done) {\n" +
+               "                            log('Download complete. Total Frames: ' + this.frames.length);\n" +
+               "                            return;\n" +
+               "                        }\n" +
+               "                        // Append new data\n" +
+               "                        const newBuffer = new Uint8Array(buffer.length + value.length);\n" +
+               "                        newBuffer.set(buffer);\n" +
+               "                        newBuffer.set(value, buffer.length);\n" +
+               "                        buffer = newBuffer;\n" +
+               "                        \n" +
+               "                        await processBuffer();\n" +
+               "                        pump();\n" +
+               "                    };\n" +
+               "                    pump();\n" +
+               "\n" +
+               "                } catch (err) {\n" +
+               "                    if (err.name === 'AbortError') log('Download aborted');\n" +
+               "                    else log('Error loading video: ' + err.message);\n" +
+               "                }\n" +
+               "            }\n" +
+               "\n" +
+               "            play() {\n" +
+               "                if (this.isPlaying) return;\n" +
+               "                this.isPlaying = true;\n" +
+               "                this.loop();\n" +
+               "                document.getElementById('btnPlay').textContent = '⏸ Pause';\n" +
+               "            }\n" +
+               "\n" +
+               "            pause() {\n" +
+               "                this.isPlaying = false;\n" +
+               "                if (this.loopId) cancelAnimationFrame(this.loopId);\n" +
+               "                document.getElementById('btnPlay').textContent = '▶ Play';\n" +
+               "            }\n" +
+               "\n" +
+               "            stop() {\n" +
+               "                this.pause();\n" +
+               "                if (this.abortController) this.abortController.abort();\n" +
+               "                this.frames = [];\n" +
+               "                this.frameIdx = 0;\n" +
+               "            }\n" +
+               "\n" +
+               "            loop() {\n" +
+               "                if (!this.isPlaying) return;\n" +
+               "                \n" +
+               "                // Draw current frame\n" +
+               "                if (this.frames.length > 0) {\n" +
+               "                    this.drawFrame(this.frameIdx);\n" +
+               "                    \n" +
+               "                    // Callback for Engine\n" +
+               "                    if (this.onFrame) {\n" +
+               "                        try {\n" +
+               "                            // Extract pixels for engine (expensive?)\n" +
+               "                            // If engine processes ImageData, we need ctx.getImageData\n" +
+               "                            const frameData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\n" +
+               "                            this.onFrame(frameData.data);\n" +
+               "                        } catch(e) { console.error(e); }\n" +
+               "                    }\n" +
+               "\n" +
+               "                    // Next frame\n" +
+               "                    this.frameIdx = (this.frameIdx + 1) % this.frames.length;\n" +
+               "                }\n" +
+               "\n" +
+               "                // Throttle? MJPEG usually 5-15 FPS. \n" +
+               "                // Let's use setTimeout to simulate FPS, or just queryAnimationFrame at max speed?\n" +
+               "                // Max speed might be too fast. Let's aim for ~15 FPS (66ms)\n" +
+               "                setTimeout(() => {\n" +
+               "                    this.loopId = requestAnimationFrame(() => this.loop());\n" +
+               "                }, 66);\n" +
+               "            }\n" +
+               "\n" +
+               "            drawFrame(idx) {\n" +
+               "                if (this.frames[idx]) {\n" +
+               "                    // Update canvas size if needed? No, user set fixed size?\n" +
+               "                    // Or follow video? user said \"640x480\"\n" +
+               "                    this.ctx.drawImage(this.frames[idx], 0, 0, this.canvas.width, this.canvas.height);\n" +
+               "                }\n" +
+               "            }\n" +
+               "        }\n" +
+               "\n" +
                "        // === MINI MJPEG PLAYER (Dashboard Port) ===\n" +
                "        function loadMiniPreview(url, canvas) {\n" +
                "            const ctx = canvas.getContext('2d');\n" +
@@ -241,30 +389,33 @@ public class WebMotionLab {
                "        \n" +
                "        function loadVideo(filename) {\n" +
                "            document.getElementById('current-video-title').textContent = filename;\n" +
-               "            video.src = '/' + filename;\n" +
-               "            video.load();\n" +
-               "            log('Loading video: ' + filename);\n" +
                "            \n" +
-               "            video.onloadedmetadata = function() {\n" +
-               "                canvas.width = video.videoWidth || 640;\n" +
-               "                canvas.height = video.videoHeight || 480;\n" +
-               "                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);\n" +
-               "                engine = new MotionEngine(canvas.width, canvas.height);\n" +
-               "                log('Engine initialized (' + canvas.width + 'x' + canvas.height + ')');\n" +
+               "            // Clean up old player if exists? Global var video is element, not class instance.\n" +
+               "            // We need a global instance of MJPEGPlayer\n" +
+               "            if (window.mjpegPlayer) window.mjpegPlayer.stop();\n" +
+               "            \n" +
+               "            window.mjpegPlayer = new MJPEGPlayer('/' + filename, canvas);\n" +
+               "            window.mjpegPlayer.onFrame = (data) => {\n" +
+               "                if (engine) {\n" +
+               "                    var result = engine.process(data);\n" +
+               "                    if (result.motion) {\n" +
+               "                       document.getElementById('status').textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n" +
+               "                       drawMotionGrid(result.grid);\n" +
+               "                    } else {\n" +
+               "                       document.getElementById('status').textContent = '...';\n" +
+               "                    }\n" +
+               "                }\n" +
                "            };\n" +
+               "            window.mjpegPlayer.load();\n" +
+               "            \n" +
+               "            // Hide native video element, we use Canvas only\n" +
+               "            video.style.display = 'none';\n" +
                "        }\n" +
                "\n" +
                "        function togglePlay() {\n" +
-               "            if (video.paused) {\n" +
-               "                video.play();\n" +
-               "                isPlaying = true;\n" +
-               "                processLoop();\n" +
-               "                document.getElementById('btnPlay').textContent = '⏸ Pause';\n" +
-               "            } else {\n" +
-               "                video.pause();\n" +
-               "                isPlaying = false;\n" +
-               "                cancelAnimationFrame(animationId);\n" +
-               "                document.getElementById('btnPlay').textContent = '▶ Play';\n" +
+               "            if (window.mjpegPlayer) {\n" +
+               "                if (window.mjpegPlayer.isPlaying) window.mjpegPlayer.pause();\n" +
+               "                else window.mjpegPlayer.play();\n" +
                "            }\n" +
                "        }\n" +
                "\n" +
