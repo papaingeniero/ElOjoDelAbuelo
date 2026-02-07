@@ -3212,3 +3212,8 @@ Potenciamos el panel lateral del Lab:
     *   Contenedor `.media-container` con `width: 100%` y `padding-bottom: 56.25%` (ratio 16:9).
     *   Canvas/Imagen con `position: absolute; top:0; left:0; width:100%; height:100%`.
 *   **Resultado**: Las tarjetas ahora ocupan el espacio vertical correcto independientemente del soporte de CSS moderno.
+
+### 🚑 Hotfix (v3.9.10-dev.22): Reparación de Archivo Corrupto
+*   **Incidente**: El archivo `WebMotionLab.java` se corrompió durante la implementación de la vista dividida, mezclando código viejo (L1-86) con código nuevo (L87+), lo que causaba layouts rotos en móviles.
+*   **Corrección**: Se reescribió el archivo completo con la implementación limpia y correcta del layout SPA + Padding Hack.
+*   **Fix Routing**: Se relajó la ruta `/lab` en `NanoHttpServer` para usar `startsWith("/lab")`, permitiendo que navegadores que añaden taling-slash (`/lab/`) funcionen correctamente en lugar de redirigir al dashboard.

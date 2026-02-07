@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.22] - 2026-02-07
+### Fixed
+- **Critical**: Reparado archivo `WebMotionLab.java` corrupto que mezclaba versiones de código y rompía la UI móvil.
+- **Routing**: Permitido el acceso a `/lab/` (con barra final) para corregir redirecciones erróneas en Chrome Desktop.
+
 ## [v3.9.10-dev.21] - 2026-02-07
 ### Fixed
 - **Web Motion Lab**: Corregido solapamiento de tarjetas en la galería usando "padding-hack" CSS para emular `aspect-ratio` en navegadores antiguos (Android 4.4).

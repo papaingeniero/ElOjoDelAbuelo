@@ -6,85 +6,179 @@ public class WebMotionLab {
 
     public static String getHtml() {
         return "<!DOCTYPE html>\n" +
-                "<html lang=\"es\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>🔬 Laboratorio Forense</title>\n" +
-                "    <style>\n" +
-                "        body { background: #0d1117; color: #c9d1d9; font-family: monospace; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; }\n" +
-                "        .sidebar { width: 300px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; height: 100%; }\n" +
-                "        .sidebar-header { padding: 15px; border-bottom: 1px solid #30363d; font-weight: bold; color: #58a6ff; display: flex; justify-content: space-between; align-items: center; }\n" +
-                "        .refresh-btn { background: none; border: none; color: #8b949e; cursor: pointer; font-size: 16px; }\n" +
-                "        .refresh-btn:hover { color: #58a6ff; }\n" +
-                "        .video-list { flex: 1; overflow-y: auto; overflow-x: hidden; }\n" +
-                "        .video-card { padding: 10px; border-bottom: 1px solid #21262d; cursor: pointer; transition: 0.2s; display: flex; gap: 10px; align-items: center; }\n" +
-                "        .video-card:hover { background: #21262d; }\n" +
-                "        .video-card.active { background: #1f6feb; color: white; border-left: 3px solid #58a6ff; }\n" +
-                "        .v-thumb { width: 60px; height: 40px; background: #000; object-fit: cover; border-radius: 4px; }\n" +
-                "        .v-info { display: flex; flex-direction: column; overflow: hidden; }\n" +
-                "        .v-name { font-weight: bold; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n" +
-                "        .v-meta { font-size: 10px; opacity: 0.7; }\n" +
-                "        \n" +
-                "        .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }\n" +
-                "        .container { width: 100%; max-width: 800px; }\n" +
-                "        h1 { border-bottom: 1px solid #30363d; padding-bottom: 10px; color: #58a6ff; margin-top: 0; }\n" +
-                "        .drop-zone { border: 2px dashed #30363d; border-radius: 6px; padding: 40px; text-align: center; color: #8b949e; cursor: pointer; transition: 0.2s; margin-bottom: 20px; }\n" +
-                "        .drop-zone:hover { border-color: #58a6ff; background: #161b22; color: #58a6ff; }\n" +
-                "        .lab-bench { display: none; width: 100%; }\n" +
-                "        .viewport { position: relative; margin: 0 auto; border: 1px solid #30363d; display: inline-block; }\n" +
-                "        video { display: block; max-width: 100%; }\n" +
-                "        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: screen; }\n" +
-                "        .controls { background: #161b22; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #30363d; }\n" +
-                "        .control-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }\n" +
-                "        input[type=range] { width: 60%; accent-color: #58a6ff; }\n" +
-                "        .val-disp { color: #58a6ff; font-weight: bold; width: 50px; text-align: right; }\n" +
-                "        .graph-box { height: 100px; background: #000; border: 1px solid #30363d; margin-top: 10px; position: relative; overflow: hidden; }\n" +
-                "        .graph-line { stroke: #238636; stroke-width: 1; fill: none; }\n" +
-                "        .graph-threshold { stroke: #d29922; stroke-dasharray: 4; stroke-width: 1; }\n" +
-                "        .graph-alert { stroke: #da3633; stroke-width: 2; opacity: 0.5; }\n" +
-                "        .btn { background: #238636; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: inherit; margin-top: 10px; width: 100%; }\n" +
-                "        .btn:hover { background: #2ea043; }\n" +
-                "        .status { margin-top: 5px; font-size: 12px; color: #8b949e; }\n" +
-                "        .legend { display: flex; gap: 10px; font-size: 10px; margin-top: 5px; }\n" +
-                "        .dot { width: 8px; height: 8px; display: inline-block; border-radius: 50%; }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <!-- SIDEBAR GALLERY -->\n" +
-                "    <div class=\"sidebar\">\n" +
-                "        <div class=\"sidebar-header\">\n" +
-                "            <span>📚 Galería</span>\n" +
-                "            <button class=\"refresh-btn\" onclick=\"fetchLibrary()\">🔄</button>\n" +
-                "        </div>\n" +
-                "        <div class=\"video-list\" id=\"libraryList\">\n" +
-                "            <div style=\"padding:10px; text-align:center; color:#8b949e\">Cargando...</div>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "\n" +
-                "    <!-- MAIN WORKBENCH -->\n" +
-                "    <div class=\"main-content\">\n" +
-                "        <div class=\"container\">\n" +
-                "            <h1>🔬 Laboratorio Forense</h1>\n" +
-                "            <div class=\"drop-zone\" id=\"dropZone\">📂 ARRASTRA UN VIDEO O SELECCIONA DE LA GALERÍA</div>\n" +
-                "            \n" +
-                "            <div class=\"lab-bench\" id=\"labBench\">\n" +
-                "                <div style=\"text-align:center;\">\n" +
-                "                    <div class=\"viewport\">\n" +
-                "                        <video id=\"videoSrc\" controls width=\"352\" crossorigin=\"anonymous\"></video>\n" +
-                "                        <canvas id=\"motionOverlay\"></canvas>\n" +
-                "                    </div>\n" +
-                "                </div>\n" +
-                "\n" +
-                "                <div class=\"graph-box\">\n" +
-                "                    <svg id=\"graphSvg\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\"></svg>\n" +
-                "                </div>\n" +
-                "                <div class=\"legend\">\n" +
-                "                    <span><span class=\"dot\" style=\"background:#238636\"></span> Score</span>\n" +
-                "                    <span><span class=\"dot\" style=\"background:#d29922\"></span> Umbral</span>\n" +
-                "                    <span><span class=\"dot\" style=\"background:#da3633\"></span> Alerta</span>\n" +
                "<html lang=\"es\">\n" +
                "<head>\n" +
+               "    <meta charset=\"UTF-8\">\n" +
+               "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+               "    <title>Motion Lab 🧪</title>\n" +
+               "    <style>\n" +
+               "        body { margin:0; font-family: sans-serif; background: #121212; color: #e0e0e0; display:flex; flex-direction:column; height:100vh; overflow:hidden; }\n" +
+               "        \n" +
+               "        /* --- PAGE 1: GALLERY --- */\n" +
+               "        #gallery-page { display:none; flex-direction:column; height:100%; padding:20px; overflow-y:auto; box-sizing:border-box; }\n" +
+               "        .gallery-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }\n" +
+               "        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }\n" +
+               "        \n" +
+               "        .video-card { background: #1e1e1e; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s; border:1px solid #333; position:relative; }\n" +
+               "        .video-card:hover { transform: scale(1.02); border-color:#0288d1; }\n" +
+               "        \n" +
+               "        /* FIX: Android 4.4 doesn't support aspect-ratio. Use padding hack. */\n" +
+               "        .media-container { position: relative; width: 100%; padding-bottom: 56.25%; /* 16:9 */ background: #000; overflow:hidden; }\n" +
+               "        .v-thumb, .v-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display:block; }\n" +
+               "        \n" +
+               "        .v-info { padding: 8px; font-size: 12px; color: #b0b0b0; }\n" +
+               "        .v-name { font-weight: bold; color: #fff; display:block; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n" +
+               "\n" +
+               "        /* --- PAGE 2: WORKBENCH --- */\n" +
+               "        #workbench-page { display:none; flex-direction:row; height:100%; }\n" +
+               "        .main-content { flex: 1; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; background:#000; }\n" +
+               "        .top-bar { display:flex; align-items:center; padding: 5px 10px; background:#1e1e1e; border-bottom:1px solid #333; height:40px; }\n" +
+               "        .back-btn { background:none; border:none; color:#bbb; font-size:18px; cursor:pointer; margin-right:15px; padding:5px; }\n" +
+               "        .back-btn:hover { color:#fff; }\n" +
+               "\n" +
+               "        canvas { background: #000; border: 1px solid #333; max-width: 100%; max-height: calc(100vh - 250px); }\n" +
+               "        .controls { display: flex; gap: 10px; padding: 10px; background: #1e1e1e; align-items: center; border-top:1px solid #333; }\n" +
+               "        button { background: #333; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }\n" +
+               "        button:hover { background: #444; }\n" +
+               "        button.active { background: #0288d1; }\n" +
+               "        .param-group { display: flex; flex-direction: column; gap: 5px; margin-left:15px; border-left:1px solid #444; padding-left:15px; }\n" +
+               "        label { font-size: 11px; color: #888; }\n" +
+               "        input[type=range] { width: 100px; }\n" +
+               "        #status { margin-left: auto; font-family: monospace; color: #0f0; font-size:12px; }\n" +
+               "    </style>\n" +
+               "</head>\n" +
+               "<body>\n" +
+               "    <!-- PAGE 1: GALLERY -->\n" +
+               "    <div id=\"gallery-page\">\n" +
+               "        <div class=\"gallery-header\">\n" +
+               "            <h2 style=\"margin:0\">📚 Galería de Grabaciones</h2>\n" +
+               "            <button onclick=\"fetchLibrary()\" style=\"background:#0288d1\">🔄 Actualizar</button>\n" +
+               "        </div>\n" +
+               "        <div class=\"gallery-grid\" id=\"libraryList\">\n" +
+               "            <div style=\"padding:20px; text-align:center; color:#666; grid-column:1/-1\">Cargando videos...</div>\n" +
+               "        </div>\n" +
+               "    </div>\n" +
+               "\n" +
+               "    <!-- PAGE 2: WORKBENCH -->\n" +
+               "    <div id=\"workbench-page\">\n" +
+               "        <div class=\"main-content\">\n" +
+               "            <div class=\"top-bar\">\n" +
+               "                <button class=\"back-btn\" onclick=\"goBack()\">⬅ Volver</button>\n" +
+               "                <span id=\"current-video-title\" style=\"font-weight:bold; color:#fff\">Sin Video</span>\n" +
+               "                <span id=\"status\">Simulación Inactiva</span>\n" +
+               "            </div>\n" +
+               "            \n" +
+               "            <video id=\"videoPlayer\" controls style=\"display:none\"></video>\n" +
+               "            <!-- Canvas de Análisis -->\n" +
+               "            <canvas id=\"analysisCanvas\" width=\"640\" height=\"480\"></canvas>\n" +
+               "\n" +
+               "            <div class=\"controls\">\n" +
+               "                <button onclick=\"togglePlay()\" id=\"btnPlay\">⏯ Play/Pause</button>\n" +
+               "                \n" +
+               "                <div class=\"param-group\">\n" +
+               "                    <label>Sensibilidad: <span id=\"val-sens\">15</span>%</label>\n" +
+               "                    <input type=\"range\" min=\"0\" max=\"50\" value=\"15\" oninput=\"updateParam('sens', this.value)\">\n" +
+               "                </div>\n" +
+               "                \n" +
+               "                <div class=\"param-group\">\n" +
+               "                    <label>Min Pixels: <span id=\"val-pix\">20</span></label>\n" +
+               "                    <input type=\"range\" min=\"5\" max=\"100\" value=\"20\" oninput=\"updateParam('pix', this.value)\">\n" +
+               "                </div>\n" +
+               "                \n" +
+               "                <div class=\"param-group\">\n" +
+               "                    <label>Debug Mode</label>\n" +
+               "                    <button onclick=\"toggleDebug()\" id=\"btnDebug\">👁️ Ver Malla</button>\n" +
+               "                </div>\n" +
+               "            </div>\n" +
+               "            \n" +
+               "            <!-- Terminal Output -->\n" +
+               "            <div id=\"terminal\" style=\"background:#000; color:#0f0; font-family:monospace; padding:10px; font-size:11px; height:100px; overflow-y:auto; border-top:1px solid #333; margin-top:5px;\">\n" +
+               "                > Web Motion Lab v3.9.10 ready.\n" +
+               "            </div>\n" +
+               "        </div>\n" +
+               "    </div>\n" +
+               "\n" +
+               "    <script>\n" +
+               "        /* --- ROUTING & INIT --- */\n" +
+               "        const urlParams = new URLSearchParams(window.location.search);\n" +
+               "        const videoParam = urlParams.get('video');\n" +
+               "\n" +
+               "        if (videoParam) {\n" +
+               "            showWorkbench(videoParam);\n" +
+               "        } else {\n" +
+               "            showGallery();\n" +
+               "        }\n" +
+               "\n" +
+               "        function showGallery() {\n" +
+               "            document.getElementById('gallery-page').style.display = 'flex';\n" +
+               "            document.getElementById('workbench-page').style.display = 'none';\n" +
+               "            fetchLibrary();\n" +
+               "        }\n" +
+               "\n" +
+               "        function showWorkbench(filename) {\n" +
+               "            document.getElementById('gallery-page').style.display = 'none';\n" +
+               "            document.getElementById('workbench-page').style.display = 'flex';\n" +
+               "            // Update URL without reload if not there\n" +
+               "            if(!videoParam) {\n" +
+               "                const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?video=' + filename;\n" +
+               "                window.history.pushState({path:newUrl},'',newUrl);\n" +
+               "            }\n" +
+               "            loadVideo(filename);\n" +
+               "        }\n" +
+               "\n" +
+               "        function goBack() {\n" +
+               "            // Go to root\n" +
+               "            window.location.href = window.location.pathname;\n" +
+               "        }\n" +
+               "\n" +
+               "        /* --- GALLERY LOGIC --- */\n" +
+               "        async function fetchLibrary() {\n" +
+               "            const list = document.getElementById('libraryList');\n" +
+               "            try {\n" +
+               "                const resp = await fetch('/api/list_videos?limit=50');\n" +
+               "                const videos = await resp.json();\n" +
+               "                \n" +
+               "                list.innerHTML = '';\n" +
+               "                if (videos.length === 0) list.innerHTML = '<div style=\"padding:20px;grid-column:1/-1;text-align:center\">Sin videos</div>';\n" +
+               "                \n" +
+               "                videos.forEach(v => {\n" +
+               "                    const div = document.createElement('div');\n" +
+               "                    div.className = 'video-card';\n" +
+               "                    \n" +
+               "                    let mediaHtml = '';\n" +
+               "                    if (v.preview) {\n" +
+               "                         mediaHtml = `<canvas class=\"v-canvas\" width=\"60\" height=\"40\" data-src=\"/${v.preview}\"></canvas>`;\n" +
+               "                    } else if (v.thumb) {\n" +
+               "                         mediaHtml = `<img src=\"/thumbnails/${v.thumb}\" class=\"v-thumb\">`;\n" +
+               "                    } else {\n" +
+               "                         mediaHtml = `<div class=\"v-thumb\" style=\"background:#333\"></div>`;\n" +
+               "                    }\n" +
+               "\n" +
+               "                    div.innerHTML = `\n" +
+               "                        <div class=\"media-container\">\n" +
+               "                            ${mediaHtml}\n" +
+               "                        </div>\n" +
+               "                        <div class=\"v-info\">\n" +
+               "                            <span class=\"v-name\">${v.name}</span>\n" +
+               "                            <span class=\"v-meta\">${v.date} | ${v.size}</span>\n" +
+               "                        </div>\n" +
+               "                    `;\n" +
+               "                    // Navigate to Workbench\n" +
+               "                    div.onclick = () => window.location.href = '?video=' + v.name;\n" +
+               "                    list.appendChild(div);\n" +
+               "\n" +
+               "                    if(v.preview) {\n" +
+               "                        const cnv = div.querySelector('canvas');\n" +
+               "                        loadMiniPreview(`/${v.preview}`, cnv);\n" +
+               "                    }\n" +
+               "                });\n" +
+               "            } catch (e) {\n" +
+               "                list.innerHTML = '<div style=\"color:red;padding:10px\">Error API</div>';\n" +
+               "            }\n" +
+               "        }\n" +
+               "\n" +
+               "        // === MINI MJPEG PLAYER (Dashboard Port) ===\n" +
+               "        function loadMiniPreview(url, canvas) {\n" +
                "            const ctx = canvas.getContext('2d');\n" +
                "            const frames = [];\n" +
                "            let idx = 0;\n" +
