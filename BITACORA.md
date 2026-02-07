@@ -3241,3 +3241,8 @@ Potenciamos el panel lateral del Lab:
 *   **Problema**: Pantalla negra en el analizador de video (Chrome/Safari).
 *   **Causa**: Navegadores modernos no soportan streams MJPEG (`octet-stream`) dentro de etiquetas `<video>`.
 *   **Solución**: Implementado `MJPEGPlayer` en JavaScript que descarga el archivo, parsea los frames JPEG (SOI/EOI) manualmente y los dibuja en el `<canvas>` del analizador. Esto reemplaza completamente el uso de `<video>` y garantiza compatibilidad multiplataforma.
+
+### 🐛 Fix (v3.9.10-dev.28): JS Hoisting Again
+*   **Problema**: El reproductor MJPEG manual (`MJPEGPlayer`) fallaba con `ReferenceError: Cannot access 'MJPEGPlayer' before initialization`.
+*   **Causa**: Las clases en JS no tienen *hoisting*. El código de inicialización/routing se ejecutaba *antes* de que la clase estuviera definida.
+*   **Solución**: Se movió el bloque de lógica de routing (`if(videoParam)...`) al final del script, asegurando que todas las clases y funciones estén cargadas antes de usarse.

@@ -108,12 +108,7 @@ public class WebMotionLab {
                "        var animationId;\n" +
                "        var debugMode = false;\n" +
                "\n" +
-               "        /* --- ROUTING & INIT --- */\n" +
-               "        const urlParams = new URLSearchParams(window.location.search);\n" +
-               "        const videoParam = urlParams.get('video');\n" +
-               "\n" +
-               "        if (videoParam) {\n" +
-               "            showWorkbench(videoParam);\n" +
+               "        /* --- ROUTING & INIT --- */\n        // Moved to bottom to fix Hoisting\n  showWorkbench(videoParam);\n" +
                "        } else {\n" +
                "            showGallery();\n" +
                "        }\n" +
@@ -510,6 +505,16 @@ public class WebMotionLab {
                "                    pixels: motionPixels\n" +
                "                };\n" +
                "            }\n" +
+               "        }\n" +
+               "\n" +
+               "        /* --- ROUTING & INIT (Moved here) --- */\n" +
+               "        const urlParams = new URLSearchParams(window.location.search);\n" +
+               "        const videoParam = urlParams.get('video');\n" +
+               "\n" +
+               "        if (videoParam) {\n" +
+               "            showWorkbench(videoParam);\n" +
+               "        } else {\n" +
+               "            showGallery();\n" +
                "        }\n" +
                "    </script>\n" +
                "</body>\n" +
