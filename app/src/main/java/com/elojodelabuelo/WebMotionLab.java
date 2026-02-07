@@ -195,11 +195,20 @@ public class WebMotionLab {
                 "                videos.forEach(v => {\n" +
                 "                    const div = document.createElement('div');\n" +
                 "                    div.className = 'video-card';\n" +
-                "                    // Usamos el thumbnail real o un placeholder\n" +
-                "                    const thumbUrl = v.thumb ? '/thumbnails/' + v.thumb : '';\n" +
                 "                    \n" +
+                "                    // Show Preview (Autoplay) if available, else Thumbnail\n" +
+                "                    let mediaHtml = '';\n" +
+                "                    if (v.preview) {\n" +
+                "                         // Autoplay video preview (muted, loop)\n" +
+                "                         mediaHtml = `<img src=\"/preview_${v.preview}\" class=\"v-thumb\" style=\"object-fit:cover\">`;\n" +
+                "                    } else if (v.thumb) {\n" +
+                "                         mediaHtml = `<img src=\"/thumbnails/${v.thumb}\" class=\"v-thumb\">`;\n" +
+                "                    } else {\n" +
+                "                         mediaHtml = `<div class=\"v-thumb\" style=\"background:#333\"></div>`;\n" +
+                "                    }\n" +
+                "\n" +
                 "                    div.innerHTML = `\n" +
-                "                        <img src=\"${thumbUrl}\" class=\"v-thumb\" onerror=\"this.style.display='none'\">\n" +
+                "                        ${mediaHtml}\n" +
                 "                        <div class=\"v-info\">\n" +
                 "                            <span class=\"v-name\">${v.name}</span>\n" +
                 "                            <span class=\"v-meta\">${v.date} | ${v.size}</span>\n" +

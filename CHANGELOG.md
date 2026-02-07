@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.17] - 2026-02-07
+### Added
+- **Motion Lab**: Autoplay de previews en la galería lateral. Permite previsualizar el contenido del video antes de cargarlo.
+
 ## [v3.9.10-dev.16] - 2026-02-07
 ### Added
 - **Motion Lab Gallery**: Panel lateral en `/lab` para cargar videos históricos directamente desde la memoria del dispositivo sin descarga previa.

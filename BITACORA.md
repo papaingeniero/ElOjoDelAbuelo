@@ -3166,3 +3166,20 @@ Integramos una **Galería Lateral** directamente en la interfaz del laboratorio.
 
 ### 🎓 3. Lecciones Aprendidas
 *   **API Economy**: Cuando tienes una buena API interna, las nuevas features de UI salen "gratis". La inversión hecha en Phase 26 (List API) ha pagado dividendos hoy.
+
+## 🎞️ Phase 42: Live Previews (Autoplay Gallery)
+**Versión**: v3.9.10-dev.17 | **Fecha**: 07 de Febrero de 2026
+
+### 📜 1. El Problema
+La "Galería" añadida en la Phase 41 mostraba thumbnails estáticos. Para elegir el "video perfecto" para analizar, el usuario tenía que ir "a ciegas" o basarse solo en la hora/fecha.
+El usuario solicitó: *"Quiero ver qué pasa en el video antes de elegirlo, igual que en el dashboard"*.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Potenciamos el panel lateral del Lab:
+*   **Preview Injection**: El Dashboard genera archivos `.mjpeg` de baja resolución (`preview_XXX.mjpeg`) para cada video.
+*   **Web Integration**: Modificamos `WebMotionLab.java` para buscar este archivo.
+*   **Autoplay**: Al renderizar la tarjeta en la galería, inyectamos un `<img>` (que los navegadores modernos tratan como stream MJPEG) apuntando a `/preview_...`.
+*   **Resultado**: La galería ahora cobra vida. Al abrir el lab, ves 50 ventanitas en movimiento mostrando la acción de cada clip. Selección visual inmediata.
+
+### 🎓 3. Lecciones Aprendidas
+*   **MJPEG como GIF**: MJPEG es un formato antiguo pero gloriosamente simple para web. No necesita `<video>`, codecs, ni buffering complejo. Un simple `<img>` tag te da "live streaming" o "preview animada" con cero coste de CPU en cliente.
