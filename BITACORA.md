@@ -3259,3 +3259,8 @@ Potenciamos el panel lateral del Lab:
     *   **Threshold**: Ajustado a `50` (diferencia de luminancia mínima).
     *   **Smart Filter**: Implementado filtro de luz global. Si cambia >60% de los píxeles analizados, se descarta el movimiento (evita falsos positivos al encender luces).
     *   **Visualización**: El modo debug ahora modifica los píxeles rojos directamente en el `ImageData` del canvas, mostrando exactamente qué puntos superaron el umbral.
+
+### 👁️ UI (v3.9.10-dev.31): Visual Debugging
+*   **Grid Rojo**: Ahora, al activar "Debug", el canvas se repinta con los píxeles modificados `(255,0,0)` por el motor de movimiento, permitiendo ver exactamente qué zonas activan la alarma.
+*   **Indicador Smart Filter**: Añadido feedback visual (texto naranja "💡 CAMBIO DE LUZ") cuando se detecta un cambio global de iluminación que es ignorado por el algoritmo, replicando el comportamiento de "Flash protection" de la app.
+*   **Corrección Lógica Reference Frame**: Ahora el `prevFrame` NO se actualiza si el Smart Filter salta (para evitar que la luz encendida se convierta inmediatamente en el nuevo fondo normal; esperamos a que se estabilice). *Nota: Esto difiere levemente de Java que actualiza referencia, revisaremos si causa loops.*

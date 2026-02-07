@@ -298,10 +298,12 @@ public class WebMotionLab {
                "                    // Callback for Engine\n" +
                "                    if (this.onFrame) {\n" +
                "                        try {\n" +
-               "                            // Extract pixels for engine (expensive?)\n" +
-               "                            // If engine processes ImageData, we need ctx.getImageData\n" +
                "                            const frameData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\n" +
                "                            this.onFrame(frameData.data);\n" +
+               "                            // Visual Debug: Repaint modified pixels if debug is on\n" +
+               "                            if (window.debugMode) {\n" +
+               "                                this.ctx.putImageData(frameData, 0, 0);\n" +
+               "                            }\n" +
                "                        } catch(e) { console.error(e); }\n" +
                "                    }\n" +
                "\n" +
@@ -420,15 +422,23 @@ public class WebMotionLab {
                "            var frame = ctx.getImageData(0, 0, canvas.width, canvas.height);\n" +
                "            \n" +
                "            // Run Enzyme\n" +
-               "            if (engine) {\n" +
-               "                var result = engine.process(frame.data);\n" +
-               "                if (result.motion) {\n" +
-               "                   document.getElementById('status').textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n" +
-               "                   drawMotionGrid(result.grid);\n" +
-               "                } else {\n" +
-               "                   document.getElementById('status').textContent = '...';\n" +
+               "            window.mjpegPlayer.onFrame = (data) => {\n" +
+               "                if (engine) {\n" +
+               "                    var result = engine.process(data);\n" +
+               "                    const statusEl = document.getElementById('status');\n" +
+               "                    \n" +
+               "                    if (result.filtered) {\n" +
+               "                       statusEl.textContent = '💡 CAMBIO DE LUZ (Ignorado)';\n" +
+               "                       statusEl.style.color = '#FFA500'; // Orange\n" +
+               "                    } else if (result.motion) {\n" +
+               "                       statusEl.textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n" +
+               "                       statusEl.style.color = '#FF0000'; // Red\n" +
+               "                    } else {\n" +
+               "                       statusEl.textContent = '...';\n" +
+               "                       statusEl.style.color = '#888';\n" +
+               "                    }\n" +
                "                }\n" +
-               "            }\n" +
+               "            };\n" +
                "            \n" +
                "            animationId = requestAnimationFrame(processLoop);\n" +
                "        }\n" +
@@ -542,7 +552,9 @@ public class WebMotionLab {
                "                \n" +
                "                // Update Reference Frame\n" +
                "                // In Java: System.arraycopy(currentFrame, 0, previousFrame, 0, currentFrame.length);\n" +
-               "                this.prevFrame.set(currentData);\n" +
+               "                if (!filtered) {\n" +
+               "                    this.prevFrame.set(currentData);\n" +
+               "                }\n" +
                "                \n" +
                "                return { \n" +
                "                    motion: diffCount > this.MOTION_PIXEL_COUNT,\n" +
