@@ -3150,3 +3150,19 @@ Implementamos el **Web Motion Lab**: Una suite forense "Client-Side" aislada.
 
 ### 🎓 3. Lecciones Aprendidas
 *   **Simulación en el Borde**: Para sistemas empotrados limitados, la mejor forma de procesar datos complejos es enviar los datos crudos al usuario y dejar que su navegador haga el trabajo pesado de análisis y visualización.
+
+## 🚀 Phase 41: Lab Gallery (Acceso Directo)
+**Versión**: v3.9.10-dev.16 | **Fecha**: 07 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+El "Web Motion Lab" era potente, pero tedioso: tenías que descargar el video del Abuelo al PC y luego arrastrarlo de vuelta al navegador. Un paso innecesario.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Integramos una **Galería Lateral** directamente en la interfaz del laboratorio.
+*   **Reutilización Inteligente**: Usamos la API `/api/list_videos` que ya existía para el dashboard principal. No tocamos ni una línea de Java en el servidor.
+*   **Frontend SPA**: El cliente JS descarga la lista JSON y renderiza un panel lateral con thumbnails.
+*   **One-Click Load**: Al pulsar un video, se carga inmediatamente en el "Banco de Pruebas" usando la ruta `/video_FILENAME`.
+*   **Resultado**: Ahora puedes auditar 10 videos sospechosos en 30 segundos sin salir de la herramienta.
+
+### 🎓 3. Lecciones Aprendidas
+*   **API Economy**: Cuando tienes una buena API interna, las nuevas features de UI salen "gratis". La inversión hecha en Phase 26 (List API) ha pagado dividendos hoy.
