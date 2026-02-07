@@ -99,6 +99,15 @@ public class WebMotionLab {
                "    </div>\n" +
                "\n" +
                "    <script>\n" +
+               "        /* --- GLOBALS --- */\n" +
+               "        var video = document.getElementById('videoPlayer');\n" +
+               "        var canvas = document.getElementById('analysisCanvas');\n" +
+               "        var ctx = canvas.getContext('2d');\n" +
+               "        var engine = null;\n" +
+               "        var isPlaying = false;\n" +
+               "        var animationId;\n" +
+               "        var debugMode = false;\n" +
+               "\n" +
                "        /* --- ROUTING & INIT --- */\n" +
                "        const urlParams = new URLSearchParams(window.location.search);\n" +
                "        const videoParam = urlParams.get('video');\n" +
@@ -228,13 +237,8 @@ public class WebMotionLab {
                "        }\n" +
                "\n" +
                "        /* --- WORKBENCH LOGIC --- */\n" +
-               "        var video = document.getElementById('videoPlayer');\n" +
-               "        var canvas = document.getElementById('analysisCanvas');\n" +
-               "        var ctx = canvas.getContext('2d');\n" +
-               "        var engine = null;\n" +
-               "        var isPlaying = false;\n" +
-               "        var animationId;\n" +
-               "\n" +
+               "        // Vars moved to top\n" +
+               "        \n" +
                "        function loadVideo(filename) {\n" +
                "            document.getElementById('current-video-title').textContent = filename;\n" +
                "            video.src = '/video_' + filename;\n" +
@@ -294,7 +298,6 @@ public class WebMotionLab {
                "            }\n" +
                "        }\n" +
                "        \n" +
-               "        var debugMode = false;\n" +
                "        function toggleDebug() {\n" +
                "            debugMode = !debugMode;\n" +
                "            document.getElementById('btnDebug').classList.toggle('active');\n" +

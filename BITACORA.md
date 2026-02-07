@@ -3217,3 +3217,8 @@ Potenciamos el panel lateral del Lab:
 *   **Incidente**: El archivo `WebMotionLab.java` se corrompió durante la implementación de la vista dividida, mezclando código viejo (L1-86) con código nuevo (L87+), lo que causaba layouts rotos en móviles.
 *   **Corrección**: Se reescribió el archivo completo con la implementación limpia y correcta del layout SPA + Padding Hack.
 *   **Fix Routing**: Se relajó la ruta `/lab` en `NanoHttpServer` para usar `startsWith("/lab")`, permitiendo que navegadores que añaden taling-slash (`/lab/`) funcionen correctamente en lugar de redirigir al dashboard.
+
+### 🐛 Fix (v3.9.10-dev.23): JS Hoisting Crash
+*   **Problema**: Al entrar directamente a un video (`/lab?video=...`), la pantalla se quedaba en negro.
+*   **Causa**: La función `loadVideo()` se ejecutaba *antes* de que la variable `video` fuera declarada al final del script (Hoisting de la llamada, pero no de la inicialización).
+*   **Solución**: Se movieron todas las declaraciones globales (`video`, `canvas`, `ctx`) al principio del bloque `<script>`, asegurando que existan antes de que el routing intente usarlas.
