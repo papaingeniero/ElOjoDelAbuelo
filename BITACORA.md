@@ -3232,3 +3232,7 @@ Potenciamos el panel lateral del Lab:
 *   **Problema**: Las previews en la galería se veían muy pixeladas.
 *   **Causa**: El elemento `<canvas>` tenía un tamaño hardcoded de **60x40** píxeles, lo cual forzaba un downscaling agresivo y luego un upscaling borroso por CSS.
 *   **Solución**: Se aumentó la resolución interna del canvas a **320x240** (QVGA), que coincide mejor con la resolución nativa de los videos MJPEG, ofreciendo una imagen nítida en la galería.
+
+### 🚑 Fix (v3.9.10-dev.26): High-Res Previews (Applied)
+*   **Problema**: La versión anterior no aplicó correctamente el cambio de resolución en `WebMotionLab.java`.
+*   **Solución**: Se fuerza la actualización del canvas a **320x240** píxeles. Validado visualmente que el código fuente ahora refleja el cambio.

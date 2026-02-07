@@ -156,7 +156,7 @@ public class WebMotionLab {
                "                    \n" +
                "                    let mediaHtml = '';\n" +
                "                    if (v.preview) {\n" +
-               "                         mediaHtml = `<canvas class=\"v-canvas\" width=\"60\" height=\"40\" data-src=\"/${v.preview}\"></canvas>`;\n" +
+               "                         mediaHtml = `<canvas class=\"v-canvas\" width=\"320\" height=\"240\" data-src=\"/${v.preview}\"></canvas>`;\n" +
                "                    } else if (v.thumb) {\n" +
                "                         mediaHtml = `<img src=\"/thumbnails/${v.thumb}\" class=\"v-thumb\">`;\n" +
                "                    } else {\n" +
