@@ -12,6 +12,14 @@ public class MotionDetector {
     private static final int THRESHOLD = 50; // Pixel difference threshold
     private static final int MOTION_PIXEL_COUNT = 50; // Number of different pixels to trigger motion
 
+    // 1. AÑADIR VARIABLES DE CLASE
+    private static final float LIGHT_CHANGE_RATIO = 0.60f; // Umbral de "Luz Global" (60%)
+    private boolean smartFilterEnabled = true;
+
+    public void setSmartFilterEnabled(boolean enabled) {
+        this.smartFilterEnabled = enabled;
+    }
+
     public int getMotionScore(byte[] currentFrame, int width, int height) {
         if (previousFrame == null || previousFrame.length != currentFrame.length) {
             previousFrame = currentFrame.clone();
@@ -19,29 +27,33 @@ public class MotionDetector {
         }
 
         int diffCount = 0;
+        int totalPixelsChecked = 0; // Nuevo contador
         // YUV NV21 format: Y component is the first width * height bytes.
         // We only check luminance (Y) for motion.
         int limit = width * height;
 
         for (int i = 0; i < limit; i += STRIDE) {
+            totalPixelsChecked++;
             int val1 = currentFrame[i] & 0xFF;
-            int val2 = previousFrame[i] & 0xFF; // previousFrame is updated at the end?
-                                                // Actually, if we update it every frame, we detect inter-frame motion.
+            int val2 = previousFrame[i] & 0xFF; 
 
             if (Math.abs(val1 - val2) > THRESHOLD) {
                 diffCount++;
             }
         }
 
+        // --- LÓGICA SMART FILTER ---
+        if (smartFilterEnabled && totalPixelsChecked > 0) {
+            float changeRatio = (float) diffCount / totalPixelsChecked;
+            if (changeRatio > LIGHT_CHANGE_RATIO) {
+                // Es un cambio de luz (>60%). Actualizamos referencia pero ignoramos movimiento.
+                System.arraycopy(currentFrame, 0, previousFrame, 0, currentFrame.length);
+                return 0; 
+            }
+        }
+        // ---------------------------
+
         // Update previous frame for next comparison
-        // Optimization: Instead of full clone, we could just swap reference if the
-        // caller allocates new buffer.
-        // But Camera.PreviewCallback reuses the same buffer often or we get a new one.
-        // Since we need to persist the reference to 'currentFrame' as 'previousFrame'
-        // for the NEXT call,
-        // we must be careful if the buffer is reused by Camera API.
-        // With setPreviewCallbackWithBuffer, we control the buffers.
-        // For safety here, we clone. System copy is fast enough for 352x288.
         System.arraycopy(currentFrame, 0, previousFrame, 0, currentFrame.length);
 
         return diffCount;

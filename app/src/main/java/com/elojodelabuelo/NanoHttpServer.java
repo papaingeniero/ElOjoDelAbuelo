@@ -457,9 +457,9 @@ public class NanoHttpServer {
             int webPanY = prefs.getInt("webPanY", 0);
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
+                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b, \"smartFilter\":%b}",
                     sens, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX, webPanY, 
-                    SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive);
+                    SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive, SentinelService.isSmartFilterActive);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -500,8 +500,13 @@ public class NanoHttpServer {
                         if (kv.length == 2) {
                             String key = kv[0];
                             String val = kv[1];
+                            boolean smartFilter = true; // Default
+                            
                             if (key.equals("sens"))
                                 sens = Integer.parseInt(val);
+                            else if (key.equals("smartFilter")) 
+                                SentinelService.updateSmartFilter(Boolean.parseBoolean(val));
+                            else if (key.equals("time"))
                             else if (key.equals("time"))
                                 time = Integer.parseInt(val);
                             else if (key.equals("active"))
@@ -1042,11 +1047,20 @@ public class NanoHttpServer {
                 "         <button onclick='testTelegram()' style='width:100%; margin-top:8px; padding:6px; background:#0288d1; border:none; color:white; border-radius:4px; cursor:pointer;'>🔔 PROBAR CONEXIÓN</button>" +
                 "      </div>\n" +
                 "\n" +
-                "      <h4 style='border-bottom:1px solid #444; margin-top:20px; padding-bottom:5px; color:#c62828; margin-bottom:10px;'>Zona de Peligro</h4>\n"
-                +
-                "      <button class='btn-cancel' onclick='deleteAllVideos()' style='width:100%; margin-bottom:20px;'>🗑️ BORRAR TODOS LOS VIDEOS</button>\n"
-                +
+                "      <div class='settings-row' style='margin-top:15px; border-top:1px dashed #444; padding-top:10px;'>\n" +
+                "         <label>💡 Filtro Anti-Luces:</label>\n" +
+                "         <div style='display:flex; align-items:center;'>\n" +
+                "             <label class='switch'>\n" +
+                "                 <input type='checkbox' id='set-smart-filter'>\n" +
+                "                 <span class='slider'></span>\n" +
+                "             </label>\n" +
+                "         </div>\n" +
+                "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Ignora cambios masivos de luz (bombillas).</div>\n" +
                 "\n" +
+                "      <div style='text-align:center; margin-top:20px; border-top:1px solid #333; padding-top:15px;'>\n" +
+                "        <button onclick='saveSettings()' style='background:#2E7D32; color:white; padding:12px 30px; border:none; border-radius:4px; font-weight:bold; font-size:16px;'>💾 GUARDAR CAMBIOS</button>\n" +
+                "      </div>\n" +
                 "      <div style='display:flex; margin-top:20px;'>\n" +
                 "         <button class='btn-save' onclick='saveSettings()'>GUARDAR</button>\n" +
                 "         <button class='btn-cancel' onclick='closeSettings()'>CANCELAR</button>\n" +
@@ -1093,7 +1107,7 @@ public class NanoHttpServer {
                 "        }\n" +
                 "    }\n" +
                 "}\n" +
-                // --- ZOOM / TRANSFORM LOGIC (INJECTED) ---
+                "// --- ZOOM / TRANSFORM LOGIC (INJECTED) ---\n" +
                 "function updateWebTransform(z, x, y) {\n" +
                 "  document.getElementById('web-zoom-val').textContent = z + 'x';\n" +
                 "  \n" +
@@ -1411,6 +1425,7 @@ public class NanoHttpServer {
                 "     if(data.tgToken) document.getElementById('tg-token').value = data.tgToken;\n" +
                 "     if(data.tgChatId) document.getElementById('tg-chatid').value = data.tgChatId;\n" +
                 "     if(data.tgActive !== undefined) document.getElementById('tg-active').checked = data.tgActive;\n" +
+                "     if(data.smartFilter !== undefined) document.getElementById('set-smart-filter').checked = data.smartFilter;\n" +
                 "     updateSensLabel(data.sens);\n" +
                 "  });\n" +
                 "}\n" +
@@ -1427,16 +1442,17 @@ public class NanoHttpServer {
                 "   var wZoom = document.getElementById('web-zoom').value;\n" +
                 "   var wPanX = document.getElementById('web-pan-x').value || 0;\n" +
                 "   var wPanY = document.getElementById('web-pan-y').value || 0;\n" +
-                "   var tgToken = document.getElementById('tg-token').value;\n" +
-                "   var tgChatId = document.getElementById('tg-chatid').value;\n" +
+                "   var tgToken = encodeURIComponent(document.getElementById('tg-token').value);\n" +
+                "   var tgChatId = encodeURIComponent(document.getElementById('tg-chatid').value);\n" +
                 "   var tgActive = document.getElementById('tg-active').checked;\n" +
+                "   var smartFilter = document.getElementById('set-smart-filter').checked;\n" +
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "   var qs = '?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
                 "            '&min_free_space=' + minSpace +\n" +
                 "            '&webZoom=' + wZoom + '&webPanX=' + wPanX + '&webPanY=' + wPanY +\n" +
-                "            '&tgToken=' + encodeURIComponent(tgToken) + '&tgChatId=' + encodeURIComponent(tgChatId) + '&tgActive=' + tgActive;\n" +
+                "            '&tgToken=' + tgToken + '&tgChatId=' + tgChatId + '&tgActive=' + tgActive + '&smartFilter=' + smartFilter;\n" +
                 "   fetch('/api/save_settings' + qs, { method: 'POST' })\n" +
                 "   .then(function() { setTimeout(function() { location.reload(); }, 800); });\n" +
                 "}\n" +

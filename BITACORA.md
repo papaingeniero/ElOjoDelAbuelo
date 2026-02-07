@@ -3106,3 +3106,23 @@ Mejora estética solicitada para el "Telegram Master Switch".
 *   **Implementación**: CSS puro inyectado en `NanoHttpServer`.
 *   **Estilo**: Toggle slider con transición suave (0.4s) y color `#29b6f6` (Light Blue) al activarse.
 *   **Objetivo**: Feedback visual superior y consistencia con el estilo "Cyber-Sentinel".
+
+## 🚀 Phase 39: Smart Light Filter (Anti-Flicker)
+**Versión**: v3.9.10-dev.12 | **Fecha**: 07 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+El "Ojo del Abuelo" sufría de hipersensibilidad lumínica. Encender una bombilla en el pasillo o una nube pasando frente al sol provocaba un cambio masivo en los píxeles de la imagen, disparando una detección de movimiento falsa. Esto llenaba el almacenamiento de grabaciones irrelevantes donde "no pasaba nada", solo cambiaba la luz.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos el **Smart Light Filter (Filtro Anti-Luces)**:
+
+1.  **Heurística de Cambio Global**:
+    *   En `MotionDetector`, calculamos no solo cuántos píxeles cambian, sino qué *porcentaje* del total representan.
+    *   Si el cambio afecta a más del **60%** de la imagen (`LIGHT_CHANGE_RATIO = 0.60f`), asumimos que es un evento ambiental (cambio de luz global) y no un intruso (que suele ocupar una fracción menor).
+    *   *Acción*: Actualizamos el `previousFrame` para adaptarnos a la nueva iluminación, pero suprimimos la alerta de movimiento (Score 0).
+
+2.  **Control UI**:
+    *   Añadido un interruptor en el Panel Web "💡 Filtro Anti-Luces" para activar/desactivar esta lógica en caliente.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Discriminación Estadística**: A veces, "demasiado movimiento" significa "ningún movimiento". Un intruso real rara vez altera el 100% de los píxeles simultáneamente; una bombilla sí.

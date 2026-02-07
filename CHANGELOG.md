@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.12] - 2026-02-07
+### Added
+- **Smart Light Filter**: Algoritmo anti-falsos positivos que ignora cambios de iluminación global masivos (>60% de la imagen).
+- **Web UI**: Toggle "Filtro Anti-Luces" en el menú de Ajustes para control en tiempo real.
+
 ## [v3.9.10-dev.11] - 2026-02-06
 ### Changed
 - **UI Modernization**: Reemplazado checkbox nativo de Telegram por un Toggle Switch CSS animado estilo "Blue Sentinel".

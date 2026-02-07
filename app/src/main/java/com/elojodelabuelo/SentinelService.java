@@ -120,6 +120,8 @@ public class SentinelService extends Service {
     public static int recordingTimeout = 10; // seconds
     public static volatile boolean isDetectorActive = true;
     public static int cameraRotation = 0; // 0 or 180
+    // [NUEVO] SMART FILTER (Anti-Flicker)
+    public static boolean isSmartFilterActive = true;
 
     // --- TELEGRAM CONFIG ---
     public static String telegramToken = "";
@@ -171,6 +173,9 @@ public class SentinelService extends Service {
         recordingTimeout = prefs.getInt("recordingTimeout", 10);
         isDetectorActive = prefs.getBoolean("isDetectorActive", true);
         logToWeb("🛡️ SENSOR ESTADO: " + (isDetectorActive ? "ACTIVO (Vigilando)" : "INACTIVO (No Vigilando, Solo Cámara)")); // <--- ESTA LÍNEA
+        
+        // [NUEVO] Cargar preferencia Smart Filter
+        isSmartFilterActive = prefs.getBoolean("smartFilter", true);
         cameraRotation = prefs.getInt("cameraRotation", 0);
         
         telegramToken = prefs.getString("tg_token", "");
@@ -212,6 +217,7 @@ public class SentinelService extends Service {
         
         // 3. Components
         motionDetector = new MotionDetector();
+        motionDetector.setSmartFilterEnabled(isSmartFilterActive); // <--- INYECTAR AQUÍ
         thermalGuardian = new ThermalGuardian();
         httpServer = new NanoHttpServer(this);
         httpServer.start();
@@ -699,6 +705,22 @@ public class SentinelService extends Service {
         }
     }
 
+    // [NUEVO] Método de actualización runtime para Smart Filter
+    public static void updateSmartFilter(boolean active) {
+        isSmartFilterActive = active;
+        if (instance != null) {
+            // Persistencia
+            instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE)
+                    .edit().putBoolean("smartFilter", active).commit();
+            
+            // Aplicar en caliente
+            if (instance.motionDetector != null) {
+                instance.motionDetector.setSmartFilterEnabled(active);
+                logToWeb("🛡️ FILTRO ANTI-LUZ: " + (active ? "ACTIVADO" : "DESACTIVADO"));
+            }
+        }
+    }
+
 
 
     private synchronized void openNewRecordingFile() {
@@ -780,6 +802,7 @@ public class SentinelService extends Service {
         // [NUEVO] FIX GHOST TRIGGER: RESET DEL CEREBRO 🧠✨
         // Borramos la memoria del detector para evitar el "salto temporal"
         motionDetector = new MotionDetector();
+        motionDetector.setSmartFilterEnabled(isSmartFilterActive); // IMPORTANTE: Re-inyectar config al resetear
     }
 
     private void manageStorage() {
