@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.30] - 2026-02-07
+### Changed
+- **Web Motion Lab**: Portada la lógica exacta de `MotionDetector.java` a JavaScript (`MotionEngine`). Ahora incluye `STRIDE=10`, `THRESHOLD=50` y el **Smart Light Filter** (ratio > 0.60).
+
 ## [v3.9.10-dev.29] - 2026-02-07
 ### Fixed
 - **Web Motion Lab**: Corregido `SyntaxError` crítico causado por código residual al mover la lógica de inicialización.

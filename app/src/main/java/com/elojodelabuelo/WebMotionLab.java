@@ -466,40 +466,88 @@ public class WebMotionLab {
                "                this.width = w;\n" +
                "                this.height = h;\n" +
                "                this.prevFrame = null;\n" +
-               "                this.threshold = 15;\n" +
-               "                this.minPixels = 20;\n" +
+               "                \n" +
+               "                // Correspondencia exacta con MotionDetector.java\n" +
+               "                this.STRIDE = 10;\n" +
+               "                this.THRESHOLD = 50; \n" +
+               "                this.MOTION_PIXEL_COUNT = 50;\n" +
+               "                this.LIGHT_CHANGE_RATIO = 0.60;\n" +
+               "                this.smartFilterEnabled = true;\n" +
+               "                \n" +
+               "                log('MotionEngine initialized (Stride: '+this.STRIDE+', Threshold: '+this.THRESHOLD+')');\n" +
                "            }\n" +
-               "            setSensitivity(val) { this.threshold = val; log('Sensitivity set to ' + val); }\n" +
-               "            setMinPixels(val) { this.minPixels = val; log('Min Pixels set to ' + val); }\n" +
+               "            \n" +
+               "            setSensitivity(val) { this.THRESHOLD = val; log('Sensitivity (Thresh) set to ' + val); }\n" +
+               "            setMinPixels(val) { this.MOTION_PIXEL_COUNT = val; log('Min Pixels set to ' + val); }\n" +
+               "            setSmartFilter(enabled) { this.smartFilterEnabled = enabled; log('Smart Filter: ' + enabled); }\n" +
                "\n" +
                "            process(currentData) {\n" +
+               "                // currentData is Uint8ClampedArray (RGBA)\n" +
+               "                // We need to simulate YUV luminance check\n" +
+               "                \n" +
                "                if (!this.prevFrame) {\n" +
                "                    this.prevFrame = new Uint8ClampedArray(currentData);\n" +
-               "                    return { motion: false };\n" +
+               "                    return { motion: false, pixels: 0, debug: 'Init' };\n" +
                "                }\n" +
                "                \n" +
-               "                let motionPixels = 0;\n" +
-               "                // Simple Grayscale Diff (Step 4)\n" +
-               "                for (let i = 0; i < currentData.length; i += 4) {\n" +
-               "                    let r1 = currentData[i], g1 = currentData[i+1], b1 = currentData[i+2];\n" +
-               "                    let r2 = this.prevFrame[i], g2 = this.prevFrame[i+1], b2 = this.prevFrame[i+2];\n" +
+               "                let diffCount = 0;\n" +
+               "                let totalPixelsChecked = 0;\n" +
+               "                \n" +
+               "                // Stride Loop (matches Java loop logic)\n" +
+               "                // Java: for (int i = 0; i < limit; i += STRIDE)\n" +
+               "                // JS Data is RGBA (4 bytes per pixel). \n" +
+               "                // Stride 10 means skip 10 pixels -> skip 40 bytes\n" +
+               "                const byteStride = this.STRIDE * 4;\n" +
+               "                \n" +
+               "                for (let i = 0; i < currentData.length; i += byteStride) {\n" +
+               "                    totalPixelsChecked++;\n" +
                "                    \n" +
-               "                    let lum1 = 0.299*r1 + 0.587*g1 + 0.114*b1;\n" +
-               "                    let lum2 = 0.299*r2 + 0.587*g2 + 0.114*b2;\n" +
+               "                    // Extract Luminance (Y)\n" +
+               "                    // Y = 0.299*R + 0.587*G + 0.114*B\n" +
+               "                    let r1 = currentData[i];\n" +
+               "                    let g1 = currentData[i+1];\n" +
+               "                    let b1 = currentData[i+2];\n" +
+               "                    let val1 = 0.299*r1 + 0.587*g1 + 0.114*b1;\n" +
+               "\n" +
+               "                    let r2 = this.prevFrame[i];\n" +
+               "                    let g2 = this.prevFrame[i+1];\n" +
+               "                    let b2 = this.prevFrame[i+2];\n" +
+               "                    let val2 = 0.299*r2 + 0.587*g2 + 0.114*b2;\n" +
                "                    \n" +
-               "                    if (Math.abs(lum1 - lum2) > this.threshold) {\n" +
-               "                        motionPixels++;\n" +
-               "                        // Highlight (Debug)\n" +
-               "                        if(debugMode) { currentData[i] = 255; currentData[i+1]=0; currentData[i+2]=0; }\n" +
+               "                    if (Math.abs(val1 - val2) > this.THRESHOLD) {\n" +
+               "                        diffCount++;\n" +
+               "                        // Debug Highlight (Red)\n" +
+               "                        if (debugMode) {\n" +
+               "                            // Mark the pixel red in currentData for visualization\n" +
+               "                            // Note: This modifies the frame being displayed! \n" +
+               "                            currentData[i] = 255;   // R\n" +
+               "                            currentData[i+1] = 0;   // G\n" +
+               "                            currentData[i+2] = 0;   // B\n" +
+               "                        }\n" +
                "                    }\n" +
                "                }\n" +
                "                \n" +
-               "                // Update prev\n" +
+               "                // --- SMART FILTER LOGIC ---\n" +
+               "                let filtered = false;\n" +
+               "                if (this.smartFilterEnabled && totalPixelsChecked > 0) {\n" +
+               "                    const changeRatio = diffCount / totalPixelsChecked;\n" +
+               "                    if (changeRatio > this.LIGHT_CHANGE_RATIO) {\n" +
+               "                        // Light Change Detected (>60%)\n" +
+               "                        // Ignore motion, update reference\n" +
+               "                        diffCount = 0;\n" +
+               "                        filtered = true;\n" +
+               "                        // log('💡 Smart Filter Triggered! (Global Change)');\n" +
+               "                    }\n" +
+               "                }\n" +
+               "                \n" +
+               "                // Update Reference Frame\n" +
+               "                // In Java: System.arraycopy(currentFrame, 0, previousFrame, 0, currentFrame.length);\n" +
                "                this.prevFrame.set(currentData);\n" +
                "                \n" +
                "                return { \n" +
-               "                    motion: motionPixels > this.minPixels,\n" +
-               "                    pixels: motionPixels\n" +
+               "                    motion: diffCount > this.MOTION_PIXEL_COUNT,\n" +
+               "                    pixels: diffCount,\n" +
+               "                    filtered: filtered\n" +
                "                };\n" +
                "            }\n" +
                "        }\n" +

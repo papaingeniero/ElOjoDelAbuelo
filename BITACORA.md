@@ -3251,3 +3251,11 @@ Potenciamos el panel lateral del Lab:
 *   **Problema**: La aplicación web se quedaba en blanco y fallaba al cargar.
 *   **Causa**: Error de sintaxis en `WebMotionLab.java`. Al mover el bloque de inicialización, quedó un fragmento de código huérfano (`} else { showGallery(); }`) que rompía el parseo del script JS.
 *   **Solución**: Eliminado el código residual.
+
+### 🧠 Logic (v3.9.10-dev.30): Paridad Algorítmica (Laboratorio)
+*   **Objetivo**: Que el navegador web replique EXACTAMENTE el comportamiento del motor de movimiento Java (`MotionDetector.java`).
+*   **Cambios en `WebMotionLab.java`**:
+    *   **Stride**: Ajustado a `10` (salta 10 píxeles, procesando solo el 10% de la imagen).
+    *   **Threshold**: Ajustado a `50` (diferencia de luminancia mínima).
+    *   **Smart Filter**: Implementado filtro de luz global. Si cambia >60% de los píxeles analizados, se descarta el movimiento (evita falsos positivos al encender luces).
+    *   **Visualización**: El modo debug ahora modifica los píxeles rojos directamente en el `ImageData` del canvas, mostrando exactamente qué puntos superaron el umbral.
