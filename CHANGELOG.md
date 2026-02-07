@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v3.9.10-dev.24] - 2026-02-07
+### Fixed
+- **Web Motion Lab**: Corregido error 404 en reproducción de video causado por doble prefijo en la URL (`/video_video_...`).
+
 ## [v3.9.10-dev.23] - 2026-02-07
 ### Fixed
 - **Web Motion Lab**: Corregido error de JavaScript (`video is undefined`) al cargar un video directamente por URL. Reordenada la inicialización de variables.

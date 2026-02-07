@@ -241,7 +241,7 @@ public class WebMotionLab {
                "        \n" +
                "        function loadVideo(filename) {\n" +
                "            document.getElementById('current-video-title').textContent = filename;\n" +
-               "            video.src = '/video_' + filename;\n" +
+               "            video.src = '/' + filename;\n" +
                "            video.load();\n" +
                "            log('Loading video: ' + filename);\n" +
                "            \n" +

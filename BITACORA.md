@@ -3222,3 +3222,8 @@ Potenciamos el panel lateral del Lab:
 *   **Problema**: Al entrar directamente a un video (`/lab?video=...`), la pantalla se quedaba en negro.
 *   **Causa**: La función `loadVideo()` se ejecutaba *antes* de que la variable `video` fuera declarada al final del script (Hoisting de la llamada, pero no de la inicialización).
 *   **Solución**: Se movieron todas las declaraciones globales (`video`, `canvas`, `ctx`) al principio del bloque `<script>`, asegurando que existan antes de que el routing intente usarlas.
+
+### 🐛 Fix (v3.9.10-dev.24): URL Double Prefix
+*   **Problema**: Los videos daban error 404 al intentar reproducirse en el Workbench.
+*   **Causa**: La función `loadVideo` añadía el prefijo `/video_` manualmente, pero el nombre del archivo (obtenido de la API) ya incluía `video_`. Resultado: `/video_video_2026...`.
+*   **Solución**: Se eliminó la concatenación redundante. Ahora se solicita `/' + filename` (ej: `/video_2026...`), lo cual es correctamente interceptado por el router `startsWith("/video_")` de `NanoHttpServer`.
