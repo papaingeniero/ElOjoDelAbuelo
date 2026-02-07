@@ -3131,3 +3131,22 @@ Implementamos el **Smart Light Filter (Filtro Anti-Luces)**:
 **Síntoma**: La compilación falló con `error: 'else' without 'if'`.
 **Causa**: Al inyectar el código del filtro inteligente en `NanoHttpServer.java`, se duplicó accidentalmente la línea `else if (key.equals("time"))` debido a un error de copiado automátizado.
 **Solución**: Eliminada la línea redundante en `v3.9.10-dev.13`.
+
+## 🚀 Phase 40: Motion Lab (El CSI Digital)
+**Versión**: v3.9.10-dev.14 | **Fecha**: 07 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+El "Smart Light Filter" funcionaba, pero configurarlo era un acto de fe. ¿Qué significa realmente "Sensibilidad 80"? ¿Cómo afecta a un video específico con una mosca cruzando? Necesitábamos ver lo que ve el algoritmo.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos el **Web Motion Lab**: Una suite forense "Client-Side" aislada.
+
+*   **Arquitectura de Isla**: Todo el código vive en `WebMotionLab.java`, una clase estática que inyecta una *Single Page Application* en el navegador. El impacto en el servidor principal (`SentinelService`) es nulo.
+*   **Port JS**: Tradujimos la lógica de detección de Java a JavaScript (`MotionEngine`). El navegador descarga el video, lo descomprime y ejecuta el algoritmo frame a frame usando la CPU del cliente (PC/Móvil moderno).
+*   **Visualización Forense**:
+    *   **Overlay Rojo**: Pinta en tiempo real qué píxeles superan el umbral de ruido.
+    *   **Osciloscopio**: Gráfica de `Score` vs `Tiempo`. Muestra claramente los picos de movimiento y el umbral de disparo.
+    *   **Simulación**: Permite cambiar la sensibilidad y ver cómo la línea de umbral sube o baja respecto a los picos del video, permitiendo una calibración perfecta *a posteriori*.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Simulación en el Borde**: Para sistemas empotrados limitados, la mejor forma de procesar datos complejos es enviar los datos crudos al usuario y dejar que su navegador haga el trabajo pesado de análisis y visualización.

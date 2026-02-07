@@ -492,6 +492,11 @@ public class NanoHttpServer {
             String tgChatId = "";
 
             try {
+                if (uri.equals("/lab")) {
+                    sendStringResponse(os, "text/html", WebMotionLab.getHtml());
+                    return;
+                }
+
                 if (uri.contains("?")) {
                     String query = uri.substring(uri.indexOf("?") + 1);
                     String[] pairs = query.split("&");
