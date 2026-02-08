@@ -468,6 +468,7 @@ public class NanoHttpServer {
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
+            os.write("Cache-Control: no-cache, no-store, must-revalidate\r\n".getBytes());
             os.write("\r\n".getBytes());
             os.write(json.getBytes());
         }
@@ -756,6 +757,7 @@ public class NanoHttpServer {
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: text/html; charset=utf-8\r\n".getBytes());
+            os.write("Cache-Control: no-cache, no-store, must-revalidate\r\n".getBytes());
             os.write(("Content-Length: " + body.length + "\r\n").getBytes());
             os.write("\r\n".getBytes());
             os.write(body);

@@ -3282,3 +3282,14 @@ Potenciamos el panel lateral del Lab:
 3.  **UI**: Nuevo slider **"Sensibilidad al Contraste"** en el Dashboard, junto al clásico "Sensibilidad al Tamaño".
 4.  **API**: Endpoints `/api/settings` y `/api/save_settings` actualizados para soportar el nuevo parámetro.
 **Resultado**: Control total y simétrico. Lo que ves en el laboratorio es lo que obtienes en la app.
+
+### 🐛 v3.9.10-dev.35: Hotfix de Caché (El Fantasma del UI) 👻
+**El Problema**: El usuario reportó que a pesar de tener la versión `.34`, no veía los nuevos sliders en el Dashboard.
+**El Diagnóstico**: `NanoHttpServer` no estaba enviando cabeceras `Cache-Control`, por lo que los navegadores (especialmente móviles) reutilizaban el HTML antiguo cacheado agresivamente.
+**La Solución**:
+1.  **Backend**: Se añadieron cabeceras explícitas `Cache-Control: no-cache, no-store, must-revalidate` en:
+    *   `serveDashboard` (HTML principal)
+    *   `serveSettings` (JSON de configuración)
+2.  **Versión**: Incrementada a `.35` para forzar un "refresco psicológico" y técnico.
+
+**Lección del Día**: En sistemas embebidos web, **nunca confíes en la caché del navegador**. Siempre define quién manda sobre la frescura de los datos.
