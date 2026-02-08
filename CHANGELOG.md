@@ -6,7 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-### v3.9.10-dev.37
+
+### v3.9.10-dev.38
+*   🧠 **Core Logic**: Reemplazado "Smart Light Filter" por **"Temporal Persistence Filter"**. Ahora se requieren 3 frames consecutivos de movimiento para activar la alarma. Mejora drástica contra falsos positivos y soluciona la ceguera por oclusión (sabotaje).
+*   🧹 **Cleanup**: Eliminado código muerto (Smart Filter UI/API) en Backend y Frontend.
+*   🎛️ **Web Motion Lab**: Slider de "Sensibilidad al Tamaño" convertido a escala logarítmica (0-100%) para control más intuitivo.
+
 *   🚑 **Hotfix**: Routing tolerante a mayúsculas (/LAB, /Lab) para corregir Chrome default.
 
 ### v3.9.10-dev.36

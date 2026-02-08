@@ -3305,3 +3305,41 @@ Potenciamos el panel lateral del Lab:
 **El Problema**: El navegador Chrome de escritorio del usuario intentaba cargar `/LAB` (mayúsculas), y el servidor (NanoHttpServer) solo respondía a `/lab` (minúsculas), redirigiendo al Dashboard por defecto.
 **La Solución**: Se modificó `NanoHttpServer.java` para evaluar la ruta como `uri.toLowerCase(Locale.US).startsWith("/lab")`.
 **Resultado**: Ahora `/lab`, `/LAB`, o `/Lab` cargan correctamente el Analizador.
+
+## 🚀 Phase 39: Filtro de Persistencia Temporal (Regla del 3)
+**Versión**: v3.9.10-dev.38
+
+### 📜 1. La Historia (El Problema)
+El "Filtro Inteligente de Luces" (smartFilter) basado en porcentaje de píxeles funcionaba bien para bombillas, pero introducía una vulnerabilidad peligrosa: **Ceguera ante Sabotaje**.
+Si un intruso se acercaba mucho a la cámara o la tapaba con la mano, el cambio masivo de píxeles (>60%) se interpretaba erróneamente como "alguien encendió la luz" y el sistema ignoraba la amenaza.
+Además, seguíamos teniendo falsos positivos por flashes puntuales (ajuste de exposición automático).
+
+### 🛠️ 2. La Solución (Ingeniería)
+Simplificación radical y cambio de paradigma: **Consistencia sobre Intensidad**.
+
+1.  **Eliminación del Smart Filter**: Borramos todo el código complejo que analizaba ratios de cambio luminosos. Menos código = Menos bugs.
+2.  **La Regla del 3 (Temporal Persistence)**:
+    *   No importa *cuánto* cambie la imagen, sino *cuánto tiempo* se mantenga cambiando.
+    *   Un flash de luz dura 1 frame.
+    *   Un intruso moviéndose dura N frames.
+    *   **Implementación**:
+        ```java
+        if (motion > threshold) {
+            consecutiveFrames++;
+            if (consecutiveFrames >= 3) {
+                // Alarma confirmada (movimiento sostenido ~100ms)
+                startRecording();
+            }
+        } else {
+            consecutiveFrames = 0; // Reset inmediato si se aquieta
+        }
+        ```
+    *   Esto elimina casi todos los "glitches" eléctricos y de sensor, mientras garantiza que un intruso (incluso uno que tape la cámara) sea detectado porque su acción persiste en el tiempo.
+
+### 🧪 3. Refactorización WebLab
+Aprovechamos para limpiar la interfaz de laboratorio:
+*   Eliminado el control "Smart Filter" (obsoleto).
+*   Convertido el slider de "Tamaño" a **Porcentaje Logarítmico** (0-100%) en lugar de píxeles crudos, alineándolo con la lógica humana ("Sensibilidad Baja/Alta" en lugar de "3500px").
+
+### 🎓 4. Lecciones Aprendidas
+*   **Complejidad vs Robustez**: A veces, un contador simple (`++`) es mejor algoritmo de IA que una fórmula estadística compleja. La persistencia temporal es el filtro de ruido más antiguo y efectivo del mundo.
