@@ -3407,7 +3407,15 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 *   **Lógica**: La función `updateParam` no tenía el código para manejar el evento `scrubber` (se perdió o no se aplicó correctamente en la v45).
 **La Solución**:
 *   Mencionado Scrubber a una nueva fila dedicada al fondo de los controles.
-*   Reescrita la función `updateParam` para asegurar que pausa el video y salta al frame indicado.
+### 🐢 Speed Control (v3.9.10-dev.47)
+**Necesidad**: El usuario quiere leer los valores de detección pixel a pixel, pero el video va muy rápido (incluso frame a frame es tedioso darle click todo el rato).
+**Solución**:
+*   Añadido selector `<select>` junto al botón Play.
+*   Opciones: `1.0x` (Normal), `0.5x`, `0.25x`, `0.1x` (Cámara lenta extrema).
+*   **Lógica**: `MJPEGPlayer` ahora usa `setTimeout(..., 66 / speed)`.
+    *   1.0x -> 66ms (15 FPS)
+    *   0.1x -> 660ms (1.5 FPS) -> Da tiempo de sobra a leer los logs.
+
 
 
 

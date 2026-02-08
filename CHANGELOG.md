@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+### v3.9.10-dev.47
+*   ⏩ **Lab**: Control de velocidad de reproducción (1.0x, 0.5x, 0.25x, 0.1x).
+*   🐢 **Slow Motion**: Permite analizar frame a frame con calma.
+
 ### v3.9.10-dev.46
 *   💄 **UI Lab**: El Scrubber se mueve debajo de los controles para tener más espacio.
 *   🐛 **Fix Lab**: Corregido bug donde el Scrubber no funcionaba (no avanzaba el video).

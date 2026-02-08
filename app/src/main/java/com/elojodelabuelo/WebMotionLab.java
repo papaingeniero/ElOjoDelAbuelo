@@ -91,6 +91,13 @@ public class WebMotionLab {
                 "\n" +
                 "            <div class=\"controls\">\n" +
                 "                <button onclick=\"togglePlay()\" id=\"btnPlay\">⏯ Play/Pause</button>\n" +
+                "                <select onchange=\"updateParam('speed', this.value)\" style=\"background:#333;color:#fff;border:1px solid #555;padding:2px\">\n"
+                +
+                "                    <option value=\"1.0\" selected>1.0x</option>\n" +
+                "                    <option value=\"0.5\">0.5x</option>\n" +
+                "                    <option value=\"0.25\">0.25x</option>\n" +
+                "                    <option value=\"0.1\">0.1x</option>\n" +
+                "                </select>\n" +
                 "                \n" +
                 "                <div class=\"param-group\">\n" +
                 "                    <label>🎨 Sensibilidad al Contraste: <span id=\"val-contrast\">50</span></label>\n"
@@ -223,6 +230,7 @@ public class WebMotionLab {
                 "                this.abortController = null;\n" +
                 "                this.loopId = null;\n" +
                 "                this.onFrame = null; // Callback for MotionEngine\n" +
+                "                this.speed = 1.0;\n" +
                 "            }\n" +
                 "\n" +
                 "            async load() {\n" +
@@ -354,7 +362,7 @@ public class WebMotionLab {
                 "                // Max speed might be too fast. Let's aim for ~15 FPS (66ms)\n" +
                 "                setTimeout(() => {\n" +
                 "                    this.loopId = requestAnimationFrame(() => this.loop());\n" +
-                "                }, 66);\n" +
+                "                }, 66 / this.speed);\n" +
                 "            }\n" +
                 "\n" +
                 "            drawFrame(idx) {\n" +
@@ -493,6 +501,10 @@ public class WebMotionLab {
                 "\n" +
                 "        function updateParam(key, val) {\n" +
                 "            var el = document.getElementById('val-' + key); if(el) el.textContent = val;\n" +
+                "            if (key === 'speed') {\n" +
+                "               if(window.mjpegPlayer) window.mjpegPlayer.speed = parseFloat(val);\n" +
+                "               return;\n" +
+                "            }\n" +
                 "            if (key === 'scrubber') {\n" +
                 "                var frame = parseInt(val);\n" +
                 "                if (window.mjpegPlayer && window.mjpegPlayer.frames.length > 0) {\n" +
@@ -504,12 +516,15 @@ public class WebMotionLab {
                 "                return;\n" +
                 "            }\n" +
                 "            if (engine) {\n" +
-                "                if (key === 'contrast') { var t = 105 - parseInt(val); if(t<5)t=5; if(t>100)t=100; engine.setSensitivity(t); }\n" +
+                "                if (key === 'contrast') { var t = 105 - parseInt(val); if(t<5)t=5; if(t>100)t=100; engine.setSensitivity(t); }\n"
+                +
                 "                if (key === 'sens') {\n" +
                 "                   var s = parseInt(val); var px = 0;\n" +
-                "                   if(s>=95) px=20; else if(s<=5) px=50000; else px=Math.floor(10000*Math.pow(1-(s/100.0),2));\n" +
+                "                   if(s>=95) px=20; else if(s<=5) px=50000; else px=Math.floor(10000*Math.pow(1-(s/100.0),2));\n"
+                +
                 "                   document.getElementById('val-sens').textContent = s+'%';\n" +
-                "                   var pxLabel = document.getElementById('val-sens-px'); if(pxLabel) pxLabel.textContent = '('+px+' px)';\n" +
+                "                   var pxLabel = document.getElementById('val-sens-px'); if(pxLabel) pxLabel.textContent = '('+px+' px)';\n"
+                +
                 "                   if(engine) engine.setMinPixels(px);\n" +
                 "                }\n" +
                 "            }\n" +
