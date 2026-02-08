@@ -3293,3 +3293,10 @@ Potenciamos el panel lateral del Lab:
 2.  **Versión**: Incrementada a `.35` para forzar un "refresco psicológico" y técnico.
 
 **Lección del Día**: En sistemas embebidos web, **nunca confíes en la caché del navegador**. Siempre define quién manda sobre la frescura de los datos.
+
+### 🧪 v3.9.10-dev.36: Unificación del Analizador (Motion Lab)
+**El Ajuste**: El usuario notó que en el "Analizador" los controles seguían llamándose "Threshold" y "Min Pixels", y funcionaban con la lógica antigua (no invertida).
+**La Solución**:
+1.  **UI**: Renombrados a "🎨 Sensibilidad al Contraste" y "📏 Sensibilidad al Tamaño".
+2.  **Lógica**: Implementada la inversión de contraste (0-100% -> Threshold 100-5) en el código JS del analizador para que coincida con el comportamiento de la App.
+**Resultado**: Coherencia total entre Dashboard y Analizador.

@@ -76,12 +76,12 @@ public class WebMotionLab {
                "                <button onclick=\"togglePlay()\" id=\"btnPlay\">⏯ Play/Pause</button>\n" +
                "                \n" +
                "                <div class=\"param-group\">\n" +
-               "                    <label>Umbral (Threshold): <span id=\"val-sens\">50</span></label>\n" +
-               "                    <input type=\"range\" min=\"0\" max=\"100\" value=\"50\" oninput=\"updateParam('sens', this.value)\">\n" +
+               "                    <label>🎨 Sensibilidad al Contraste: <span id=\"val-contrast\">50</span></label>\n" +
+               "                    <input type=\"range\" min=\"0\" max=\"100\" value=\"50\" oninput=\"updateParam('contrast', this.value)\">\n" +
                "                </div>\n" +
                "                \n" +
                "                <div class=\"param-group\">\n" +
-               "                    <label>Min Pixels: <span id=\"val-pix\">50</span></label>\n" +
+               "                    <label>📏 Sensibilidad al Tamaño: <span id=\"val-pix\">50</span></label>\n" +
                "                    <input type=\"range\" min=\"5\" max=\"200\" value=\"50\" oninput=\"updateParam('pix', this.value)\">\n" +
                "                </div>\n" +
                "                \n" +
@@ -452,7 +452,7 @@ public class WebMotionLab {
                "        function updateParam(key, val) {\n" +
                "            document.getElementById('val-' + key).textContent = val;\n" +
                "            if (engine) {\n" +
-               "                if (key === 'sens') engine.setSensitivity(parseInt(val));\n" +
+               "                if (key === 'contrast') { var t = 105 - parseInt(val); if(t<5)t=5; if(t>100)t=100; engine.setSensitivity(t); }\n" +
                "                if (key === 'pix') engine.setMinPixels(parseInt(val));\n" +
                "            }\n" +
                "        }\n" +
