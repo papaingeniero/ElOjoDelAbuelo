@@ -3381,7 +3381,14 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 *   A ~3 FPS (vigilancia), 3 frames implican ~1 segundo de latencia.
 *   2 frames implican ~0.66 segundos.
 *   0.66s es tiempo suficiente para discriminar flashes (que duran <0.1s) pero ofrece una respuesta más rápida ante intrusos reales.
-*   *Hipótesis*: Menos tiempo "evaluando" = Menos CPU = Menos calor.
+### 🧪 Sincronización Laboratorio (v3.9.10-dev.43)
+**El Problema**: El laboratorio usaba un slider lineal de "Píxeles" (5-200), mientras que la App usa "Sensibilidad" (0-100%) con una curva exponencial (0-50,000 px). Las pruebas en el laboratorio no reflejaban la realidad.
+
+**La Solución**:
+*   Implementada la fórmula de producción en `WebMotionLab.java`.
+*   Ahora el laboratorio muestra "Sensibilidad %" y calcula los píxeles equivalentes en tiempo real.
+*   **Beneficio**: Lo que ves en el Lab es lo que obtienes en la App.
+
 
 
 

@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+### v3.9.10-dev.43
+*   🧪 **WebMotionLab**: Sincronización de slider "Sensibilidad" con la App real.
+*   🧮 **Fórmula**: El laboratorio ahora usa la misma curva exponencial `(1-sens)^2` que el motor de producción.
+
 ### v3.9.10-dev.42
 *   ⚡ **Tuning**: Reducción del filtro de persistencia de 3 a **2 frames** (~600ms).
 *   🎯 **Objetivo**: Mejorar la reactividad sin sacrificar la inmunidad a flashes.

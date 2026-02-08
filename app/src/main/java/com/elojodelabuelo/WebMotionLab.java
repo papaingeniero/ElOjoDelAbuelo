@@ -100,8 +100,9 @@ public class WebMotionLab {
                 "                </div>\n" +
                 "                \n" +
                 "                <div class=\"param-group\">\n" +
-                "                    <label>📏 Sensibilidad al Tamaño: <span id=\"val-pix\">50</span></label>\n" +
-                "                    <input type=\"range\" min=\"5\" max=\"200\" value=\"50\" oninput=\"updateParam('pix', this.value)\">\n"
+                "                    <label>📏 Sensibilidad al Movimiento: <span id=\"val-sens\">50%</span> <small style='color:#aaa' id='val-sens-px'></small></label>\n"
+                +
+                "                    <input type=\"range\" min=\"0\" max=\"100\" value=\"50\" oninput=\"updateParam('sens', this.value)\">\n"
                 +
                 "                </div>\n" +
                 "                \n" +
@@ -483,7 +484,15 @@ public class WebMotionLab {
                 "            if (engine) {\n" +
                 "                if (key === 'contrast') { var t = 105 - parseInt(val); if(t<5)t=5; if(t>100)t=100; engine.setSensitivity(t); }\n"
                 +
-                "                if (key === 'pix') engine.setMinPixels(parseInt(val));\n" +
+                "                if (key === 'sens') {\n" +
+                "                   var s = parseInt(val); var px = 0;\n" +
+                "                   if(s>=95) px=20; else if(s<=5) px=50000; else px=Math.floor(10000*Math.pow(1-(s/100.0),2));\n"
+                +
+                "                   document.getElementById('val-sens').textContent = s+'%';\n" +
+                "                   var pxLabel = document.getElementById('val-sens-px'); if(pxLabel) pxLabel.textContent = '('+px+' px)';\n"
+                +
+                "                   if(engine) engine.setMinPixels(px);\n" +
+                "                }\n" +
                 "            }\n" +
                 "        }\n" +
                 "        \n" +
