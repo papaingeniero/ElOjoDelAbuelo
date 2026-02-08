@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+### v3.9.10-dev.34
+*   🎛️ **Pro Mode**: Slider "Sensibilidad al Contraste" añadido al Dashboard.
+*   🧠 **Backend**: Umbral de movimiento dinámico ahora controlable desde la UI.
+*   🌐 **API**: Nuevo parámetro `contrast` para control fino.
+
 ## [v3.9.10-dev.33] - 2026-02-07
 ### Fixed
 - **Web Motion Lab**: Asegurado que el feedback visual del **Smart Filter** ("💡 CAMBIO DE LUZ") se muestre correctamente en el reproductor.

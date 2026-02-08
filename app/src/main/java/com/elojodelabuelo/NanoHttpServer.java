@@ -445,6 +445,7 @@ public class NanoHttpServer {
         private void serveSettings(OutputStream os) throws IOException {
             // Retrieve current settings
             int sens = SentinelService.motionSensitivity;
+            int contrast = SentinelService.contrastSensitivity;
             int time = SentinelService.recordingTimeout;
             boolean active = SentinelService.isDetectorActive;
             int rot = SentinelService.cameraRotation;
@@ -461,8 +462,8 @@ public class NanoHttpServer {
             int webPanY = prefs.getInt("webPanY", 0);
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b, \"smartFilter\":%b}",
-                    sens, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX, webPanY, 
+                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b, \"smartFilter\":%b}",
+                    sens, contrast, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX, webPanY, 
                     SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive, SentinelService.isSmartFilterActive);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
@@ -480,6 +481,7 @@ public class NanoHttpServer {
          */
         private void serveSaveSettings(OutputStream os, String uri) throws IOException {
             int sens = 90;
+            int contrast = 50;
             int time = 10;
             boolean active = true;
             int rot = 0;
@@ -510,6 +512,8 @@ public class NanoHttpServer {
                             
                             if (key.equals("sens"))
                                 sens = Integer.parseInt(val);
+                            else if (key.equals("contrast"))
+                                contrast = Integer.parseInt(val);
                             else if (key.equals("smartFilter")) 
                                 SentinelService.updateSmartFilter(Boolean.parseBoolean(val));
                             else if (key.equals("time"))
@@ -553,7 +557,7 @@ public class NanoHttpServer {
                         .putInt("webPanY", webPanY)
                         .commit();
 
-                SentinelService.updateSettings(sens, time, active, rot, tgToken, tgChatId);
+                SentinelService.updateSettings(sens, contrast, time, active, rot, tgToken, tgChatId);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
             } catch (Exception e) {
@@ -995,16 +999,20 @@ public class NanoHttpServer {
                 "      </div>\n" +
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Activa la vigilancia y grabación por movimiento.</div>\n"
                 +
-                "      <div style='margin-bottom:20px;'>\n" +
-                "         <label>Sensibilidad: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n"
-                +
-                "         <div style='display:flex; align-items:center; margin-top:5px;'>\n" +
-                "            <span style='font-size:12px;'>Min</span>\n" +
-                "            <input type='range' id='sens-slider' min='0' max='100' oninput='updateSensLabel(this.value)'>\n"
-                +
-                "            <span style='font-size:12px;'>Max</span>\n" +
-                "         </div>\n" +
+                "      <div class='settings-row'>\n" +
+                "         <label>📏 Sensibilidad al Tamaño: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n" +
                 "      </div>\n" +
+                "      <div class='settings-row' style='margin-bottom:5px;'>\n" +
+                "            <input type='range' id='sens-slider' min='0' max='100' oninput='updateSensLabel(this.value)'>\n" +
+                "      </div>\n" +
+                "\n" +
+                "      <div class='settings-row'>\n" +
+                "         <label>🎨 Sensibilidad al Contraste: <span id='contrast-label' style='color:#aaa; font-size:14px;'>50%</span></label>\n" +
+                "      </div>\n" +
+                "      <div class='settings-row' style='margin-bottom:5px;'>\n" +
+                "            <input type='range' id='contrast-slider' min='0' max='100' oninput='updateContrastLabel(this.value)'>\n" +
+                "      </div>\n" +
+                "      <div style='font-size:10px; color:#666; margin-bottom:15px; text-align:right'>* 100% = Detecta camuflaje / 0% = Solo luces fuertes</div>\n" +
                 "      <div style='font-size:11px; color:#aaa; margin-top:-15px; margin-bottom:15px;'>* Umbral de movimiento para iniciar grabación.</div>\n"
                 +
                 "      <div class='settings-row'>\n" +
@@ -1437,6 +1445,7 @@ public class NanoHttpServer {
                 "function saveSettings() {\n" +
                 "   var active = document.getElementById('set-active').checked;\n" +
                 "   var sens = document.getElementById('sens-slider').value;\n" +
+                "   var contrast = document.getElementById('contrast-slider').value;\n" +
                 "   var time = document.getElementById('set-time').value;\n" +
                 "   var rot = document.getElementById('rot-180').checked ? 180 : 0;\n" +
                 "   var defZoom = document.getElementById('hw-zoom').value;\n" +
@@ -1453,7 +1462,7 @@ public class NanoHttpServer {
                 "   var smartFilter = document.getElementById('set-smart-filter').checked;\n" +
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
-                "   var qs = '?sens=' + sens + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
+                "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
                 "            '&min_free_space=' + minSpace +\n" +
                 "            '&webZoom=' + wZoom + '&webPanX=' + wPanX + '&webPanY=' + wPanY +\n" +

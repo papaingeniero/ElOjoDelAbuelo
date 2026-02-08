@@ -9,7 +9,7 @@ public class MotionDetector {
     private byte[] previousFrame;
     // Cambiamos de stride 30 a stride 10 porque hemos vuelto de VGA a CIF (3 veces menos pixeles)
     private static final int STRIDE = 10;
-    private static final int THRESHOLD = 50; // Pixel difference threshold
+    private int colorDiffThreshold = 50; // Default (formerly constant THRESHOLD)
     private static final int MOTION_PIXEL_COUNT = 50; // Number of different pixels to trigger motion
 
     // 1. AÑADIR VARIABLES DE CLASE
@@ -18,6 +18,12 @@ public class MotionDetector {
 
     public void setSmartFilterEnabled(boolean enabled) {
         this.smartFilterEnabled = enabled;
+    }
+
+    public void setThreshold(int val) {
+        if(val < 5) val = 5; 
+        if(val > 100) val = 100;
+        this.colorDiffThreshold = val;
     }
 
     public int getMotionScore(byte[] currentFrame, int width, int height) {
@@ -37,7 +43,7 @@ public class MotionDetector {
             int val1 = currentFrame[i] & 0xFF;
             int val2 = previousFrame[i] & 0xFF; 
 
-            if (Math.abs(val1 - val2) > THRESHOLD) {
+            if (Math.abs(val1 - val2) > colorDiffThreshold) {
                 diffCount++;
             }
         }

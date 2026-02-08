@@ -170,6 +170,7 @@ public class SentinelService extends Service {
         // Load Preferences
         SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
         motionSensitivity = prefs.getInt("motionSensitivity", 90);
+        contrastSensitivity = prefs.getInt("contrastSensitivity", 50); // Default 50
         recordingTimeout = prefs.getInt("recordingTimeout", 10);
         isDetectorActive = prefs.getBoolean("isDetectorActive", true);
         logToWeb("🛡️ SENSOR ESTADO: " + (isDetectorActive ? "ACTIVO (Vigilando)" : "INACTIVO (No Vigilando, Solo Cámara)")); // <--- ESTA LÍNEA
@@ -883,7 +884,11 @@ public class SentinelService extends Service {
             screenLock.release();
     }
 
-    public static void updateSettings(int sens, int time, boolean active, int rot, String tgToken, String tgChatId) {
+    // [NUEVO] Sensibilidad al Contraste (0-100)
+    // 0 = threshold 100 (Sordo), 100 = threshold 5 (Ojo de Halcón)
+    public static int contrastSensitivity = 50; 
+
+    public static void updateSettings(int sens, int contrast, int time, boolean active, int rot, String tgToken, String tgChatId) {
         boolean rotationChanged = (cameraRotation != rot);
         // --- INICIO INSERCIÓN ---
         if (isDetectorActive != active) {
@@ -894,18 +899,30 @@ public class SentinelService extends Service {
         telegramToken = tgToken;
         telegramChatId = tgChatId;
         motionSensitivity = sens;
+        contrastSensitivity = contrast;
         recordingTimeout = time;
         isDetectorActive = active;
         cameraRotation = rot;
         
+        // 1. Min Pixels Logic (Legacy Sensitivity)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
         if (currentThreshold < 20) currentThreshold = 20;
         if (currentThreshold > 50000) currentThreshold = 50000;
+
+        // 2. Contrast Logic (New Pro Mode)
+        // Convertir Slider (0-100) a Threshold (100-5)
+        // 0 -> 105, 100 -> 5
+        int rawThreshold = 105 - contrastSensitivity;
+        if (instance != null && instance.motionDetector != null) {
+            instance.motionDetector.setThreshold(rawThreshold);
+            logToWeb("⚙️ Contrast Updated: " + contrastSensitivity + "% -> Threshold: " + rawThreshold);
+        }
 
         if (instance != null) {
             SharedPreferences prefs = instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putInt("motionSensitivity", sens);
+            editor.putInt("contrastSensitivity", contrast);
             editor.putInt("recordingTimeout", time);
             editor.putBoolean("isDetectorActive", active);
             editor.putInt("cameraRotation", rot);

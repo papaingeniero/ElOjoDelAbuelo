@@ -3273,3 +3273,12 @@ Potenciamos el panel lateral del Lab:
 ### 🐛 Fix (v3.9.10-dev.33): Feedback Smart Filter en Videoplayer
 *   **Problema**: El indicador naranja de "Cambio de Luz" no aparecía en el reproductor MJPEG porque la lógica de UI no se había actualizado en la función `loadVideo`.
 *   **Solución**: Sincronizada la lógica de `onFrame` en `loadVideo` para manejar `result.filtered` y mostrar el estado correcto.
+
+### ✅ v3.9.10-dev.34: Modo Pro (Dual Motion Control) 🎛️
+**El Problema**: La app móvil tenía un umbral de contraste fijo (50), mientras que el Motion Lab permitía ajustarlo. Esto hacía que las calibraciones en el laboratorio no se pudieran aplicar en el mundo real.
+**La Solución**:
+1.  **Backend**: `MotionDetector.java` ahora permite modificar el `threshold` dinámicamente.
+2.  **Service**: Nueva variable `contrastSensitivity` (0-100) que se traduce inversamente a threshold (100-5).
+3.  **UI**: Nuevo slider **"Sensibilidad al Contraste"** en el Dashboard, junto al clásico "Sensibilidad al Tamaño".
+4.  **API**: Endpoints `/api/settings` y `/api/save_settings` actualizados para soportar el nuevo parámetro.
+**Resultado**: Control total y simétrico. Lo que ves en el laboratorio es lo que obtienes en la app.
