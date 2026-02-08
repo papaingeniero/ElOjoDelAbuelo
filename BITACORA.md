@@ -3400,7 +3400,15 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 *   **Bidireccionalidad**:
     *   Al reproducir, el slider avanza solo.
     *   Al mover el slider, el video se pausa y salta al frame exacto.
-*   **Contador**: Muestra `Frame Actual / Total Frames`.
+### 🐛 Scrubber Fix & Relocation (v3.9.10-dev.46)
+**Feedback**: El usuario notó que el Scrubber estaba apiñado y, peor aún, **no funcionaba** (al moverlo no hacía nada).
+**La Causa**:
+*   **Visual**: Inserción dentro del `flex-row` de controles.
+*   **Lógica**: La función `updateParam` no tenía el código para manejar el evento `scrubber` (se perdió o no se aplicó correctamente en la v45).
+**La Solución**:
+*   Mencionado Scrubber a una nueva fila dedicada al fondo de los controles.
+*   Reescrita la función `updateParam` para asegurar que pausa el video y salta al frame indicado.
+
 
 
 

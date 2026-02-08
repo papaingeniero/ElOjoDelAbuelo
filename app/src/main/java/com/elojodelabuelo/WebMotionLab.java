@@ -106,17 +106,18 @@ public class WebMotionLab {
                 +
                 "                </div>\n" +
                 "                \n" +
-                "                <div class=\"param-group\" style=\"width:100%\">\n" +
-                "                    <label>🎞️ Avance: <span id=\"val-frame\">0</span> / <span id=\"val-total\">0</span></label>\n"
-                +
-                "                    <input type=\"range\" min=\"0\" max=\"0\" value=\"0\" id=\"scrubber\" oninput=\"updateParam('scrubber', this.value)\" style=\"width:100%\">\n"
-                +
-                "                </div>\n" +
                 "                \n" +
                 "                <div class=\"param-group\">\n" +
                 "                    <label>Debug Mode</label>\n" +
                 "                    <button onclick=\"toggleDebug()\" id=\"btnDebug\">👁️ Ver Malla</button>\n" +
                 "                </div>\n" +
+                "            </div>\n" +
+                "            <div class=\"scrubber-row\" style=\"padding:10px; background:#1e1e1e; border-top:1px solid #333;\">\n"
+                +
+                "                <label>🎞️ Avance: <span id=\"val-frame\">0</span> / <span id=\"val-total\">0</span></label>\n"
+                +
+                "                <input type=\"range\" min=\"0\" max=\"0\" value=\"0\" id=\"scrubber\" oninput=\"updateParam('scrubber', this.value)\" style=\"width:100%\">\n"
+                +
                 "            </div>\n" +
                 "            \n" +
                 "            <!-- Terminal Output -->\n" +
@@ -491,17 +492,24 @@ public class WebMotionLab {
                 "        }\n" +
                 "\n" +
                 "        function updateParam(key, val) {\n" +
-                "            document.getElementById('val-' + key).textContent = val;\n" +
+                "            var el = document.getElementById('val-' + key); if(el) el.textContent = val;\n" +
+                "            if (key === 'scrubber') {\n" +
+                "                var frame = parseInt(val);\n" +
+                "                if (window.mjpegPlayer && window.mjpegPlayer.frames.length > 0) {\n" +
+                "                    window.mjpegPlayer.pause();\n" +
+                "                    window.mjpegPlayer.drawFrame(frame);\n" +
+                "                    window.mjpegPlayer.frameIdx = frame;\n" +
+                "                    document.getElementById('val-frame').textContent = frame;\n" +
+                "                }\n" +
+                "                return;\n" +
+                "            }\n" +
                 "            if (engine) {\n" +
-                "                if (key === 'contrast') { var t = 105 - parseInt(val); if(t<5)t=5; if(t>100)t=100; engine.setSensitivity(t); }\n"
-                +
+                "                if (key === 'contrast') { var t = 105 - parseInt(val); if(t<5)t=5; if(t>100)t=100; engine.setSensitivity(t); }\n" +
                 "                if (key === 'sens') {\n" +
                 "                   var s = parseInt(val); var px = 0;\n" +
-                "                   if(s>=95) px=20; else if(s<=5) px=50000; else px=Math.floor(10000*Math.pow(1-(s/100.0),2));\n"
-                +
+                "                   if(s>=95) px=20; else if(s<=5) px=50000; else px=Math.floor(10000*Math.pow(1-(s/100.0),2));\n" +
                 "                   document.getElementById('val-sens').textContent = s+'%';\n" +
-                "                   var pxLabel = document.getElementById('val-sens-px'); if(pxLabel) pxLabel.textContent = '('+px+' px)';\n"
-                +
+                "                   var pxLabel = document.getElementById('val-sens-px'); if(pxLabel) pxLabel.textContent = '('+px+' px)';\n" +
                 "                   if(engine) engine.setMinPixels(px);\n" +
                 "                }\n" +
                 "            }\n" +
