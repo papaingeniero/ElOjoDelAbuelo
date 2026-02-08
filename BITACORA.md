@@ -3374,6 +3374,14 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 
 **Resultado Esperado**:
 *   Reducción masiva de syscalls y GC.
-*   Retorno a temperaturas nominales (~39°C) manteniendo la lógica de persistencia.
+### ⚡ Tuning de Persistencia (v3.9.10-dev.42)
+**El Cambio**: Reducción de `MIN_CONSECUTIVE_FRAMES` de 3 a **2**.
+
+**La Razón**:
+*   A ~3 FPS (vigilancia), 3 frames implican ~1 segundo de latencia.
+*   2 frames implican ~0.66 segundos.
+*   0.66s es tiempo suficiente para discriminar flashes (que duran <0.1s) pero ofrece una respuesta más rápida ante intrusos reales.
+*   *Hipótesis*: Menos tiempo "evaluando" = Menos CPU = Menos calor.
+
 
 

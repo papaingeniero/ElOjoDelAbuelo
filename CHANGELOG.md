@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+### v3.9.10-dev.42
+*   ⚡ **Tuning**: Reducción del filtro de persistencia de 3 a **2 frames** (~600ms).
+*   🎯 **Objetivo**: Mejorar la reactividad sin sacrificar la inmunidad a flashes.
+
 ### v3.9.10-dev.41
 *   🧊 **Thermal**: Optimización drástica en `ThermalGuardian`. Lectura de temperatura cada 15s (antes 60ms).
 *   📉 **CPU Load**: Reducción del 99% en I/O de sistema térmico.
