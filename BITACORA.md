@@ -3387,7 +3387,22 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 **La Solución**:
 *   Implementada la fórmula de producción en `WebMotionLab.java`.
 *   Ahora el laboratorio muestra "Sensibilidad %" y calcula los píxeles equivalentes en tiempo real.
-*   **Beneficio**: Lo que ves en el Lab es lo que obtienes en la App.
+### 🐛 Fix Laboratorio (v3.9.10-dev.44)
+**El Problema**: El usuario reportó que incluso con sensibilidad al 100%, no había detección ni líneas rojas.
+**La Causa**: `MotionEngine` se declaraba como `null` pero NUNCA se instanciaba con `new MotionEngine()`. El código `if (engine) ...` siempre fallaba silenciosamente.
+**La Solución**:
+*   Añadida instanciación `if (!engine) engine = new MotionEngine(0, 0);` en `loadVideo()`.
+### 🎞️ Lab Scrubber (v3.9.10-dev.45)
+**El Desafío**: Analizar videos largos en el laboratorio era tedioso porque no se podía "rebobinar" o saltar a un momento específico. Había que verlo entero.
+
+**La Solución**:
+*   Añadido un `<input type="range">` vinculado al `MJPEGPlayer`.
+*   **Bidireccionalidad**:
+    *   Al reproducir, el slider avanza solo.
+    *   Al mover el slider, el video se pausa y salta al frame exacto.
+*   **Contador**: Muestra `Frame Actual / Total Frames`.
+
+
 
 
 

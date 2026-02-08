@@ -106,6 +106,13 @@ public class WebMotionLab {
                 +
                 "                </div>\n" +
                 "                \n" +
+                "                <div class=\"param-group\" style=\"width:100%\">\n" +
+                "                    <label>🎞️ Avance: <span id=\"val-frame\">0</span> / <span id=\"val-total\">0</span></label>\n"
+                +
+                "                    <input type=\"range\" min=\"0\" max=\"0\" value=\"0\" id=\"scrubber\" oninput=\"updateParam('scrubber', this.value)\" style=\"width:100%\">\n"
+                +
+                "                </div>\n" +
+                "                \n" +
                 "                <div class=\"param-group\">\n" +
                 "                    <label>Debug Mode</label>\n" +
                 "                    <button onclick=\"toggleDebug()\" id=\"btnDebug\">👁️ Ver Malla</button>\n" +
@@ -351,6 +358,9 @@ public class WebMotionLab {
                 "\n" +
                 "            drawFrame(idx) {\n" +
                 "                if (this.frames[idx]) {\n" +
+                "                    var s=document.getElementById('scrubber'); if(s) { s.value=idx; if(s.max!=this.frames.length-1) { s.max=this.frames.length-1; document.getElementById('val-total').textContent=this.frames.length-1; } }\n"
+                +
+                "                    document.getElementById('val-frame').textContent = idx;\n" +
                 "                    // Update canvas size if needed? No, user set fixed size?\n" +
                 "                    // Or follow video? user said \"640x480\"\n" +
                 "                    this.ctx.drawImage(this.frames[idx], 0, 0, this.canvas.width, this.canvas.height);\n"
@@ -422,6 +432,7 @@ public class WebMotionLab {
                 "            // We need a global instance of MJPEGPlayer\n" +
                 "            if (window.mjpegPlayer) window.mjpegPlayer.stop();\n" +
                 "            \n" +
+                "            if (!engine) engine = new MotionEngine(0, 0);\n" +
                 "            window.mjpegPlayer = new MJPEGPlayer('/' + filename, canvas);\n" +
                 "            window.mjpegPlayer.onFrame = (data) => {\n" +
                 "                if (engine) {\n" +

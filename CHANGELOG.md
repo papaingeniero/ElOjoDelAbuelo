@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+
+### v3.9.10-dev.45
+*   🎞️ **WebMotionLab**: Nuevo Slider "Scrubber" para avanzar/rebobinar el video.
+*   🕹️ **Control**: Permite saltar a cualquier frame y ver el conteo exacto de frames.
+
+### v3.9.10-dev.44
+*   🐛 **Fix Lab**: Instanciación correcta del `MotionEngine` en el laboratorio.
+*   🚫 **Bug**: El laboratorio no detectaba movimiento porque el motor estaba `null`.
+
 ### v3.9.10-dev.43
 *   🧪 **WebMotionLab**: Sincronización de slider "Sensibilidad" con la App real.
 *   🧮 **Fórmula**: El laboratorio ahora usa la misma curva exponencial `(1-sens)^2` que el motor de producción.
