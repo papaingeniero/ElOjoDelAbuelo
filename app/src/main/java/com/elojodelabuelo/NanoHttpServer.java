@@ -77,7 +77,7 @@ public class NanoHttpServer {
                 } catch (Exception e) {
                     SentinelService.logToWeb("❌ FATAL WEB SERVER ERROR: " + e.toString());
                     // Dump stack trace to log
-                    for(StackTraceElement ste : e.getStackTrace()) {
+                    for (StackTraceElement ste : e.getStackTrace()) {
                         SentinelService.logToWeb("    at " + ste.toString());
                     }
                 }
@@ -169,7 +169,8 @@ public class NanoHttpServer {
                         String[] pairs = query.split("&");
                         for (String pair : pairs) {
                             String[] kv = pair.split("=");
-                            if (kv.length == 2) parms.setProperty(kv[0], kv[1]);
+                            if (kv.length == 2)
+                                parms.setProperty(kv[0], kv[1]);
                         }
                     }
                     String x = parms.getProperty("x");
@@ -181,14 +182,15 @@ public class NanoHttpServer {
                             float xVal = Float.parseFloat(x);
                             float yVal = Float.parseFloat(y);
                             SentinelService.updateOsdPosition(context, xVal, yVal);
-                            
+
                             if (size != null) {
                                 SentinelService.updateOsdSize(context, Integer.parseInt(size));
                             }
-                            
+
                             sendStringResponse(os, "text/plain", "OK");
                             return;
-                        } catch (Exception e) {}
+                        } catch (Exception e) {
+                        }
                     }
                     sendStringResponse(os, "text/plain", "ERR");
                     return;
@@ -201,13 +203,14 @@ public class NanoHttpServer {
                         String[] pairs = query.split("&");
                         for (String pair : pairs) {
                             String[] kv = pair.split("=");
-                            if (kv.length == 2) parms.setProperty(kv[0], java.net.URLDecoder.decode(kv[1], "UTF-8"));
+                            if (kv.length == 2)
+                                parms.setProperty(kv[0], java.net.URLDecoder.decode(kv[1], "UTF-8"));
                         }
                     }
                     String token = parms.getProperty("token");
                     String chat = parms.getProperty("chat");
-                    if(token != null && chat != null) {
-                        SentinelService.logToWeb("🔔 TEST REQUEST: Token=" + token.substring(0,5) + "...");
+                    if (token != null && chat != null) {
+                        SentinelService.logToWeb("🔔 TEST REQUEST: Token=" + token.substring(0, 5) + "...");
                         TelegramUplink.sendTextMessage("🔔 TEST: ¡El Ojo del Abuelo está conectado! 👁️", token, chat);
                     }
                     os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
@@ -264,15 +267,19 @@ public class NanoHttpServer {
                     serveWaitStatus(os, uri);
                 } else if (uri.equals("/api/debug")) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append("<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>Sentinel Debug</title>");
-                    sb.append("<style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;font-size:14px;-webkit-text-size-adjust:100%;} .btn{background:#300;color:#fff;border:1px solid #f00;padding:10px;margin-bottom:20px;cursor:pointer;width:100%;font-weight:bold;font-size:16px;}</style>");
+                    sb.append(
+                            "<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>Sentinel Debug</title>");
+                    sb.append(
+                            "<style>body{background:#000;color:#0f0;font-family:monospace;padding:10px;font-size:14px;-webkit-text-size-adjust:100%;} .btn{background:#300;color:#fff;border:1px solid #f00;padding:10px;margin-bottom:20px;cursor:pointer;width:100%;font-weight:bold;font-size:16px;}</style>");
                     sb.append("</head><body>");
-                    sb.append("<button onclick='window.close()' style='float:right;margin:0;margin-top:5px;background:#c00;color:white;border:1px solid #fff;width:30px;height:30px;font-weight:bold;cursor:pointer;'>X</button>");
-                    
+                    sb.append(
+                            "<button onclick='window.close()' style='float:right;margin:0;margin-top:5px;background:#c00;color:white;border:1px solid #fff;width:30px;height:30px;font-weight:bold;cursor:pointer;'>X</button>");
+
                     // Botón de Pánico ADB
                     sb.append("<h2>🔧 ADMIN PANEL</h2>");
-                    sb.append("<button class='btn' onclick=\"fetch('/api/restart_adb').then(r=>alert('ADB Reiniciando... La conexión se cortará.'))\">⚠️ REINICIAR SERVICIO ADB (adbd)</button>");
-                    
+                    sb.append(
+                            "<button class='btn' onclick=\"fetch('/api/restart_adb').then(r=>alert('ADB Reiniciando... La conexión se cortará.'))\">⚠️ REINICIAR SERVICIO ADB (adbd)</button>");
+
                     sb.append("<h3>📝 SYSTEM LOGS</h3><pre>");
                     sb.append("--- DEBUG ONLINE (v3.9.8 - DEV TOOLS) ---\n");
                     if (SentinelService.debugLogs != null) {
@@ -283,44 +290,46 @@ public class NanoHttpServer {
                         }
                     }
                     sb.append("</pre></body></html>");
-                    
-                    String response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n" + sb.toString();
+
+                    String response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n"
+                            + sb.toString();
                     os.write(response.getBytes());
-                // 2. AÑADIR LA RUTA DEL TRIGGER (Con diagnóstico completo)
+                    // 2. AÑADIR LA RUTA DEL TRIGGER (Con diagnóstico completo)
                 } else if (uri.equals("/api/restart_adb")) {
                     try {
                         SentinelService.logToWeb("⚠️ WEB TRIGGER: Intentando reiniciar ADB...");
-                        
+
                         // Lanzamos el proceso
-                        Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", "setprop service.adb.tcp.port 5555; stop adbd; start adbd"});
-                        
+                        Process process = Runtime.getRuntime().exec(new String[] { "su", "-c",
+                                "setprop service.adb.tcp.port 5555; stop adbd; start adbd" });
+
                         // LEEMOS LA RESPUESTA (Las "Orejas")
                         // Es importante leer el stream de error por si el comando falla
                         java.io.BufferedReader adbReader = new java.io.BufferedReader(
-                            new java.io.InputStreamReader(process.getErrorStream()));
+                                new java.io.InputStreamReader(process.getErrorStream()));
                         StringBuilder output = new StringBuilder();
                         String adbOutputLine;
                         while ((adbOutputLine = adbReader.readLine()) != null) {
                             output.append(adbOutputLine).append(" ");
                         }
-                        
+
                         // Esperamos a que el comando termine y nos dé su veredicto (0 = Éxito)
                         int exitCode = process.waitFor();
-                        
+
                         if (exitCode == 0) {
                             SentinelService.logToWeb("✅ ÉXITO: ADB Reiniciado correctamente (Exit Code 0).");
                         } else {
                             // Si falla, logueamos qué ha dicho el sistema (ej: "Permission denied")
                             SentinelService.logToWeb("❌ FALLO ROOT (Código " + exitCode + "): " + output.toString());
                         }
-                        
+
                     } catch (Exception e) {
                         SentinelService.logToWeb("❌ EXCEPCIÓN JAVA crítica: " + e.getMessage());
                     }
-                    
+
                     // Respondemos al navegador
                     os.write("HTTP/1.1 200 OK\r\n\r\nOK".getBytes());
-                    
+
                 } else {
                     SentinelService.logToWeb("🌐 WEB: Dashboard cargado");
                     serveDashboard(os);
@@ -462,9 +471,11 @@ public class NanoHttpServer {
             int webPanY = prefs.getInt("webPanY", 0);
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b, \"smartFilter\":%b}",
-                    sens, contrast, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX, webPanY, 
-                    SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive, SentinelService.isSmartFilterActive);
+                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
+                    sens, contrast, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX,
+                    webPanY,
+                    SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive,
+                    SentinelService.isSmartFilterActive);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -500,7 +511,6 @@ public class NanoHttpServer {
 
             try {
 
-
                 if (uri.contains("?")) {
                     String query = uri.substring(uri.indexOf("?") + 1);
                     String[] pairs = query.split("&");
@@ -510,12 +520,12 @@ public class NanoHttpServer {
                             String key = kv[0];
                             String val = kv[1];
                             boolean smartFilter = true; // Default
-                            
+
                             if (key.equals("sens"))
                                 sens = Integer.parseInt(val);
                             else if (key.equals("contrast"))
                                 contrast = Integer.parseInt(val);
-                            else if (key.equals("smartFilter")) 
+                            else if (key.equals("smartFilter"))
                                 SentinelService.updateSmartFilter(Boolean.parseBoolean(val));
                             else if (key.equals("time"))
                                 time = Integer.parseInt(val);
@@ -539,12 +549,15 @@ public class NanoHttpServer {
                             else if (key.equals("webPanY"))
                                 webPanY = Integer.parseInt(val);
                             // Telegram Parsing
-                            else if (key.equals("tgToken")) tgToken = val;
-                            else if (key.equals("tgChatId")) tgChatId = val;
+                            else if (key.equals("tgToken"))
+                                tgToken = val;
+                            else if (key.equals("tgChatId"))
+                                tgChatId = val;
                             else if (key.equals("tgActive")) {
                                 boolean isActive = Boolean.parseBoolean(val);
                                 SentinelService.isTelegramActive = isActive;
-                                context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE).edit().putBoolean("telegramActive", isActive).commit();
+                                context.getSharedPreferences("SentinelPrefs", Context.MODE_PRIVATE).edit()
+                                        .putBoolean("telegramActive", isActive).commit();
                             }
                         }
                     }
@@ -873,8 +886,10 @@ public class NanoHttpServer {
                 "/* Switch Toggle */\n" +
                 ".switch { position: relative; display: inline-block; width: 42px; height: 24px; }\n" +
                 ".switch input { opacity: 0; width: 0; height: 0; }\n" +
-                ".slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }\n" +
-                ".slider:before { position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;box-shadow: 0 2px 4px rgba(0,0,0,0.2); }\n" +
+                ".slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }\n"
+                +
+                ".slider:before { position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;box-shadow: 0 2px 4px rgba(0,0,0,0.2); }\n"
+                +
                 "input:checked + .slider { background-color: #29b6f6; }\n" +
                 "input:checked + .slider:before { transform: translateX(18px); }\n" +
                 "</style>\n" +
@@ -887,7 +902,8 @@ public class NanoHttpServer {
                 commonHeader
                 +
                 "  <div style='text-align:center; padding-bottom:10px; flex-shrink:0;'>\n" +
-                "      <div class='live-btn' onclick='openLiveView()' style='cursor:pointer;'>🔴 VER CÁMARA EN VIVO</div>\n" +
+                "      <div class='live-btn' onclick='openLiveView()' style='cursor:pointer;'>🔴 VER CÁMARA EN VIVO</div>\n"
+                +
                 "      <div style='margin-top:10px; font-size:12px; color:#666;'>Status: " + lastError + " | Boot: "
                 + SystemStats.getBootTime() + "</div>\n" +
                 "  </div>\n" +
@@ -988,11 +1004,14 @@ public class NanoHttpServer {
                 +
                 "      </div>" +
 
-                "      <div class='settings-row' style='margin-top:15px; border-top:1px dashed #444; padding-top:10px;'>\n" +
+                "      <div class='settings-row' style='margin-top:15px; border-top:1px dashed #444; padding-top:10px;'>\n"
+                +
                 "          <label>Estampado Fecha (OSD):</label>\n" +
-                "          <a href='/config/osd' target='_blank' style='background:#222; border:1px solid #0f0; color:#0f0; padding:6px 15px; text-decoration:none; border-radius:4px; font-size:13px; font-family:monospace;'>📟 AJUSTAR POSICIÓN</a>\n" +
+                "          <a href='/config/osd' target='_blank' style='background:#222; border:1px solid #0f0; color:#0f0; padding:6px 15px; text-decoration:none; border-radius:4px; font-size:13px; font-family:monospace;'>📟 AJUSTAR POSICIÓN</a>\n"
+                +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:5px; margin-bottom:15px;'>* Abre el editor visual en una pestaña nueva.</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:5px; margin-bottom:15px;'>* Abre el editor visual en una pestaña nueva.</div>\n"
+                +
 
                 // 3. GENERAL SETTINGS
                 "      <div class='settings-row'>\n" +
@@ -1002,19 +1021,24 @@ public class NanoHttpServer {
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Activa la vigilancia y grabación por movimiento.</div>\n"
                 +
                 "      <div class='settings-row'>\n" +
-                "         <label>📏 Sensibilidad al Tamaño: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n" +
+                "         <label>📏 Sensibilidad al Tamaño: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n"
+                +
                 "      </div>\n" +
                 "      <div class='settings-row' style='margin-bottom:5px;'>\n" +
-                "            <input type='range' id='sens-slider' min='0' max='100' oninput='updateSensLabel(this.value)'>\n" +
+                "            <input type='range' id='sens-slider' min='0' max='100' oninput='updateSensLabel(this.value)'>\n"
+                +
                 "      </div>\n" +
                 "\n" +
                 "      <div class='settings-row'>\n" +
-                "         <label>🎨 Sensibilidad al Contraste: <span id='contrast-label' style='color:#aaa; font-size:14px;'>50%</span></label>\n" +
+                "         <label>🎨 Sensibilidad al Contraste: <span id='contrast-label' style='color:#aaa; font-size:14px;'>50%</span></label>\n"
+                +
                 "      </div>\n" +
                 "      <div class='settings-row' style='margin-bottom:5px;'>\n" +
-                "            <input type='range' id='contrast-slider' min='0' max='100' oninput='updateContrastLabel(this.value)'>\n" +
+                "            <input type='range' id='contrast-slider' min='0' max='100' oninput='updateContrastLabel(this.value)'>\n"
+                +
                 "      </div>\n" +
-                "      <div style='font-size:10px; color:#666; margin-bottom:15px; text-align:right'>* 100% = Detecta camuflaje / 0% = Solo luces fuertes</div>\n" +
+                "      <div style='font-size:10px; color:#666; margin-bottom:15px; text-align:right'>* 100% = Detecta camuflaje / 0% = Solo luces fuertes</div>\n"
+                +
                 "      <div style='font-size:11px; color:#aaa; margin-top:-15px; margin-bottom:15px;'>* Umbral de movimiento para iniciar grabación.</div>\n"
                 +
                 "      <div class='settings-row'>\n" +
@@ -1041,8 +1065,10 @@ public class NanoHttpServer {
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Rota la imagen si aparece al revés (suelo en el techo).</div>\n"
                 +
                 // 4. TELEGRAM SETTINGS
-                "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; margin-top:15px;'>" +
-                "         <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>\n" +
+                "      <div style='margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; margin-top:15px;'>"
+                +
+                "         <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;'>\n"
+                +
                 "             <h4 style='margin:0; color:#29b6f6;'>✈️ Notificaciones Telegram</h4>\n" +
                 "             <div style='display:flex; align-items:center;'>\n" +
                 "                 <span style='font-size:12px; margin-right:10px; color:#ddd;'>Activar</span>\n" +
@@ -1054,15 +1080,20 @@ public class NanoHttpServer {
                 "         </div>\n" +
                 "         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
                 "         <div style='display:flex; align-items:center; margin-bottom:5px;'>" +
-                "             <input type='password' id='tg-token' placeholder='123456:ABC-Def...' style='flex:1; padding:5px; background:#333; color:#fff; border:1px solid #555;'>" +
-                "             <span onclick='toggleTgToken()' style='margin-left:8px; cursor:pointer; font-size:18px; user-select:none;'>👁️</span>" +
+                "             <input type='password' id='tg-token' placeholder='123456:ABC-Def...' style='flex:1; padding:5px; background:#333; color:#fff; border:1px solid #555;'>"
+                +
+                "             <span onclick='toggleTgToken()' style='margin-left:8px; cursor:pointer; font-size:18px; user-select:none;'>👁️</span>"
+                +
                 "         </div>" +
                 "         <label style='font-size:12px; color:#aaa;'>Chat ID:</label>" +
-                "         <input type='text' id='tg-chatid' placeholder='12345678' style='width:100%; padding:5px; background:#333; color:#fff; border:1px solid #555;'>" +
-                "         <button onclick='testTelegram()' style='width:100%; margin-top:8px; padding:6px; background:#0288d1; border:none; color:white; border-radius:4px; cursor:pointer;'>🔔 PROBAR CONEXIÓN</button>" +
+                "         <input type='text' id='tg-chatid' placeholder='12345678' style='width:100%; padding:5px; background:#333; color:#fff; border:1px solid #555;'>"
+                +
+                "         <button onclick='testTelegram()' style='width:100%; margin-top:8px; padding:6px; background:#0288d1; border:none; color:white; border-radius:4px; cursor:pointer;'>🔔 PROBAR CONEXIÓN</button>"
+                +
                 "      </div>\n" +
                 "\n" +
-                "      <div class='settings-row' style='margin-top:15px; border-top:1px dashed #444; padding-top:10px;'>\n" +
+                "      <div class='settings-row' style='margin-top:15px; border-top:1px dashed #444; padding-top:10px;'>\n"
+                +
                 "         <label>💡 Filtro Anti-Luces:</label>\n" +
                 "         <div style='display:flex; align-items:center;'>\n" +
                 "             <label class='switch'>\n" +
@@ -1071,10 +1102,13 @@ public class NanoHttpServer {
                 "             </label>\n" +
                 "         </div>\n" +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Ignora cambios masivos de luz (bombillas).</div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Ignora cambios masivos de luz (bombillas).</div>\n"
+                +
                 "\n" +
-                "      <div style='text-align:center; margin-top:20px; border-top:1px solid #333; padding-top:15px;'>\n" +
-                "        <button onclick='saveSettings()' style='background:#2E7D32; color:white; padding:12px 30px; border:none; border-radius:4px; font-weight:bold; font-size:16px;'>💾 GUARDAR CAMBIOS</button>\n" +
+                "      <div style='text-align:center; margin-top:20px; border-top:1px solid #333; padding-top:15px;'>\n"
+                +
+                "        <button onclick='saveSettings()' style='background:#2E7D32; color:white; padding:12px 30px; border:none; border-radius:4px; font-weight:bold; font-size:16px;'>💾 GUARDAR CAMBIOS</button>\n"
+                +
                 "      </div>\n" +
                 "      <div style='display:flex; margin-top:20px;'>\n" +
                 "         <button class='btn-save' onclick='saveSettings()'>GUARDAR</button>\n" +
@@ -1082,7 +1116,8 @@ public class NanoHttpServer {
                 "      </div>\n" +
                 "      <!-- Opción B: Footer Diagnóstico -->\n" +
                 "      <div style='margin-top:20px; text-align:center; padding-bottom:40px;'>\n" +
-                "         <a href='#' onclick=\"window.open('/api/debug'); return false;\" style='color:#ef5350; text-decoration:none; font-size:12px; border-bottom:1px dotted #ef5350;'>⚠️ VER LOGS DE DEBUG</a>\n" +
+                "         <a href='#' onclick=\"window.open('/api/debug'); return false;\" style='color:#ef5350; text-decoration:none; font-size:12px; border-bottom:1px dotted #ef5350;'>⚠️ VER LOGS DE DEBUG</a>\n"
+                +
                 "      </div>\n" +
                 "  </div>\n" +
                 "</div>\n" +
@@ -1440,7 +1475,8 @@ public class NanoHttpServer {
                 "     if(data.tgToken) document.getElementById('tg-token').value = data.tgToken;\n" +
                 "     if(data.tgChatId) document.getElementById('tg-chatid').value = data.tgChatId;\n" +
                 "     if(data.tgActive !== undefined) document.getElementById('tg-active').checked = data.tgActive;\n" +
-                "     if(data.smartFilter !== undefined) document.getElementById('set-smart-filter').checked = data.smartFilter;\n" +
+                "\n"
+                +
                 "     updateSensLabel(data.sens);\n" +
                 "  });\n" +
                 "}\n" +
@@ -1464,11 +1500,13 @@ public class NanoHttpServer {
                 "   var smartFilter = document.getElementById('set-smart-filter').checked;\n" +
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
-                "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&rot=' + rot +\n" +
+                "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&rot=' + rot +\n"
+                +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
                 "            '&min_free_space=' + minSpace +\n" +
                 "            '&webZoom=' + wZoom + '&webPanX=' + wPanX + '&webPanY=' + wPanY +\n" +
-                "            '&tgToken=' + tgToken + '&tgChatId=' + tgChatId + '&tgActive=' + tgActive + '&smartFilter=' + smartFilter;\n" +
+                "            '&tgToken=' + tgToken + '&tgChatId=' + tgChatId + '&tgActive=' + tgActive;\n"
+                +
                 "   fetch('/api/save_settings' + qs, { method: 'POST' })\n" +
                 "   .then(function() { setTimeout(function() { location.reload(); }, 800); });\n" +
                 "}\n" +
@@ -1782,7 +1820,6 @@ public class NanoHttpServer {
                 "    var x = document.getElementById('tg-token');\n" +
                 "    x.type = (x.type === 'password') ? 'text' : 'password';\n" +
                 "}\n" +
-
 
                 "</script>\n" +
                 "</body></html>";
