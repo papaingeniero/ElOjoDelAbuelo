@@ -10,10 +10,21 @@ public class ThermalGuardian {
     private static final String TEMP_PATH = "/sys/class/power_supply/battery/temp";
     private static final int MAX_TEMP = 430; // 43.0 degrees Celsius
 
+    private long lastTempCheckTime = 0;
+    private boolean lastOverheatValue = false;
+    private static final long CHECK_INTERVAL_MS = 15000; // 15 seconds
+
     public boolean isOverheating() {
+        long now = System.currentTimeMillis();
+        if (now - lastTempCheckTime < CHECK_INTERVAL_MS) {
+            return lastOverheatValue;
+        }
+
+        lastTempCheckTime = now;
         File file = new File(TEMP_PATH);
         if (!file.exists()) {
-            return false; // Cannot read, assume safe or handle error
+            lastOverheatValue = false;
+            return false;
         }
 
         BufferedReader reader = null;
@@ -22,7 +33,8 @@ public class ThermalGuardian {
             String line = reader.readLine();
             if (line != null) {
                 int temp = Integer.parseInt(line.trim());
-                return temp > MAX_TEMP;
+                lastOverheatValue = (temp > MAX_TEMP);
+                return lastOverheatValue;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -31,10 +43,10 @@ public class ThermalGuardian {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    // Ignore
                 }
             }
         }
+        lastOverheatValue = false;
         return false;
     }
 

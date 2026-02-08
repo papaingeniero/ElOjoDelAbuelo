@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+### v3.9.10-dev.41
+*   🧊 **Thermal**: Optimización drástica en `ThermalGuardian`. Lectura de temperatura cada 15s (antes 60ms).
+*   📉 **CPU Load**: Reducción del 99% en I/O de sistema térmico.
+
 ### v3.9.10-dev.40
 *   🗑️ **Cleanup**: Eliminación quirúrgica de UI/JS obsoletos del "Smart Filter" en `NanoHttpServer` y `WebMotionLab`.
 *   🚀 **UX**: Interfaz web más limpia sin controles confusos.

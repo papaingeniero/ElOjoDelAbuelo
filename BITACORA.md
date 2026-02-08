@@ -3364,5 +3364,16 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 ### 🚀 Estado Final del Ciclo
 *   **Backend**: Regla del 3 (Persistencia) implementada y compilada.
 *   **Frontend**: Limpio y alineado.
-*   **Versión**: `v3.9.10-dev.40` lista para pruebas de campo.
+### 🧊 Optimización Térmica (v3.9.10-dev.41)
+**El Problema**: Tras implementar la persistencia (Regla del 3), el dispositivo subió de 39°C a 41°C. Se identificó que la clase `ThermalGuardian` leía el fichero `/sys/class/power_supply/battery/temp` *en cada frame* (15 veces/segundo grabando), generando I/O innecesario.
+
+**La Solución**:
+*   Implementado "Thermal Cache" en `ThermalGuardian.java`.
+*   Intervalo de lectura forzado: **1 vez cada 15 segundos**.
+*   Si se pide la temperatura antes de tiempo, se devuelve el valor cacheado.
+
+**Resultado Esperado**:
+*   Reducción masiva de syscalls y GC.
+*   Retorno a temperaturas nominales (~39°C) manteniendo la lógica de persistencia.
+
 
