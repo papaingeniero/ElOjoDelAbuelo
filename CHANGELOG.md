@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+### v3.9.10-dev.37
+*   🚑 **Hotfix**: Routing tolerante a mayúsculas (/LAB, /Lab) para corregir Chrome default.
+
 ### v3.9.10-dev.36
 *   🧪 **Motion Lab**: Unificación de nombres y lógica de inversión con el Dashboard.
 

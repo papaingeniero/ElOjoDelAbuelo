@@ -3300,3 +3300,8 @@ Potenciamos el panel lateral del Lab:
 1.  **UI**: Renombrados a "🎨 Sensibilidad al Contraste" y "📏 Sensibilidad al Tamaño".
 2.  **Lógica**: Implementada la inversión de contraste (0-100% -> Threshold 100-5) en el código JS del analizador para que coincida con el comportamiento de la App.
 **Resultado**: Coherencia total entre Dashboard y Analizador.
+
+### 🚑 v3.9.10-dev.37: Hotfix de Routing Case-Insensitive (/LAB)
+**El Problema**: El navegador Chrome de escritorio del usuario intentaba cargar `/LAB` (mayúsculas), y el servidor (NanoHttpServer) solo respondía a `/lab` (minúsculas), redirigiendo al Dashboard por defecto.
+**La Solución**: Se modificó `NanoHttpServer.java` para evaluar la ruta como `uri.toLowerCase(Locale.US).startsWith("/lab")`.
+**Resultado**: Ahora `/lab`, `/LAB`, o `/Lab` cargan correctamente el Analizador.

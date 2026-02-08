@@ -154,7 +154,7 @@ public class NanoHttpServer {
 
                 // 2. Route Request
                 // --- RUTAS OSD (V3.9.7) ---
-                if (uri.startsWith("/lab")) {
+                if (uri.toLowerCase(Locale.US).startsWith("/lab")) {
                     sendStringResponse(os, "text/html", WebMotionLab.getHtml());
                     return;
                 }
