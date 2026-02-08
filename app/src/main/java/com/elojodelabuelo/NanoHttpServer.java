@@ -474,8 +474,7 @@ public class NanoHttpServer {
                     "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
                     sens, contrast, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX,
                     webPanY,
-                    SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive,
-                    SentinelService.isSmartFilterActive);
+                    SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive);
 
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write("Content-Type: application/json\r\n".getBytes());
@@ -519,14 +518,11 @@ public class NanoHttpServer {
                         if (kv.length == 2) {
                             String key = kv[0];
                             String val = kv[1];
-                            boolean smartFilter = true; // Default
 
                             if (key.equals("sens"))
                                 sens = Integer.parseInt(val);
                             else if (key.equals("contrast"))
                                 contrast = Integer.parseInt(val);
-                            else if (key.equals("smartFilter"))
-                                SentinelService.updateSmartFilter(Boolean.parseBoolean(val));
                             else if (key.equals("time"))
                                 time = Integer.parseInt(val);
                             else if (key.equals("active"))
@@ -1497,7 +1493,7 @@ public class NanoHttpServer {
                 "   var tgToken = encodeURIComponent(document.getElementById('tg-token').value);\n" +
                 "   var tgChatId = encodeURIComponent(document.getElementById('tg-chatid').value);\n" +
                 "   var tgActive = document.getElementById('tg-active').checked;\n" +
-                "   var smartFilter = document.getElementById('set-smart-filter').checked;\n" +
+
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&rot=' + rot +\n"

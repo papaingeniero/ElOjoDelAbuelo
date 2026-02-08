@@ -121,6 +121,10 @@ public class SentinelService extends Service {
     public static volatile boolean isDetectorActive = true;
     public static int cameraRotation = 0; // 0 or 180
 
+    // RULE OF 3: Temporal Persistence Filter
+    private int consecutiveMotionFrames = 0;
+    private static final int MIN_CONSECUTIVE_FRAMES = 3;
+
     // --- TELEGRAM CONFIG ---
     public static String telegramToken = "";
     public static String telegramChatId = "";
@@ -731,22 +735,6 @@ public class SentinelService extends Service {
         }
     }
 
-    // [NUEVO] Método de actualización runtime para Smart Filter
-    public static void updateSmartFilter(boolean active) {
-        isSmartFilterActive = active;
-        if (instance != null) {
-            // Persistencia
-            instance.getSharedPreferences("SentinelPrefs", MODE_PRIVATE)
-                    .edit().putBoolean("smartFilter", active).commit();
-
-            // Aplicar en caliente
-            if (instance.motionDetector != null) {
-                instance.motionDetector.setSmartFilterEnabled(active);
-                logToWeb("🛡️ FILTRO ANTI-LUZ: " + (active ? "ACTIVADO" : "DESACTIVADO"));
-            }
-        }
-    }
-
     private synchronized void openNewRecordingFile() {
         File dir = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
         if (!dir.exists())
@@ -831,7 +819,7 @@ public class SentinelService extends Service {
         // [NUEVO] FIX GHOST TRIGGER: RESET DEL CEREBRO 🧠✨
         // Borramos la memoria del detector para evitar el "salto temporal"
         motionDetector = new MotionDetector();
-        motionDetector.setSmartFilterEnabled(isSmartFilterActive); // IMPORTANTE: Re-inyectar config al resetear
+
     }
 
     private void manageStorage() {

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+### v3.9.10-dev.39
+*   🐞 **Fix**: Corregidos errores de compilación en `SentinelService` (filtros faltantes) y `WebMotionLab` (sintaxis string literal).
+*   🧹 **Cleanup**: Eliminación definitiva de código muerto del Smart Filter.
+
 ### v3.9.10-dev.38
 *   🧠 **Core Logic**: Reemplazado "Smart Light Filter" por **"Temporal Persistence Filter"**. Ahora se requieren 3 frames consecutivos de movimiento para activar la alarma. Mejora drástica contra falsos positivos y soluciona la ceguera por oclusión (sabotaje).
 *   🧹 **Cleanup**: Eliminado código muerto (Smart Filter UI/API) en Backend y Frontend.
