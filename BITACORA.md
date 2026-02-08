@@ -3353,4 +3353,16 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 **La Solución (v3.9.10-dev.39)**:
 *   Se restauraron las variables faltantes y se limpió el código muerto restante.
 *   Se corrigió la sintaxis de `NanoHttpServer` y `WebMotionLab`.
-*   **Estado**: Compilación EXITOSA. Instilación PENDIENTE (No device).
+### 🧹 Limpieza Final (v3.9.10-dev.40)
+**El Problema**: Existían restos "fantasmas" del Smart Filter en la UI (checkbox HTML) y en la lógica JS (`result.filtered`). Esto confundía al usuario y ensuciaba el código.
+
+**La Solución**:
+*   ✂️ **HTML Surgery**: Eliminado el bloque entero del checkbox en `NanoHttpServer.java`.
+*   ✂️ **JS Surgery**: Eliminados los bloques `if (result.filtered)` en `WebMotionLab.java`.
+*   **Resultado**: Código polimórfico limpio y UX honesta (lo que ves es lo que hay).
+
+### 🚀 Estado Final del Ciclo
+*   **Backend**: Regla del 3 (Persistencia) implementada y compilada.
+*   **Frontend**: Limpio y alineado.
+*   **Versión**: `v3.9.10-dev.40` lista para pruebas de campo.
+

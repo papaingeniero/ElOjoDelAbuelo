@@ -427,10 +427,7 @@ public class WebMotionLab {
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
                 "                    \n" +
-                "                    if (result.filtered) {\n" +
-                "                       statusEl.textContent = '💡 CAMBIO DE LUZ (Ignorado)';\n" +
-                "                       statusEl.style.color = '#FFA500'; // Orange\n" +
-                "                    } else if (result.motion) {\n" +
+                "                    if (result.motion) {\n" +
                 "                       statusEl.textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n"
                 +
                 "                       statusEl.style.color = '#FF0000'; // Red\n" +
@@ -467,10 +464,7 @@ public class WebMotionLab {
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
                 "                    \n" +
-                "                    if (result.filtered) {\n" +
-                "                       statusEl.textContent = '💡 CAMBIO DE LUZ (Ignorado)';\n" +
-                "                       statusEl.style.color = '#FFA500'; // Orange\n" +
-                "                    } else if (result.motion) {\n" +
+                "                    if (result.motion) {\n" +
                 "                       statusEl.textContent = '⚠️ MOVIMIENTO DETECTADO (' + result.pixels + ' px)';\n"
                 +
                 "                       statusEl.style.color = '#FF0000'; // Red\n" +

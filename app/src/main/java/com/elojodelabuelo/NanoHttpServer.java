@@ -1088,16 +1088,7 @@ public class NanoHttpServer {
                 +
                 "      </div>\n" +
                 "\n" +
-                "      <div class='settings-row' style='margin-top:15px; border-top:1px dashed #444; padding-top:10px;'>\n"
-                +
-                "         <label>💡 Filtro Anti-Luces:</label>\n" +
-                "         <div style='display:flex; align-items:center;'>\n" +
-                "             <label class='switch'>\n" +
-                "                 <input type='checkbox' id='set-smart-filter'>\n" +
-                "                 <span class='slider'></span>\n" +
-                "             </label>\n" +
-                "         </div>\n" +
-                "      </div>\n" +
+
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Ignora cambios masivos de luz (bombillas).</div>\n"
                 +
                 "\n" +
