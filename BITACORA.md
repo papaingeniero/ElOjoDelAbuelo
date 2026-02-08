@@ -3343,3 +3343,14 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 
 ### 🎓 4. Lecciones Aprendidas
 *   **Complejidad vs Robustez**: A veces, un contador simple (`++`) es mejor algoritmo de IA que una fórmula estadística compleja. La persistencia temporal es el filtro de ruido más antiguo y efectivo del mundo.
+
+### ❌ Intento Fallido (v3.9.10-dev.38): Build Error
+**El Problema**: La compilación falló tras el refactor.
+1.  `SentinelService.java`: Faltaban las variables `consecutiveMotionFrames` (error de inserción) y sobraba una llamada a `setSmartFilterEnabled` (método borrado).
+2.  `NanoHttpServer.java`: Se rompió la cadena `if-else` al borrar el bloque del smart filter, dejando un `else if` huérfano.
+3.  `WebMotionLab.java`: Error de sintaxis en string literal durante la limpieza de JS.
+
+**La Solución (v3.9.10-dev.39)**:
+*   Se restauraron las variables faltantes y se limpió el código muerto restante.
+*   Se corrigió la sintaxis de `NanoHttpServer` y `WebMotionLab`.
+*   **Estado**: Compilación EXITOSA. Instilación PENDIENTE (No device).
