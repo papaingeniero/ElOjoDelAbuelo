@@ -3491,3 +3491,21 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 **Glosario 📖**:
 - **UX (User Experience)**: Diseño centrado en la facilidad de uso.
 - **Modal Secundario**: Ventana emergente que se abre sobre otra ventana emergente.
+
+### 🛡️ Filtro de Estabilidad: Triple Confirmación (v3.9.10-dev.53)
+**El Problema ��**: El sistema grababa apagados de luz como si fueran movimiento real. Al apagar la luz, el sensor de la cámara del Galaxy S sufre dos efectos: primero un score masivo (>5000) por el cambio brusco de luminosidad, y luego un "ruido fantasma" (~1081) causado por el ISO disparándose al máximo intentando ver en la oscuridad. Con solo 2 frames de confirmación, ese ruido del segundo frame bastaba para disparar una grabación inútil de una habitación vacía y oscura.
+
+**La Solución (Ingeniería) 🛠️**: Subimos `MIN_CONSECUTIVE_FRAMES` de 2 a 3. Ese tercer frame extra (~333ms adicionales) le da tiempo al sensor para estabilizar su ganancia ISO. Así el score cae a <10 y el sistema reconoce el apagón como "falsa alarma" en lugar de confirmar una grabación.
+
+**Cronología del Filtro** ⏱️:
+- **Frame 1 (T=0ms)**: Score 5000 → "¡Algo pasó!" → Buffer empieza a llenarse.
+- **Frame 2 (T=333ms)**: Score 1081 (ruido ISO) → Antes: confirmaba grabación ❌. Ahora: sigue esperando ✅.
+- **Frame 3 (T=666ms)**: Score ~0 (sensor estabilizado) → "Falsa Alarma" → Buffer limpiado 💤.
+
+**Lecciones Aprendidas 🎓**:
+- Los sensores CMOS antiguos tardan hasta 500ms en estabilizar su ganancia tras un cambio brusco de luz.
+- En sistemas de detección, la paciencia (un frame extra) es más eficiente que la complejidad (algoritmos de detección de flash).
+
+**Glosario 📖**:
+- **ISO/Ganancia**: Amplificación electrónica de la señal del sensor. A mayor ISO, más ruido digital (grano).
+- **MIN_CONSECUTIVE_FRAMES**: Número mínimo de frames consecutivos con movimiento real para confirmar una grabación.

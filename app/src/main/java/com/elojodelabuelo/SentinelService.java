@@ -123,7 +123,7 @@ public class SentinelService extends Service {
 
     // RULE OF 3: Temporal Persistence Filter
     private int consecutiveMotionFrames = 0;
-    private static final int MIN_CONSECUTIVE_FRAMES = 2;
+    private static final int MIN_CONSECUTIVE_FRAMES = 3;
 
     // --- TELEGRAM CONFIG ---
     public static String telegramToken = "";

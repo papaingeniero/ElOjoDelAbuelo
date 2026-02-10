@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.53
+*   🛡️ **Anti-False Positive**: `MIN_CONSECUTIVE_FRAMES` de 2 → 3. El frame extra (~333ms) da tiempo al sensor a estabilizar el ISO tras cambios bruscos de luz, evitando grabar apagados de luz como movimiento falso.
+
 ### v3.9.10-dev.52
 *   🛡️ **Security**: Credenciales de Telegram (Token/ChatID) movidas a un modal secundario para evitar cambios accidentales.
 *   🚦 **UX**: Eliminado botón de guardado duplicado en el panel de Ajustes.
