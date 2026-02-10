@@ -3449,3 +3449,10 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 *   **Deferred Rotation**: Rotar imágenes consume mucha CPU. Aprendimos a NO rotar los frames del buffer mientras están en RAM. Guardamos los datos "crudos" (invertidos si el móvil está al revés) y solo aplicamos la rotación matemática justo en el milisegundo de escribirlos a disco.
 *   **FPS Harmonization**: El buffer captura a 5FPS (vigilancia), pero el vídeo es a 15FPS. Si volcamos tal cual, se ve a cámara rápida (Benny Hill). Solución: Inyectar cada frame del buffer 3 veces para rellenar el tiempo.
 
+### 🐛 Hotfix Telegram (v3.9.10-dev.49)
+**Reporte**: El usuario detectó en el log (`⚠️ Telegram ALERT Error`) que el sistema intentaba enviar alertas a Telegram incluso con el interruptor "Activar" apagado.
+**Causa**: La condición en `onPreviewFrame` solo verificaba si había Tokens configurados (`!token.isEmpty()`), ignorando por completo el booleano `isTelegramActive`.
+**Semántica de la UI**: La UI dice "Activar" (interruptor general), pero el código actuaba como si la mera presencia de credenciales implicara activación.
+**Solución**: Añadida la guarda lógica `if (isTelegramActive && ...)` en el disparador de alerta temprana.
+
+

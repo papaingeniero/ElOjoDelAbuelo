@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.49
+*   🐛 **Hotfix Telegram**: Corregido bug donde se intentaba enviar alerta aunque la opción estuviese desactivada.
+
 ### v3.9.10-dev.48
 *   ⏪ **Pre-Record Buffer**: Captura de 3 segundos previos al evento (Memoria de Pez).
 *   🏊‍♂️ **Object Pooling**: Gestión de memoria Zero-GC para evitar lag en vigilancia.

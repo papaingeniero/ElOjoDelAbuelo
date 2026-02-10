@@ -661,7 +661,7 @@ public class SentinelService extends Service {
                             logToWeb("MOTION DETECTED (Persistente)! Score: " + score);
 
                             // 🔔 ALERTA TEMPRANA: Avisar a Telegram YA (Vibración)
-                            if (!telegramToken.isEmpty() && !telegramChatId.isEmpty()) {
+                            if (isTelegramActive && !telegramToken.isEmpty() && !telegramChatId.isEmpty()) {
                                 TelegramUplink.sendTextMessage("🚨 ¡Movimiento detectado! Grabando...", telegramToken,
                                         telegramChatId);
                             }
