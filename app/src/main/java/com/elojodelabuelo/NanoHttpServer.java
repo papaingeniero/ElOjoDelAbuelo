@@ -1090,17 +1090,9 @@ public class NanoHttpServer {
                 "                 </label>\n" +
                 "             </div>\n" +
                 "         </div>\n" +
-                "         <label style='font-size:12px; color:#aaa;'>Bot Token:</label>" +
-                "         <div style='display:flex; align-items:center; margin-bottom:5px;'>" +
-                "             <input type='password' id='tg-token' placeholder='123456:ABC-Def...' style='flex:1; padding:5px; background:#333; color:#fff; border:1px solid #555;'>"
-                +
-                "             <span onclick='toggleTgToken()' style='margin-left:8px; cursor:pointer; font-size:18px; user-select:none;'>👁️</span>"
-                +
-                "         </div>" +
-                "         <label style='font-size:12px; color:#aaa;'>Chat ID:</label>" +
-                "         <input type='text' id='tg-chatid' placeholder='12345678' style='width:100%; padding:5px; background:#333; color:#fff; border:1px solid #555;'>"
-                +
-                "         <button onclick='testTelegram()' style='width:100%; margin-top:8px; padding:6px; background:#0288d1; border:none; color:white; border-radius:4px; cursor:pointer;'>🔔 PROBAR CONEXIÓN</button>"
+                "         <input type='hidden' id='tg-token' value=''>" +
+                "         <input type='hidden' id='tg-chatid' value=''>" +
+                "         <button onclick='openTelegramModal()' style='width:100%; padding:8px; background:#1a237e; border:1px solid #29b6f6; color:#29b6f6; border-radius:4px; cursor:pointer; font-size:13px;'>⚙️ Configurar Bot Token y Chat ID</button>"
                 +
                 "      </div>\n" +
                 "\n" +
@@ -1108,11 +1100,6 @@ public class NanoHttpServer {
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Ignora cambios masivos de luz (bombillas).</div>\n"
                 +
                 "\n" +
-                "      <div style='text-align:center; margin-top:20px; border-top:1px solid #333; padding-top:15px;'>\n"
-                +
-                "        <button onclick='saveSettings()' style='background:#2E7D32; color:white; padding:12px 30px; border:none; border-radius:4px; font-weight:bold; font-size:16px;'>💾 GUARDAR CAMBIOS</button>\n"
-                +
-                "      </div>\n" +
                 "      <div style='display:flex; margin-top:20px;'>\n" +
                 "         <button class='btn-save' onclick='saveSettings()'>GUARDAR</button>\n" +
                 "         <button class='btn-cancel' onclick='closeSettings()'>CANCELAR</button>\n" +
@@ -1151,6 +1138,34 @@ public class NanoHttpServer {
                 "\n" +
                 "    <button onclick='closeDeleteModal()' style='margin-top:40px; background:none; border:1px solid #666; color:#888; padding:10px 30px; border-radius:20px;'>CANCELAR</button>\n"
                 +
+                "</div>\n" +
+                "\n" +
+                "<!-- TELEGRAM CONFIG MODAL -->\n" +
+                "<div id='telegram-modal' style='display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,10,30,0.95); z-index:5000; flex-direction:column; justify-content:center; align-items:center;'>\n"
+                +
+                "    <div style='width:85%; max-width:350px; background:#1a1a2e; border:1px solid #29b6f6; border-radius:12px; padding:25px;'>\n"
+                +
+                "        <h3 style='margin:0 0 15px 0; color:#29b6f6; text-align:center;'>✈️ Configuración Bot Telegram</h3>\n"
+                +
+                "        <label style='font-size:12px; color:#aaa;'>Bot Token:</label>\n" +
+                "        <div style='display:flex; align-items:center; margin-bottom:10px;'>\n" +
+                "            <input type='password' id='tg-token-modal' placeholder='123456:ABC-Def...' style='flex:1; padding:8px; background:#333; color:#fff; border:1px solid #555; border-radius:4px;'>\n"
+                +
+                "            <span onclick='toggleTgToken()' style='margin-left:8px; cursor:pointer; font-size:18px; user-select:none;'>👁️</span>\n"
+                +
+                "        </div>\n" +
+                "        <label style='font-size:12px; color:#aaa;'>Chat ID:</label>\n" +
+                "        <input type='text' id='tg-chatid-modal' placeholder='12345678' style='width:100%; padding:8px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; margin-bottom:15px; box-sizing:border-box;'>\n"
+                +
+                "        <button onclick='testTelegramFromModal()' style='width:100%; padding:8px; background:#0288d1; border:none; color:white; border-radius:4px; cursor:pointer; margin-bottom:10px;'>🔔 PROBAR CONEXIÓN</button>\n"
+                +
+                "        <div style='display:flex; gap:10px;'>\n" +
+                "            <button onclick='saveTelegramModal()' style='flex:1; padding:8px; background:#2E7D32; border:none; color:white; border-radius:4px; cursor:pointer; font-weight:bold;'>✅ GUARDAR</button>\n"
+                +
+                "            <button onclick='closeTelegramModal()' style='flex:1; padding:8px; background:none; border:1px solid #666; color:#888; border-radius:4px; cursor:pointer;'>CANCELAR</button>\n"
+                +
+                "        </div>\n" +
+                "    </div>\n" +
                 "</div>\n" +
                 "\n" +
                 // --- FULL JAVASCRIPT LOGIC (RESTORED FROM YOUR BACKUP) ---
@@ -1945,10 +1960,30 @@ public class NanoHttpServer {
                 "}\n" +
 
                 "function toggleTgToken() {\n" +
-                "    var x = document.getElementById('tg-token');\n" +
+                "    var x = document.getElementById('tg-token-modal');\n" +
                 "    x.type = (x.type === 'password') ? 'text' : 'password';\n" +
                 "}\n" +
-
+                "function openTelegramModal() {\n" +
+                "    document.getElementById('tg-token-modal').value = document.getElementById('tg-token').value;\n" +
+                "    document.getElementById('tg-chatid-modal').value = document.getElementById('tg-chatid').value;\n" +
+                "    document.getElementById('telegram-modal').style.display = 'flex';\n" +
+                "}\n" +
+                "function closeTelegramModal() {\n" +
+                "    document.getElementById('telegram-modal').style.display = 'none';\n" +
+                "}\n" +
+                "function saveTelegramModal() {\n" +
+                "    document.getElementById('tg-token').value = document.getElementById('tg-token-modal').value;\n" +
+                "    document.getElementById('tg-chatid').value = document.getElementById('tg-chatid-modal').value;\n" +
+                "    closeTelegramModal();\n" +
+                "}\n" +
+                "function testTelegramFromModal() {\n" +
+                "    var t = document.getElementById('tg-token-modal').value;\n" +
+                "    var c = document.getElementById('tg-chatid-modal').value;\n" +
+                "    if(!t || !c) { alert('Introduce Token y Chat ID primero'); return; }\n" +
+                "    fetch('/api/test_telegram?token=' + encodeURIComponent(t) + '&chat=' + encodeURIComponent(c))\n" +
+                "    .then(function(){ alert('🔔 Mensaje de prueba enviado (Revisa tu Telegram)'); });\n" +
+                "}\n" +
+                "\n" +
                 "</script>\n" +
                 "</body></html>";
     }

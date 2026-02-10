@@ -3473,3 +3473,21 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 
 
 
+
+
+
+### 🚀 Mejoras de UX y Seguridad: Telegram & Pre-Record (v3.9.10-dev.52)
+**El Problema**: La interfaz de configuración se estaba volviendo "ruidosa" y peligrosa. Teníamos botones duplicados y campos críticos (Telegram Bot Token) expuestos a cambios accidentales cada vez que el usuario quería ajustar la sensibilidad o la rotación.
+
+**La Solución (Ingeniería)**:
+1.  **Refactorización de UI**: Se eliminó un botón de guardado redundante que ensuciaba el modal de ajustes.
+2.  **Blindaje de Credenciales**: Los campos de Bot Token y Chat ID se han movido a un **modal de segundo nivel**. Ahora el usuario debe pulsar explícitamente "Configurar Bot" para verlos o editarlos. Esto protege la configuración "set-and-forget" de Telegram.
+3.  **Trazabilidad**: Se añadió una traza `logToWeb` específica para el cambio de estado del Pre-Record Buffer.
+
+**Lecciones Aprendidas 🎓**:
+- En dispositivos pequeños (como el Galaxy S), menos es más. Reducir el ruido visual no es solo estética, es seguridad operativa.
+- Separar la configuración "frecuente" de la configuración "estructural" (APIs, Tokens) mejora drásticamente la experiencia de usuario.
+
+**Glosario 📖**:
+- **UX (User Experience)**: Diseño centrado en la facilidad de uso.
+- **Modal Secundario**: Ventana emergente que se abre sobre otra ventana emergente.

@@ -1031,6 +1031,9 @@ public class SentinelService extends Service {
         if (isDetectorActive != active) {
             logToWeb("🛡️ VIGILANDO CAMBIADO: " + (active ? "ACTIVADO (Vigilando)" : "DESACTIVADO (Solo Cámara)"));
         }
+        if (isPreRecordActive != preRecord) {
+            logToWeb("📼 PRE-RECORD CAMBIADO: " + (preRecord ? "ACTIVADO (3s Buffer)" : "DESACTIVADO (Sin Pasado)"));
+        }
         // --- FIN INSERCIÓN ---
         // Telegram Update
         telegramToken = tgToken;
