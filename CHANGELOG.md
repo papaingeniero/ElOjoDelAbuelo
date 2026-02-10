@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.50
+*   🛡️ **Security**: Implementado "Slide-to-Confirm" (estilo TWRP) para borrado masivo.
+*   🚦 **UI**: Nuevo modal de confirmación con slider y feedback visual.
+
 ### v3.9.10-dev.49
 *   🐛 **Hotfix Telegram**: Corregido bug donde se intentaba enviar alerta aunque la opción estuviese desactivada.
 

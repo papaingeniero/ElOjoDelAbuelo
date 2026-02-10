@@ -1049,6 +1049,10 @@ public class NanoHttpServer {
                 "         <input type='number' id='set-min-space' style='width:70px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='100' max='5000'>\n"
                 +
                 "      </div>\n" +
+                "      <div style='margin-top:20px; text-align:right;'>\n" +
+                "        <button onclick='openDeleteModal()' style='background:#330000; border:1px solid #550000; color:#ff4444; padding:8px 15px; border-radius:4px; font-size:12px;'>🗑️ BORRAR TODO</button>\n"
+                +
+                "      </div>\n" +
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Borra videos antiguos si queda menos espacio (MB).</div>\n"
                 +
                 "      <div class='settings-row'>\n" +
@@ -1107,6 +1111,34 @@ public class NanoHttpServer {
                 +
                 "      </div>\n" +
                 "  </div>\n" +
+                "</div>\n" +
+                "\n" +
+                "<!-- DATA DELETION CONFIRMATION MODAL (TWRP STYLE) -->\n" +
+                "<div id='delete-modal' style='display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(20,0,0,0.95); z-index:5000; flex-direction:column; justify-content:center; align-items:center;'>\n"
+                +
+                "    <div style='text-align:center; color:#ff4444; margin-bottom:40px; padding:0 20px;'>\n" +
+                "        <div style='font-size:60px; margin-bottom:20px;'>⚠️</div>\n" +
+                "        <h2 style='margin:0; text-transform:uppercase; letter-spacing:2px;'>Zona de Peligro</h2>\n" +
+                "        <p style='color:#ccc; margin-top:10px;'>¿Estás seguro de que quieres borrar <b>TODAS</b> las grabaciones?</p>\n"
+                +
+                "        <p style='color:#888; font-size:12px;'>Esta acción es irreversible.</p>\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- SLIDER CONTAINER -->\n" +
+                "    <div id='slider-track' style='position:relative; width:80%; max-width:300px; height:60px; background:#330000; border-radius:30px; border:2px solid #550000; overflow:hidden; touch-action:none; user-select:none;'>\n"
+                +
+                "        <div style='position:absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center; color:#aa5555; fontWeight:bold; font-size:14px; letter-spacing:1px; z-index:1;'>\n"
+                +
+                "            DESLIZA PARA BORRAR &gt;&gt;&gt;\n" +
+                "        </div>\n" +
+                "        <div id='slider-thumb' style='position:absolute; left:0; top:0; width:60px; height:60px; background:#ff4444; border-radius:50%; z-index:2; display:flex; justify-content:center; align-items:center; box-shadow:0 0 15px rgba(255,0,0,0.5); cursor:grab;'>\n"
+                +
+                "            🗑️\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <button onclick='closeDeleteModal()' style='margin-top:40px; background:none; border:1px solid #666; color:#888; padding:10px 30px; border-radius:20px;'>CANCELAR</button>\n"
+                +
                 "</div>\n" +
                 "\n" +
                 // --- FULL JAVASCRIPT LOGIC (RESTORED FROM YOUR BACKUP) ---
@@ -1421,12 +1453,106 @@ public class NanoHttpServer {
                 "function closeSettings() {\n" +
                 "   document.getElementById('settings-modal').style.display = 'none';\n" +
                 "}\n" +
-                "function deleteAllVideos() {\n" +
-                "   if(confirm('⚠️ ¡PELIGRO! ¿Seguro que quieres borrar TODOS los videos grabados? Esta acción es irreversible.')) {\n"
-                +
-                "       fetch('/api/delete_all_videos', { method: 'POST' }).then(function() { location.reload(); }).catch(function(e) { alert('Error: ' + e); });\n"
-                +
-                "   }\n" +
+                "function openDeleteModal() {\n" +
+                "    document.getElementById('delete-modal').style.display = 'flex';\n" +
+                "    resetSlider();\n" +
+                "}\n" +
+                "function closeDeleteModal() {\n" +
+                "    document.getElementById('delete-modal').style.display = 'none';\n" +
+                "}\n" +
+                "\n" +
+                "// --- SLIDER LOGIC ---\n" +
+                "var slider = {\n" +
+                "    track: null,\n" +
+                "    thumb: null,\n" +
+                "    isDragging: false,\n" +
+                "    startX: 0,\n" +
+                "    currentX: 0,\n" +
+                "    maxDist: 0\n" +
+                "};\n" +
+                "\n" +
+                "function initSlider() {\n" +
+                "    slider.track = document.getElementById('slider-track');\n" +
+                "    slider.thumb = document.getElementById('slider-thumb');\n" +
+                "    \n" +
+                "    // Mouse Events\n" +
+                "    slider.thumb.addEventListener('mousedown', startDrag);\n" +
+                "    window.addEventListener('mousemove', onDrag);\n" +
+                "    window.addEventListener('mouseup', endDrag);\n" +
+                "    \n" +
+                "    // Touch Events\n" +
+                "    slider.thumb.addEventListener('touchstart', startDrag, {passive:false});\n" +
+                "    window.addEventListener('touchmove', onDrag, {passive:false});\n" +
+                "    window.addEventListener('touchend', endDrag);\n" +
+                "}\n" +
+                "\n" +
+                "function startDrag(e) {\n" +
+                "    slider.isDragging = true;\n" +
+                "    slider.startX = (e.type === 'mousedown') ? e.clientX : e.touches[0].clientX;\n" +
+                "    slider.maxDist = slider.track.clientWidth - slider.thumb.clientWidth;\n" +
+                "    slider.thumb.style.transition = 'none';\n" +
+                "    if(e.cancelable) e.preventDefault();\n" +
+                "}\n" +
+                "\n" +
+                "function onDrag(e) {\n" +
+                "    if(!slider.isDragging) return;\n" +
+                "    var clientX = (e.type.startsWith('touch')) ? e.touches[0].clientX : e.clientX;\n" +
+                "    var dx = clientX - slider.startX;\n" +
+                "    \n" +
+                "    // Clamp\n" +
+                "    if(dx < 0) dx = 0;\n" +
+                "    if(dx > slider.maxDist) dx = slider.maxDist;\n" +
+                "    \n" +
+                "    slider.currentX = dx;\n" +
+                "    slider.thumb.style.transform = 'translateX(' + dx + 'px)';\n" +
+                "    \n" +
+                "    // Visual Feedback (Opacity changes)\n" +
+                "    var pct = dx / slider.maxDist;\n" +
+                "    slider.track.children[0].style.opacity = 1 - pct;\n" +
+                "    \n" +
+                "    if(e.cancelable) e.preventDefault();\n" +
+                "}\n" +
+                "\n" +
+                "function endDrag(e) {\n" +
+                "    if(!slider.isDragging) return;\n" +
+                "    slider.isDragging = false;\n" +
+                "    \n" +
+                "    var pct = slider.currentX / slider.maxDist;\n" +
+                "    \n" +
+                "    if(pct > 0.9) {\n" +
+                "        // CONFIRMED!\n" +
+                "        slider.thumb.style.transform = 'translateX(' + slider.maxDist + 'px)';\n" +
+                "        slider.thumb.style.background = '#44ff44';\n" +
+                "        slider.thumb.innerHTML = '✅';\n" +
+                "        slider.track.children[0].innerText = \"BORRANDO...\";\n" +
+                "        slider.track.children[0].style.opacity = 1;\n" +
+                "        slider.track.children[0].style.color = \"#44ff44\";\n" +
+                "        \n" +
+                "        // EXECUTE WIPE\n" +
+                "        fetch('/api/delete_all_videos', { method: 'POST' })\n" +
+                "        .then(function() { \n" +
+                "            setTimeout(function() { location.reload(); }, 1000); \n" +
+                "        })\n" +
+                "        .catch(function(e) { \n" +
+                "            alert('Error: ' + e); \n" +
+                "            resetSlider();\n" +
+                "        });\n" +
+                "        \n" +
+                "    } else {\n" +
+                "        // RESET (Snap back)\n" +
+                "        resetSlider();\n" +
+                "    }\n" +
+                "}\n" +
+                "\n" +
+                "function resetSlider() {\n" +
+                "    if(!slider.thumb) initSlider();\n" +
+                "    slider.thumb.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';\n" +
+                "    slider.thumb.style.transform = 'translateX(0px)';\n" +
+                "    slider.thumb.style.background = '#ff4444';\n" +
+                "    slider.thumb.innerHTML = '🗑️';\n" +
+                "    slider.track.children[0].innerText = \"DESLIZA PARA BORRAR >>>\";\n" +
+                "    slider.track.children[0].style.opacity = 1;\n" +
+                "    slider.track.children[0].style.color = \"#aa5555\";\n" +
                 "}\n" +
                 "function updateSensLabel(val) {\n" +
                 "   document.getElementById('sens-label').textContent = val + '%';\n" +

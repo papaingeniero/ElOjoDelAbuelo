@@ -3455,4 +3455,13 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 **Semántica de la UI**: La UI dice "Activar" (interruptor general), pero el código actuaba como si la mera presencia de credenciales implicara activación.
 **Solución**: Añadida la guarda lógica `if (isTelegramActive && ...)` en el disparador de alerta temprana.
 
+### 🛡️ Feature: Slide-to-Confirm (v3.9.10-dev.50)
+**El Problema**: La opción "Borrar Todos" desapareció en una refactorización anterior. Además, un simple botón es peligroso (clics accidentales).
+**La Solución**: Inspirados en **TWRP Recovery**, implementamos un mecanismo de seguridad física:
+1.  **Modal Dedicado**: No basta con pulsar "Borrar", se abre un segundo modal de confirmación.
+2.  **Slider de la Muerte**: Un control deslizante que requiere arrastrar >90% del recorrido.
+3.  **Feedback Visual**: El slider se pone verde (`#44ff44`) y muestra un "✅" al completar. Si se suelta antes, rebota al inicio (animación CSS `cubic-bezier`).
+**Detalle Técnico**: Toda la lógica (HTML/CSS/JS) es autocontenida y se inyecta desde `NanoHttpServer.java` sin dependencias externas, manteniendo el espíritu "Zero-Dependencies" del proyecto.
+
+
 
