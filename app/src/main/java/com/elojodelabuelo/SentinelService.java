@@ -188,9 +188,12 @@ public class SentinelService extends Service {
                                                                                                        // LÍNEA
 
         cameraRotation = prefs.getInt("cameraRotation", 0);
+        isPreRecordActive = prefs.getBoolean("isPreRecordActive", true); // [NUEVO]
 
+        // --- RESTAURAR CREDENCIALES TELEGRAM ---
         telegramToken = prefs.getString("tg_token", "");
         telegramChatId = prefs.getString("tg_chat_id", "");
+
         isTelegramActive = prefs.getBoolean("telegramActive", true);
 
         defaultZoom = prefs.getFloat("defaultZoom", 1.0f);
@@ -576,8 +579,10 @@ public class SentinelService extends Service {
                 // RAM.
                 // Si estamos en calma total (score <= 10), no hacemos nada para ahorrar
                 // batería.
-                if (score > 10 && !isRecording) {
+                // [MOD] Guardada por isPreRecordActive
+                if (isPreRecordActive && score > 10 && !isRecording) {
                     // [DEBUG] Chivato de actividad
+
                     if (preRecordBuffer.isEmpty()) {
                         logToWeb("👃 DETECTADO POSIBLE EVENTO (Score: " + score + ") - Iniciando Buffer RAW");
                     }
@@ -1017,8 +1022,10 @@ public class SentinelService extends Service {
     // 0 = threshold 100 (Sordo), 100 = threshold 5 (Ojo de Halcón)
     public static int contrastSensitivity = 50;
 
+    public static boolean isPreRecordActive = true; // [NUEVO]
+
     public static void updateSettings(int sens, int contrast, int time, boolean active, int rot, String tgToken,
-            String tgChatId) {
+            String tgChatId, boolean preRecord) { // <--- Added param
         boolean rotationChanged = (cameraRotation != rot);
         // --- INICIO INSERCIÓN ---
         if (isDetectorActive != active) {
@@ -1033,6 +1040,7 @@ public class SentinelService extends Service {
         recordingTimeout = time;
         isDetectorActive = active;
         cameraRotation = rot;
+        isPreRecordActive = preRecord; // [NUEVO]
 
         // 1. Min Pixels Logic (Legacy Sensitivity)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
@@ -1058,9 +1066,11 @@ public class SentinelService extends Service {
             editor.putInt("recordingTimeout", time);
             editor.putBoolean("isDetectorActive", active);
             editor.putInt("cameraRotation", rot);
+            editor.putBoolean("isPreRecordActive", preRecord); // [NUEVO]
             // --- FIX PERSISTENCIA TELEGRAM (v3.9.9-dev.3) ---
             editor.putString("tg_token", tgToken);
             editor.putString("tg_chat_id", tgChatId);
+
             // ------------------------------------------------
             editor.apply();
 

@@ -3463,5 +3463,13 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 3.  **Feedback Visual**: El slider se pone verde (`#44ff44`) y muestra un "✅" al completar. Si se suelta antes, rebota al inicio (animación CSS `cubic-bezier`).
 **Detalle Técnico**: Toda la lógica (HTML/CSS/JS) es autocontenida y se inyecta desde `NanoHttpServer.java` sin dependencias externas, manteniendo el espíritu "Zero-Dependencies" del proyecto.
 
+### 📼 Feature: Toggle Pre-Record (v3.9.10-dev.51)
+**El Problema**: El "Pre-Record Buffer" (Memoria de Pez) es genial para no perder el inicio de la acción, pero consume RAM y CPU ciclando constantemente. El usuario no tenía opción de desactivarlo.
+**La Solución**: Implementado un "Kill Switch" (`isPreRecordActive`) en Ajustes.
+1.  **Backend**: En `onPreviewFrame`, el llenado del buffer circular ahora está protegido por esta bandera. Si está OFF, el array no se toca (coste cero).
+2.  **Safety**: El sistema de inyección es defensivo (`isEmpty()`), por lo que si arrancamos sin buffer, simplemente se graba desde el segundo 0 real sin errores.
+3.  **UI**: Checkbox simple "Pre-Record Buffer (3s)" en el panel de configuración.
+
+
 
 

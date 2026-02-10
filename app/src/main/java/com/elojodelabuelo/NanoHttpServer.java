@@ -457,6 +457,7 @@ public class NanoHttpServer {
             int contrast = SentinelService.contrastSensitivity;
             int time = SentinelService.recordingTimeout;
             boolean active = SentinelService.isDetectorActive;
+            boolean preRecord = SentinelService.isPreRecordActive;
             int rot = SentinelService.cameraRotation;
             float defZoom = SentinelService.defaultZoom;
             int defPanX = SentinelService.defaultPanX;
@@ -471,8 +472,9 @@ public class NanoHttpServer {
             int webPanY = prefs.getInt("webPanY", 0);
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
-                    sens, contrast, time, active, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom, webPanX,
+                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"preRecord\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
+                    sens, contrast, time, active, preRecord, rot, defZoom, defPanX, defPanY, minFreeSpace, webZoom,
+                    webPanX,
                     webPanY,
                     SentinelService.telegramToken, SentinelService.telegramChatId, SentinelService.isTelegramActive);
 
@@ -495,6 +497,7 @@ public class NanoHttpServer {
             int contrast = 50;
             int time = 10;
             boolean active = true;
+            boolean preRecord = true;
             int rot = 0;
             float defZoom = 1.0f;
             int defPanX = 0;
@@ -527,6 +530,8 @@ public class NanoHttpServer {
                                 time = Integer.parseInt(val);
                             else if (key.equals("active"))
                                 active = Boolean.parseBoolean(val);
+                            else if (key.equals("preRecord"))
+                                preRecord = Boolean.parseBoolean(val);
                             else if (key.equals("rot"))
                                 rot = Integer.parseInt(val);
                             else if (key.equals("defZoom"))
@@ -567,7 +572,7 @@ public class NanoHttpServer {
                         .putInt("webPanY", webPanY)
                         .commit();
 
-                SentinelService.updateSettings(sens, contrast, time, active, rot, tgToken, tgChatId);
+                SentinelService.updateSettings(sens, contrast, time, active, rot, tgToken, tgChatId, preRecord);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
             } catch (Exception e) {
@@ -1017,7 +1022,14 @@ public class NanoHttpServer {
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Activa la vigilancia y grabación por movimiento.</div>\n"
                 +
                 "      <div class='settings-row'>\n" +
+                "         <label>Pre-Record Buffer (3s):</label>\n" +
+                "         <input type='checkbox' id='set-prerecord' style='transform: scale(1.5);'>\n" +
+                "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Graba lo que pasó ANTES del movimiento.</div>\n"
+                +
+                "      <div class='settings-row'>\n" +
                 "         <label>📏 Sensibilidad al Tamaño: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n"
+
                 +
                 "      </div>\n" +
                 "      <div class='settings-row' style='margin-bottom:5px;'>\n" +
@@ -1563,6 +1575,8 @@ public class NanoHttpServer {
                 "     document.getElementById('sens-label').innerText = data.sens + '%';\n" +
                 "     document.getElementById('set-time').value = data.time;\n" +
                 "     document.getElementById('set-active').checked = data.active;\n" +
+                "     if(data.preRecord !== undefined) document.getElementById('set-prerecord').checked = data.preRecord;\n"
+                +
                 "     if(data.rot === 180) document.getElementById('rot-180').checked = true;\n" +
                 "     else document.getElementById('rot-0').checked = true;\n" +
                 "     if(data.defZoom) {\n" +
@@ -1595,6 +1609,7 @@ public class NanoHttpServer {
                 "}\n" +
                 "function saveSettings() {\n" +
                 "   var active = document.getElementById('set-active').checked;\n" +
+                "   var preRecord = document.getElementById('set-prerecord').checked;\n" +
                 "   var sens = document.getElementById('sens-slider').value;\n" +
                 "   var contrast = document.getElementById('contrast-slider').value;\n" +
                 "   var time = document.getElementById('set-time').value;\n" +
@@ -1613,7 +1628,7 @@ public class NanoHttpServer {
 
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
-                "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&rot=' + rot +\n"
+                "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&preRecord=' + preRecord + '&rot=' + rot +\n"
                 +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
                 "            '&min_free_space=' + minSpace +\n" +

@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.51
+*   📼 **Feature**: "Pre-Record Toggle". Activación/Desactivación selectiva del buffer de memoria (3s) en Ajustes.
+*   🚦 **Performance**: Ahorro total de ciclos de CPU en modo vigilancia cuando está desactivado.
+
 ### v3.9.10-dev.50
 *   🛡️ **Security**: Implementado "Slide-to-Confirm" (estilo TWRP) para borrado masivo.
 *   🚦 **UI**: Nuevo modal de confirmación con slider y feedback visual.
