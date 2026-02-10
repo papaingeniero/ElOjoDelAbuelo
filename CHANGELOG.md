@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.48
+*   ⏪ **Pre-Record Buffer**: Captura de 3 segundos previos al evento (Memoria de Pez).
+*   🏊‍♂️ **Object Pooling**: Gestión de memoria Zero-GC para evitar lag en vigilancia.
+*   🤸 **Deferred Rotation**: Rotación de video 180º aplicada solo al grabar (ahorro CPU).
+*   🐛 **Debug**: Trazas "Olor a Humo" para afinar sensibilidad.
+
 ### v3.9.10-dev.47
 *   ⏩ **Lab**: Control de velocidad de reproducción (1.0x, 0.5x, 0.25x, 0.1x).
 *   🐢 **Slow Motion**: Permite analizar frame a frame con calma.

@@ -3423,3 +3423,29 @@ Aprovechamos para limpiar la interfaz de laboratorio:
 
 
 
+
+### ⏪ Phase 39: El Buffer de Pre-Grabación (La Memoria de Pez)
+**Versión**: v3.9.10-dev.48 | **Fecha**: 10 de Febrero de 2026
+
+#### 📜 1. La Historia (El Problema)
+El "Abuelo" tenía un defecto fatal: era reactivo, no proactivo.
+Para cuando el sistema confirmaba que había una persona (3 frames de movimiento), encendía el disco duro y empezaba a escribir... el intruso ya había cruzado la mitad de la habitación.
+Perdíamos el "momento cero": la puerta abriéndose, la luz encendiéndose.
+
+#### 🛠️ 2. La Solución (Ingeniería)
+Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
+1.  **Buffer Circular en RAM**: Guardamos los últimos 15 frames (~3 segundos) en un `Deque`.
+2.  **Estrategia "Olor a Humo"**:
+    *   No grabamos siempre (gastaría batería).
+    *   Solo empezamos a llenar el buffer si el `MotionScore > 10` (algo cambia, aunque sea poco).
+    *   Si se confirma el evento, volcamos el pasado al disco antes de seguir grabando.
+    *   Si fue falsa alarma, borramos la memoria.
+3.  **Object Pooling (Vital en Android 2.3)**:
+    *   `new byte[]` es veneno para el Garbage Collector.
+    *   Creamos una piscina de 15 arrays al inicio (`freeBufferPool`).
+    *   Reciclamos los buffers eternamente. **Allocations por segundo: 0.**
+
+#### 🎓 3. Lecciones Aprendidas
+*   **Deferred Rotation**: Rotar imágenes consume mucha CPU. Aprendimos a NO rotar los frames del buffer mientras están en RAM. Guardamos los datos "crudos" (invertidos si el móvil está al revés) y solo aplicamos la rotación matemática justo en el milisegundo de escribirlos a disco.
+*   **FPS Harmonization**: El buffer captura a 5FPS (vigilancia), pero el vídeo es a 15FPS. Si volcamos tal cual, se ve a cámara rápida (Benny Hill). Solución: Inyectar cada frame del buffer 3 veces para rellenar el tiempo.
+

@@ -138,11 +138,20 @@ public class SentinelService extends Service {
     // Optimization: Pre-calculated threshold
     private static int currentThreshold = 50;
 
-    // Buffer management
-    private static final int NUM_BUFFERS = 3;
+    // --- BUFFER PRE-GRABACIÓN (Memoria de Pez 🐟) ---
+    // Guardamos los últimos N frames para no perder el inicio de la acción
+    private static final int NUM_BUFFERS = 3; // Buffer nativo de cámara (SurfaceView)
+    private static final int PRE_RECORD_FRAMES = 15; // 15 frames @ ~5FPS = ~3 segundos
+    private static final int FRAME_SIZE_NV21 = 352 * 288 * 3 / 2; // ~150KB
 
-    // Software Rotation Buffer
-    private byte[][] rotationBuffers; // Pool of buffers
+    // ESTRUCTURAS DE RECICLAJE (Object Pooling para evitar GC Lag) 🏊‍♂️
+    private java.util.concurrent.LinkedBlockingDeque<byte[]> preRecordBuffer = new java.util.concurrent.LinkedBlockingDeque<>(
+            PRE_RECORD_FRAMES);
+    private java.util.concurrent.LinkedBlockingQueue<byte[]> freeBufferPool = new java.util.concurrent.LinkedBlockingQueue<>(
+            PRE_RECORD_FRAMES);
+
+    // Buffer de rotación (Pool simple de 2)
+    private byte[][] rotationBuffers;
     private int rotationBufferIndex = 0;
 
     private int frameCount = 0;
@@ -258,6 +267,13 @@ public class SentinelService extends Service {
         };
         statsHandler.postDelayed(statsRunnable, 60000);
         // --- FIN HEARTBEAT ---
+
+        // [NUEVO] Inicializar Piscina de Memoria (Evita GC Lag luego)
+        // Llenamos el pool con buffers vacíos listos para usar
+        for (int i = 0; i < PRE_RECORD_FRAMES; i++) {
+            freeBufferPool.add(new byte[FRAME_SIZE_NV21]);
+        }
+        logToWeb("🧠 Buffer Pool Inicializado: " + PRE_RECORD_FRAMES + " frames en RAM.");
 
     }
 
@@ -554,6 +570,48 @@ public class SentinelService extends Service {
             } else {
                 int score = motionDetector.getMotionScore(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
+                // --- A. GESTIÓN DEL BUFFER PRE-GRABACIÓN (Solo si "olor a humo" y NO grabando)
+                // ---
+                // Si hay el más mínimo indicio de cambio (score > 10), empezamos a grabar en
+                // RAM.
+                // Si estamos en calma total (score <= 10), no hacemos nada para ahorrar
+                // batería.
+                if (score > 10 && !isRecording) {
+                    // [DEBUG] Chivato de actividad
+                    if (preRecordBuffer.isEmpty()) {
+                        logToWeb("👃 DETECTADO POSIBLE EVENTO (Score: " + score + ") - Iniciando Buffer RAW");
+                    }
+
+                    // 1. Conseguir memoria limpia del pool (Sin new byte[])
+                    byte[] buffer = freeBufferPool.poll();
+
+                    if (buffer != null) {
+                        // 2. Copia rápida RAW (Sin procesar). NO ROTAR AQUÍ (ahorro CPU).
+                        // System.arraycopy(Fuente, PosFuente, Destino, PosDestino, Longitud)
+                        System.arraycopy(data, 0, buffer, 0, data.length);
+
+                        // 3. Añadir al historial
+                        if (!preRecordBuffer.offer(buffer)) {
+                            // Si lleno, sacamos el viejo y lo RECICLAMOS al momento
+                            byte[] old = preRecordBuffer.poll();
+                            if (old != null)
+                                freeBufferPool.offer(old); // Devolver al pool
+                            preRecordBuffer.offer(buffer); // Reintentar inserción
+                        }
+                    }
+                } else if (score <= 10 && !isRecording) {
+                    // CALMA TOTAL: Vaciamos buffer para no arrastrar basura antigua de eventos
+                    // pasados
+                    if (!preRecordBuffer.isEmpty()) {
+                        logToWeb("💤 Falsa Alarma (Buffer limpio).");
+                    }
+                    while (!preRecordBuffer.isEmpty()) {
+                        freeBufferPool.offer(preRecordBuffer.poll()); // Devolver todo al pool
+                    }
+                    consecutiveMotionFrames = 0;
+                }
+                // --------------------------------------------------------------------------------
+
                 if (score > currentThreshold) {
                     consecutiveMotionFrames++;
                     // Exigimos 3 frames seguidos de movimiento para confirmar que no es un flash
@@ -565,6 +623,28 @@ public class SentinelService extends Service {
 
                         if (!isRecording) {
                             openNewRecordingFile();
+
+                            // --- VOLCADO DEL PASADO ("PRE-RECORD") ---
+                            // Inyectamos lo que te perdiste mientras pensabas si grabar o no
+                            logToWeb("⏪ PRE-RECORD: Revelando " + preRecordBuffer.size() + " frames...");
+
+                            while (!preRecordBuffer.isEmpty()) {
+                                byte[] pastFrame = preRecordBuffer.poll();
+                                if (pastFrame != null) {
+                                    // Pasamos el frame RAW tal cual (rotación diferida dentro de saveToFile)
+                                    // IMPORTANTE: saveToFile maneja la compresión y escritura
+
+                                    // TRUCO FPS: processFrame es asíncrono y complejo.
+                                    // Aquí necesitamos inyección SÍNCRONA en el fichero que acabamos de abrir
+                                    // Usamos una versión simplificada de processFrame pero síncrona:
+                                    injectPreRecordFrameInjected(pastFrame);
+
+                                    // ¡CRÍTICO! Devolver el plato al lavavajillas
+                                    freeBufferPool.offer(pastFrame);
+                                }
+                            }
+                            // -----------------------------------------
+
                             isRecording = true;
                             isRecordingPublic = true;
                             if (screenLock != null) {
@@ -615,6 +695,39 @@ public class SentinelService extends Service {
             });
         }
     };
+
+    // [NUEVO] Método auxiliar para inyectar frames del pasado de forma síncrona
+    private void injectPreRecordFrameInjected(byte[] data) {
+        try {
+            // 1. Rotación Diferida
+            byte[] dataToCompress = data;
+            if (cameraRotation == 180) {
+                dataToCompress = rotateNV21Degree180(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+            }
+
+            // 2. Tatuar OSD (Fecha del pasado - aproximada al momento de captura sería
+            // ideal pero usamos la actual por simplicidad en v1)
+            // PD: En rigor deberíamos haber guardado el timestamp junto con el frame, pero
+            // en el Galaxy S
+            // cada objeto extra cuenta. Asumimos un error de <3seg en el OSD.
+            imprintDate(dataToCompress, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+
+            // 3. Comprimir JPEG
+            YuvImage yuv = new YuvImage(dataToCompress, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 60, out);
+            byte[] jpeg = out.toByteArray();
+
+            // 4. Escribir a Disco (3 VECES POR FRAME PARA ARMONIZAR FPS)
+            // 5FPS capturados -> 15FPS video = Repetir 3 veces
+            for (int k = 0; k < 3; k++) {
+                fileOutputStream.write(jpeg);
+                frameCount++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private byte[] rotateNV21Degree180(byte[] data, int width, int height) {
         int size = width * height * 3 / 2;
