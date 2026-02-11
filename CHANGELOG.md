@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.59
+*   👁️ **Web Motion Lab - Modo Monitor**: Ahora muestra **SIEMPRE** los píxeles y la sensibilidad necesaria, incluso si no supera el umbral de alarma.
+    *   Si hay alarma: `⚠️ ALARMA: 500 px (Eq: 80%)` (Rojo)
+    *   Si es silencioso: `👁️ Monitor: 30 px (Eq: 5%)` (Gris) -> Útil para calibrar falsos positivos.
+
 ### v3.9.10-dev.58
 *   🧪 **Web Motion Lab 2.0**: Ahora el analizador web muestra la **Sensibilidad Equivalente (%)** necesaria para detectar cada movimiento.
     *   Fórmula inversa: `S = 100 * (1 - sqrt(Pixels / 10000))`.

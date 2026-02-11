@@ -448,15 +448,15 @@ public class WebMotionLab {
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
                 "                    \n" +
+                "                    var sensEq = result.pixels >= 10000 ? 0 : Math.floor(100 * (1 - Math.sqrt(result.pixels / 10000)));\n"
+                +
+                "                    statusEl.textContent = (result.motion ? '⚠️ ALARMA: ' : '👁️ Monitor: ') + result.pixels + ' px (Eq. Sens: ' + sensEq + '%)';\n"
+                +
+                "                    \n" +
                 "                    if (result.motion) {\n" +
-                "                       var sensEq = result.pixels >= 10000 ? 0 : Math.floor(100 * (1 - Math.sqrt(result.pixels / 10000)));\n"
-                +
-                "                       statusEl.textContent = '⚠️ MOVIMIENTO: ' + result.pixels + ' px (Eq. Sens: ' + sensEq + '%)';\n"
-                +
                 "                       statusEl.style.color = '#FF0000'; // Red\n" +
                 "                    } else {\n" +
-                "                       statusEl.textContent = '...';\n" +
-                "                       statusEl.style.color = '#888';\n" +
+                "                       statusEl.style.color = '#888'; // Grey\n" +
                 "                    }\n" +
                 "                }\n" +
                 "            };\n" +
@@ -487,15 +487,15 @@ public class WebMotionLab {
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
                 "                    \n" +
+                "                    var sensEq = result.pixels >= 10000 ? 0 : Math.floor(100 * (1 - Math.sqrt(result.pixels / 10000)));\n"
+                +
+                "                    statusEl.textContent = (result.motion ? '⚠️ ALARMA: ' : '👁️ Monitor: ') + result.pixels + ' px (Eq. Sens: ' + sensEq + '%)';\n"
+                +
+                "                    \n" +
                 "                    if (result.motion) {\n" +
-                "                       var sensEq = result.pixels >= 10000 ? 0 : Math.floor(100 * (1 - Math.sqrt(result.pixels / 10000)));\n"
-                +
-                "                       statusEl.textContent = '⚠️ MOVIMIENTO: ' + result.pixels + ' px (Eq. Sens: ' + sensEq + '%)';\n"
-                +
                 "                       statusEl.style.color = '#FF0000'; // Red\n" +
                 "                    } else {\n" +
-                "                       statusEl.textContent = '...';\n" +
-                "                       statusEl.style.color = '#888';\n" +
+                "                       statusEl.style.color = '#888'; // Grey\n" +
                 "                    }\n" +
                 "                }\n" +
                 "            };\n" +

@@ -3652,3 +3652,22 @@ Esto significa: "Si quieres que la cámara detecte este movimiento específico, 
 **Lecciones Aprendidas 🎓**:
 - ✅ **Cerrar el ciclo de feedback**: Las herramientas de debug deben hablar el mismo idioma que las herramientas de configuración. Si configuro en %, quiero medir en %.
 - ✅ **Matemáticas útiles**: Invertir una función cuadrática simple puede ahorrar horas de prueba y error manual.
+
+### 👁️ Web Motion Lab: Monitor Continuo (v3.9.10-dev.59)
+
+**El Problema 📜**:
+En la versión anterior (dev.58), el laboratorio mostraba el cálculo de sensibilidad solo cuando saltaba la alarma (`result.motion == true`).
+Si bajabas mucho la sensibilidad (subías el umbral), los movimientos pequeños dejaban de mostrar datos y salía un triste `...`. Esto impedía calibrar "por debajo del radar".
+
+**La Solución 🛠️**:
+Hemos sacado la lógica de visualización fuera del condicional de alarma.
+Ahora el Motion Lab es un monitor continuo:
+> `👁️ Monitor: 45 px (Eq. Sens: 12%)` (Texto gris, sin alarma)
+
+Y cuando supera el umbral:
+> `⚠️ ALARMA: 600 px (Eq. Sens: 85%)` (Texto rojo, con alarma)
+
+Esto permite al usuario ver exactamente qué sensibilidad necesita para ignorar movimientos de fondo (ruido, árboles) o capturar movimientos sutiles.
+
+**Lecciones Aprendidas 🎓**:
+- ✅ **Visibilidad Total**: Una herramienta de debug debe mostrarlo todo, no solo lo que el sistema considera "importante". Lo que el sistema ignora es a veces más importante para el ingeniero que lo que detecta.
