@@ -3721,3 +3721,15 @@ Sospechamos "Consumo Fantasma" (cámara encendida sin uso real) o "Zombis" (clie
 ### 🎓 Lecciones Aprendidas
 *   **Observabilidad**: Sin datos, solo tenemos "sensaciones". Ahora tenemos números.
 *   **Costo Basal**: Mantener el sensor de cámara encendido tiene un costo energético fijo alto (ISP + Sensor), independientemente del procesamiento de software.
+
+### ✅ Resolución Flash: El Reinicio Maestro (34°C)
+
+**Observación**:
+Tras reinstalar la versión `v3.9.10-dev.61`, el usuario reporta que la temperatura ha caído inmediatamente de **40°C** a **34°C** ("fresquito como una rosa").
+
+**Diagnóstico Deductivo**:
+1.  **No era Hardware**: Si fuera el costo basal del sensor, seguiría caliente tras reiniciar.
+2.  **Era Software (Estado Zombie)**: Algún proceso (compresión JPEG en bucle, hilo de red atascado o lock no liberado) se quedó enganchado en la sesión anterior.
+3.  **La Sonda Vigilará**: Ahora, si vuelve a subir a 40°C, tendremos las métricas de `/api/debug` para cazar al culpable (¿Clientes fantasma? ¿Encoder desbocado?).
+
+**Estado**: **Cerrado (por ahora)**. Vigilancia activa mediante panel de diagnóstico.
