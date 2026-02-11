@@ -141,8 +141,15 @@ public class SentinelService extends Service {
     // --- BUFFER PRE-GRABACIÓN (Memoria de Pez 🐟) ---
     // Guardamos los últimos N frames para no perder el inicio de la acción
     private static final int NUM_BUFFERS = 3; // Buffer nativo de cámara (SurfaceView)
-    private static final int PRE_RECORD_FRAMES = 15; // 15 frames @ ~5FPS = ~3 segundos
+    private static final int PRE_RECORD_FRAMES = 15; // 15 frames @ ~3FPS = ~5 segundos
     private static final int FRAME_SIZE_NV21 = 352 * 288 * 3 / 2; // ~150KB
+
+    // --- MODO ALERTA TEMPORAL (El Perro Guardián 🐕) ---
+    // Tras detectar actividad sospechosa, el buffer sigue llenándose durante este
+    // tiempo
+    // aunque el score baje a 0. Cubre el patrón "Luz ON → pausa → Intruso".
+    private static final long ALERT_MODE_DURATION_MS = 15000; // 15 segundos
+    private long lastSuspiciousTime = 0;
 
     // ESTRUCTURAS DE RECICLAJE (Object Pooling para evitar GC Lag) 🏊‍♂️
     private java.util.concurrent.LinkedBlockingDeque<byte[]> preRecordBuffer = new java.util.concurrent.LinkedBlockingDeque<>(
@@ -573,47 +580,52 @@ public class SentinelService extends Service {
             } else {
                 int score = motionDetector.getMotionScore(data, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-                // --- A. GESTIÓN DEL BUFFER PRE-GRABACIÓN (Solo si "olor a humo" y NO grabando)
-                // ---
-                // Si hay el más mínimo indicio de cambio (score > 10), empezamos a grabar en
-                // RAM.
-                // Si estamos en calma total (score <= 10), no hacemos nada para ahorrar
-                // batería.
+                // --- A. GESTIÓN DEL BUFFER PRE-GRABACIÓN + MODO ALERTA ---
+                // Si hay indicio de cambio (score > 10), llenamos el buffer y activamos
+                // el "Modo Alerta" (el perro levanta las orejas 🐕).
+                // Si el score baja, el buffer SIGUE llenándose durante 15s
+                // (ALERT_MODE_DURATION_MS)
+                // por si viene un intruso tras un cambio de luz.
                 // [MOD] Guardada por isPreRecordActive
-                if (isPreRecordActive && score > 10 && !isRecording) {
-                    // [DEBUG] Chivato de actividad
+                if (isPreRecordActive && !isRecording) {
+                    boolean isSuspicious = score > 10;
+                    boolean isAlertActive = (System.currentTimeMillis() - lastSuspiciousTime) < ALERT_MODE_DURATION_MS;
 
-                    if (preRecordBuffer.isEmpty()) {
-                        logToWeb("👃 DETECTADO POSIBLE EVENTO (Score: " + score + ") - Iniciando Buffer RAW");
-                    }
+                    if (isSuspicious) {
+                        // Marcamos timestamp de última sospecha (reinicia ventana de alerta)
+                        lastSuspiciousTime = System.currentTimeMillis();
 
-                    // 1. Conseguir memoria limpia del pool (Sin new byte[])
-                    byte[] buffer = freeBufferPool.poll();
-
-                    if (buffer != null) {
-                        // 2. Copia rápida RAW (Sin procesar). NO ROTAR AQUÍ (ahorro CPU).
-                        // System.arraycopy(Fuente, PosFuente, Destino, PosDestino, Longitud)
-                        System.arraycopy(data, 0, buffer, 0, data.length);
-
-                        // 3. Añadir al historial
-                        if (!preRecordBuffer.offer(buffer)) {
-                            // Si lleno, sacamos el viejo y lo RECICLAMOS al momento
-                            byte[] old = preRecordBuffer.poll();
-                            if (old != null)
-                                freeBufferPool.offer(old); // Devolver al pool
-                            preRecordBuffer.offer(buffer); // Reintentar inserción
+                        if (preRecordBuffer.isEmpty()) {
+                            logToWeb("👃 DETECTADO POSIBLE EVENTO (Score: " + score + ") - Iniciando Buffer RAW");
                         }
                     }
-                } else if (score <= 10 && !isRecording) {
-                    // CALMA TOTAL: Vaciamos buffer para no arrastrar basura antigua de eventos
-                    // pasados
-                    if (!preRecordBuffer.isEmpty()) {
-                        logToWeb("💤 Falsa Alarma (Buffer limpio).");
+
+                    if (isSuspicious || isAlertActive) {
+                        // MODO ACTIVO o MODO ALERTA: Seguimos llenando el buffer
+                        byte[] buffer = freeBufferPool.poll();
+
+                        if (buffer != null) {
+                            System.arraycopy(data, 0, buffer, 0, data.length);
+
+                            if (!preRecordBuffer.offer(buffer)) {
+                                byte[] old = preRecordBuffer.poll();
+                                if (old != null)
+                                    freeBufferPool.offer(old);
+                                preRecordBuffer.offer(buffer);
+                            }
+                        }
+                    } else {
+                        // CALMA TOTAL (15s sin actividad): Vaciamos buffer
+                        if (!preRecordBuffer.isEmpty()) {
+                            logToWeb("💤 Modo Alerta expirado (Buffer limpio).");
+                        }
+                        while (!preRecordBuffer.isEmpty()) {
+                            freeBufferPool.offer(preRecordBuffer.poll());
+                        }
                     }
-                    while (!preRecordBuffer.isEmpty()) {
-                        freeBufferPool.offer(preRecordBuffer.poll()); // Devolver todo al pool
-                    }
-                    consecutiveMotionFrames = 0;
+
+                    // El consecutiveMotionFrames se resetea siempre que score <= threshold
+                    // (se maneja más abajo en el bloque B)
                 }
                 // --------------------------------------------------------------------------------
 

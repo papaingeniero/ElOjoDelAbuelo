@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.55
+*   🐕 **Modo Alerta Temporal (15s)**: El buffer de pre-grabación ya no se vacía inmediatamente tras una falsa alarma. Sigue llenándose durante 15 segundos para cubrir el patrón "Luz ON → pausa → Intruso".
+*   📝 **Fix Comentario**: `PRE_RECORD_FRAMES` corregido de `5FPS = ~3s` a `3FPS = ~5s`.
+
 ### v3.9.10-dev.54
 *   🎞️ **FPS Fix**: Multiplicador pre-record de ×3 a ×5 para armonizar 3FPS capturados con 15FPS de grabación. Corrige velocidad acelerada del pasado en los videos.
 *   📲 **Preview con Memoria**: Pre-record ahora se inyecta también en el preview (1 de cada 3 frames = 1FPS). Telegram recibe el contexto previo al movimiento sin compresiones JPEG extra.

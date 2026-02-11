@@ -3530,3 +3530,31 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 **Glosario 📖**:
 - **skipTarget**: Divisor de frames. Con skipTarget=10, procesamos 1 de cada 10 frames de la cámara (30FPS/10 = 3FPS).
 - **Object Reuse**: Técnica de devolver objetos ya procesados para evitar trabajo duplicado. Clave en hardware legacy.
+
+### 🐕 Modo Alerta Temporal: El Perro Guardián (v3.9.10-dev.55)
+**El Problema 📜**: Al apagar una luz, el sistema correctamente descartaba la falsa alarma (gracias al filtro de 3 frames de la v3.9.10-dev.53). Pero al hacerlo, **vaciaba inmediatamente el buffer de pre-grabación**. Si 5-10 segundos después del encendido de una luz una persona se acercaba, el buffer estaba vacío y se perdía el contexto previo.
+
+**El Escenario Real ��**: Un intruso enciende la luz → La cámara detecta un cambio masivo (score 5000) → El score baja al estabilizarse → El sistema descarta como "falsa alarma" y vacía el buffer → 5 segundos después el intruso aparece caminando → El buffer está vacío, perdemos los 5 segundos de la habitación iluminada vacía antes de que apareciera.
+
+**La Solución (Ingeniería) 🛠️**: Implementamos un "Modo Alerta Temporal" inspirado en el comportamiento de un perro guardián:
+- **Antes**: Oye ruido → Si no pasa nada en 0.3s → Vuelve a dormir (buffer limpio).
+- **Ahora**: Oye ruido → Se queda con **las orejas levantadas 15 segundos** → Si en ese tiempo aparece alguien, ya estaba grabando en RAM → Si en 15s no pasa nada → Ahora sí, vuelve a dormir.
+
+**Implementación Técnica** ⚙️:
+- Nueva constante: `ALERT_MODE_DURATION_MS = 15000` (15 segundos)
+- Nueva variable: `lastSuspiciousTime` (timestamp del último score > 10)
+- Lógica: Cuando el score baja a <= 10, el buffer NO se vacía si estamos dentro de la ventana de 15s. Sigue llenándose silenciosamente.
+- El buffer circular (15 frames) se pisa automáticamente, manteniendo siempre los últimos ~5 segundos.
+
+**La Innovación Clave 🎓**: Esta solución **desacopla la pre-grabación de la sensibilidad**:
+- **Sensibilidad fina**: El acercamiento lejano de la persona ya genera score > 10. El buffer se llena por la persona. El Modo Alerta no aporta nada extra. Compatible.
+- **Sensibilidad basta**: El acercamiento no genera score > 10, pero la luz que se encendió 10 segundos antes SÍ lo hizo. El buffer lleva 10 segundos llenándose. El video empieza con la habitación vacía iluminada.
+
+**Lecciones Aprendidas 🎓**:
+- ✅ En ingeniería de control, la histéresis (no conmutar instantáneamente) evita comportamientos frenéticos.
+- ✅ Un sistema de seguridad debe quedarse "alerta" un tiempo después de un evento sospechoso, igual que un guardia humano.
+- ✅ La solución más elegante a veces no viene del código sino de repensar la lógica de negocio.
+
+**Glosario 📖**:
+- **Histéresis**: Retardo intencional entre un cambio de estado y la respuesta del sistema. Evita oscilaciones.
+- **Modo Alerta**: Estado intermedio entre "dormido" y "grabando". El sistema llena el buffer silenciosamente.
