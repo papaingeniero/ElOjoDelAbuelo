@@ -3671,3 +3671,35 @@ Esto permite al usuario ver exactamente qué sensibilidad necesita para ignorar 
 
 **Lecciones Aprendidas 🎓**:
 - ✅ **Visibilidad Total**: Una herramienta de debug debe mostrarlo todo, no solo lo que el sistema considera "importante". Lo que el sistema ignora es a veces más importante para el ingeniero que lo que detecta.
+
+### 🐛 Fix Motion Lab: Corrupción por Debug (v3.9.10-dev.60)
+
+**El Problema 📜**:
+El usuario reportó que tras un cambio de luz, el detector de movimiento web se quedaba "enganchado" detectando miles de píxeles falsos indefinidamente.
+La causa fue irónica: **El propio modo de depuración causaba el bug**.
+1.  Al activar "Ver Malla" (Debug), pintábamos píxeles rojos 🔴 sobre el frame actual (`currentData`).
+2.  Luego copiábamos ese frame (¡ya sucio con rojo!) al buffer de referencia (`prevFrame`).
+3.  En el siguiente frame, comparábamos la imagen limpia con la referencia sucia => Miles de diferencias => Volvíamos a pintar rojo => Bucle infinito.
+
+**La Solución (Single Loop Update) 🛠️**:
+Reescribimos el motor `MotionEngine` en JS para ser atómico:
+```javascript
+// Bucle único optimizado
+for (i...) {
+    // 1. Leer pixel limpio
+    let pixel = currentData[i];
+    
+    // 2. Guardar en referencia INMEDIATAMENTE (antes de ensuciar)
+    this.prevFrame[i] = pixel;
+    
+    // 3. Calcular diferencia...
+    
+    // 4. Si hay movimiento + Debug => Pintar ROJO en currentData
+    if (diff && debug) currentData[i] = 255; 
+}
+```
+Ahora la referencia siempre está limpia y la visualización siempre muestra lo que detectó. Además, añadimos protección contra cambios de tamaño del canvas.
+
+**Lecciones Aprendidas 🎓**:
+- ✅ **Principio de Heisenberg del Software**: A veces la herramienta de observación (Debug Mode) altera el experimento.
+- ✅ **Atomicidad**: Separar lectura y escritura en buffers compartidos es vital.

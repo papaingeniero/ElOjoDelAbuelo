@@ -568,46 +568,56 @@ public class WebMotionLab {
                 "            setSensitivity(val) { this.THRESHOLD = val; log('Sensitivity (Thresh) set to ' + val); }\n"
                 +
                 "            setMinPixels(val) { this.MOTION_PIXEL_COUNT = val; log('Min Pixels set to ' + val); }\n" +
-
                 "            process(currentData) {\n" +
                 "                // currentData is Uint8ClampedArray (RGBA)\n" +
-                "                // We need to simulate YUV luminance check\n" +
                 "                \n" +
-                "                if (!this.prevFrame) {\n" +
+                "                // 1. Init Safety\n" +
+                "                if (!this.prevFrame || this.prevFrame.length !== currentData.length) {\n" +
                 "                    this.prevFrame = new Uint8ClampedArray(currentData);\n" +
-                "                    return { motion: false, pixels: 0, debug: 'Init' };\n" +
+                "                    return { motion: false, pixels: 0, debug: 'Init/Resize' };\n" +
                 "                }\n" +
                 "                \n" +
                 "                let diffCount = 0;\n" +
                 "                let totalPixelsChecked = 0;\n" +
                 "                \n" +
-                "                // Stride Loop (matches Java loop logic)\n" +
-                "                // Java: for (int i = 0; i < limit; i += STRIDE)\n" +
-                "                // JS Data is RGBA (4 bytes per pixel). \n" +
-                "                // Stride 10 means skip 10 pixels -> skip 40 bytes\n" +
                 "                const byteStride = this.STRIDE * 4;\n" +
                 "                \n" +
+                "                // 2. Single Loop: Compare + Update Reference + Debug Paint\n" +
                 "                for (let i = 0; i < currentData.length; i += byteStride) {\n" +
                 "                    totalPixelsChecked++;\n" +
                 "                    \n" +
-                "                    // Extract Luminance (Y)\n" +
-                "                    // Y = 0.299*R + 0.587*G + 0.114*B\n" +
+                "                    // A) Read Current (Clean)\n" +
                 "                    let r1 = currentData[i];\n" +
                 "                    let g1 = currentData[i+1];\n" +
                 "                    let b1 = currentData[i+2];\n" +
-                "                    let val1 = 0.299*r1 + 0.587*g1 + 0.114*b1;\n" +
-                "\n" +
-                "                    let r2 = this.prevFrame[i];\n" +
-                "                    let g2 = this.prevFrame[i+1];\n" +
-                "                    let b2 = this.prevFrame[i+2];\n" +
-                "                    let val2 = 0.299*r2 + 0.587*g2 + 0.114*b2;\n" +
                 "                    \n" +
+                "                    // B) Read Previous (Reference)\n" +
+                "                    let rRef = this.prevFrame[i];\n" +
+                "                    let gRef = this.prevFrame[i+1];\n" +
+                "                    let bRef = this.prevFrame[i+2];\n" +
+                "                    \n" +
+                "                    // C) UPDATE REFERENCE NOW (Store clean pixel for next frame)\n" +
+                "                    // We can overwrite prevFrame[i] now because we already read rRef\n" +
+                "                    // This prevents 'Debug Red' from polluting the reference.\n" +
+                "                    this.prevFrame[i] = r1;\n" +
+                "                    this.prevFrame[i+1] = g1;\n" +
+                "                    this.prevFrame[i+2] = b1;\n" +
+                "                    // Auto-fill gaps if Stride > 1? No, we only check strided pixels.\n" +
+                "                    // But wait, if we only update strided pixels, the gaps become old ghosts!\n" +
+                "                    // CRITICAL: We must update ALL pixels or accept ghosts in gaps.\n" +
+                "                    // Since we use Stride, we accept ghosts. But for robustness, \n" +
+                "                    // a full copy is better. BUT full copy is slow.\n" +
+                "                    // Let's stick to Stride check. If we check idx i, we update idx i.\n" +
+                "                    \n" +
+                "                    // D) Luminance Calc\n" +
+                "                    let val1 = 0.299*r1 + 0.587*g1 + 0.114*b1;\n" +
+                "                    let val2 = 0.299*rRef + 0.587*gRef + 0.114*bRef;\n" +
+                "                    \n" +
+                "                    // E) Compare\n" +
                 "                    if (Math.abs(val1 - val2) > this.THRESHOLD) {\n" +
                 "                        diffCount++;\n" +
-                "                        // Debug Highlight (Red)\n" +
+                "                        // F) Debug Paint (Dirty Current)\n" +
                 "                        if (debugMode) {\n" +
-                "                            // Mark the pixel red in currentData for visualization\n" +
-                "                            // Note: This modifies the frame being displayed! \n" +
                 "                            currentData[i] = 255;   // R\n" +
                 "                            currentData[i+1] = 0;   // G\n" +
                 "                            currentData[i+2] = 0;   // B\n" +
@@ -615,11 +625,35 @@ public class WebMotionLab {
                 "                    }\n" +
                 "                }\n" +
                 "                \n" +
-
-                "                // Update Reference Frame\n" +
-                "                // In Java: System.arraycopy(currentFrame, 0, previousFrame, 0, currentFrame.length);\n"
-                +
-                "                this.prevFrame.set(currentData);\n" +
+                "                // 3. Ghost Clearing (Optional but recommended)\n" +
+                "                // Since we only updated strided pixels in the loop, the reference is fragmented.\n" +
+                "                // To be 100% safe against ghosts, we should do a full copy.\n" +
+                "                // But doing full copy AND stride loop is redundant.\n" +
+                "                // New Approach: Loop stride for check, but `prevFrame.set(currentCopy)`?\n" +
+                "                // No, we want to avoid extra alloc.\n" +
+                "                // Compromise: The bug was likely Debug Mode painting on currentData BEFORE copy.\n" +
+                "                // With this in-place update, we update reference with CLEAN data.\n" +
+                "                // But what about pixels skipped by stride? They hold ancient values.\n" +
+                "                // If the object moves into a gap, next frame we compare New(Gap) vs Ancient(Gap).\n" +
+                "                // This creates noise. \n" +
+                "                //\n" +
+                "                // BETTER FIX: Do the full copy at the end, BUT use a CLEAN source.\n" +
+                "                // We don't have a clean source if we painted red.\n" +
+                "                //\n" +
+                "                // PRO SOLUTION:\n" +
+                "                // Use a separate visualization buffer? No memory.\n" +
+                "                // Use currentData for reference update BEFORE processing?\n" +
+                "                // 1. prevFrame.set(currentData) -> Now prevFrame is NEW.\n" +
+                "                // 2. Compare prevFrame (NEW) vs... wait, we lost OLD.\n" +
+                "                //\n" +
+                "                // Ok, we need OLD reference.\n" +
+                "                //\n" +
+                "                // The in-loop update (Option C above) is correct for strided pixels.\n" +
+                "                // For non-strided pixels, we don't care (we don't check them).\n" +
+                "                // So updating only strided pixels in reference is VALID for the algorithm.\n" +
+                "                // (We only check index i, we only update index i).\n" +
+                "                //\n" +
+                "                // So the logic stands.\n" +
                 "                \n" +
                 "                return { \n" +
                 "                    motion: diffCount > this.MOTION_PIXEL_COUNT,\n" +
