@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.56
+*   🧹 **Anti-Fantasmas**: Al desactivar Pre-Record, se vacía el buffer y se resetea `lastSuspiciousTime`. No más frames "fantasma" de hace horas en grabaciones futuras.
+*   📝 **Fix Etiquetas Fósiles**: Dashboard (`3s` → `5s`), Log (`3s Buffer` → `5s Buffer`).
+
 ### v3.9.10-dev.55
 *   🐕 **Modo Alerta Temporal (15s)**: El buffer de pre-grabación ya no se vacía inmediatamente tras una falsa alarma. Sigue llenándose durante 15 segundos para cubrir el patrón "Luz ON → pausa → Intruso".
 *   📝 **Fix Comentario**: `PRE_RECORD_FRAMES` corregido de `5FPS = ~3s` a `3FPS = ~5s`.

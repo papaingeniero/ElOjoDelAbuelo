@@ -1055,7 +1055,7 @@ public class SentinelService extends Service {
             logToWeb("🛡️ VIGILANDO CAMBIADO: " + (active ? "ACTIVADO (Vigilando)" : "DESACTIVADO (Solo Cámara)"));
         }
         if (isPreRecordActive != preRecord) {
-            logToWeb("📼 PRE-RECORD CAMBIADO: " + (preRecord ? "ACTIVADO (3s Buffer)" : "DESACTIVADO (Sin Pasado)"));
+            logToWeb("📼 PRE-RECORD CAMBIADO: " + (preRecord ? "ACTIVADO (5s Buffer)" : "DESACTIVADO (Sin Pasado)"));
         }
         // --- FIN INSERCIÓN ---
         // Telegram Update
@@ -1067,6 +1067,15 @@ public class SentinelService extends Service {
         isDetectorActive = active;
         cameraRotation = rot;
         isPreRecordActive = preRecord; // [NUEVO]
+
+        // [SAFETY] Si se desactiva el pre-record, vaciar buffer para no arrastrar
+        // fantasmas
+        if (!preRecord && instance != null) {
+            while (!instance.preRecordBuffer.isEmpty()) {
+                instance.freeBufferPool.offer(instance.preRecordBuffer.poll());
+            }
+            instance.lastSuspiciousTime = 0; // Resetear Modo Alerta también
+        }
 
         // 1. Min Pixels Logic (Legacy Sensitivity)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));

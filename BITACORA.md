@@ -3558,3 +3558,15 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 **Glosario 📖**:
 - **Histéresis**: Retardo intencional entre un cambio de estado y la respuesta del sistema. Evita oscilaciones.
 - **Modo Alerta**: Estado intermedio entre "dormido" y "grabando". El sistema llena el buffer silenciosamente.
+
+### 🧹 Anti-Fantasmas + Etiquetas Fósiles (v3.9.10-dev.56)
+**El Problema 📜**: Al implementar el Modo Alerta (v3.9.10-dev.55), descubrimos un "bug durmiente": si el usuario desactivaba el Pre-Record Buffer desde el dashboard, el buffer de RAM no se vaciaba. Los frames que hubiera dentro se quedaban como "fantasmas" y podían inyectarse en futuras grabaciones con imágenes de hace minutos u horas. Además, varias etiquetas en la UI y en los logs seguían diciendo "3s" cuando el buffer real es de ~5 segundos.
+
+**La Solución (Ingeniería) 🛠️**:
+1. **Safety Flush**: Al desactivar `isPreRecordActive` en `updateSettings`, se vacía el buffer y se resetea `lastSuspiciousTime` (el timestamp del Modo Alerta). Así, apagar el Pre-Record es una acción "limpia" sin residuos.
+2. **Label Fix (Dashboard)**: `Pre-Record Buffer (3s)` → `Pre-Record Buffer (5s)` en el HTML del settings modal (`NanoHttpServer.java`).
+3. **Label Fix (Log)**: `ACTIVADO (3s Buffer)` → `ACTIVADO (5s Buffer)` en el `logToWeb` de `updateSettings` (`SentinelService.java`).
+
+**Lecciones Aprendidas 🎓**:
+- ✅ Todo toggle que gestiona recursos (buffers, locks, streams) debe tener una "limpieza de salida". No basta con dejar de llenar; hay que vaciar.
+- ✅ Los "fósiles" (textos desactualizados) pueden parecer cosméticos, pero generan confusión real al usuario y al desarrollador futuro.

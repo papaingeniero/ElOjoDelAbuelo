@@ -1022,7 +1022,7 @@ public class NanoHttpServer {
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Activa la vigilancia y grabación por movimiento.</div>\n"
                 +
                 "      <div class='settings-row'>\n" +
-                "         <label>Pre-Record Buffer (3s):</label>\n" +
+                "         <label>Pre-Record Buffer (5s):</label>\n" +
                 "         <input type='checkbox' id='set-prerecord' style='transform: scale(1.5);'>\n" +
                 "      </div>\n" +
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Graba lo que pasó ANTES del movimiento.</div>\n"
