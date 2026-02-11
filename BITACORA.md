@@ -3703,3 +3703,21 @@ Ahora la referencia siempre está limpia y la visualización siempre muestra lo 
 **Lecciones Aprendidas 🎓**:
 - ✅ **Principio de Heisenberg del Software**: A veces la herramienta de observación (Debug Mode) altera el experimento.
 - ✅ **Atomicidad**: Separar lectura y escritura en buffers compartidos es vital.
+
+### 🌡️ v3.9.10-dev.61: [DIAGNOSTIC] Power Consumption Probe 🕵️‍♂️🔥
+
+### 🚀 El Problema
+El usuario reporta sobrecalentamiento (40°C) con el detector desactivado.
+Sospechamos "Consumo Fantasma" (cámara encendida sin uso real) o "Zombis" (clientes web mal desconectados).
+
+### 🛠️ La Solución (Instrumentación)
+1.  **Exposición Pública de Estadísticas**: Convertimos `statsFrameProcessed`, `statsJpgGenerated`, etc. a `public static` en `SentinelService` para que el servidor web pueda leerlas.
+2.  **Nuevo Panel de Diagnóstico**: En `/api/debug`, ahora mostramos:
+    *   `LiveStream Clients`: Cuántos ojos están mirando realmente.
+    *   `JPEGs Generated`: Cuánto trabaja la CPU comprimiendo fotos.
+    *   `Thermal State`: Estado del termómetro interno.
+3.  **Lógica de Ahorro**: Confirmamos que si `Clients == 0` y `Recording == false`, la compresión JPEG se salta totalmente (`return` temprano).
+
+### 🎓 Lecciones Aprendidas
+*   **Observabilidad**: Sin datos, solo tenemos "sensaciones". Ahora tenemos números.
+*   **Costo Basal**: Mantener el sensor de cámara encendido tiene un costo energético fijo alto (ISP + Sensor), independientemente del procesamiento de software.

@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.61
+*   🌡️ **Diagnostic**: Panel `/api/debug` mejorado para investigar sobrecalentamiento.
+*   🔍 **Metrics**: Monitorización en tiempo real de Clientes Activos (Stream/Web), FPS procesados vs saltados y JPEGs generados.
+*   ⚡ **Core**: Variables de estadísticas de `SentinelService` expuestas públicamente para auditoría.
+
 ### v3.9.10-dev.60
 *   🐛 **Fix Web Motion Lab**: Corregido bug crítico donde el "Modo Debug" (malla roja) corrompía el buffer de referencia, creando un bucle infinito de falsos positivos.
 *   ⚡ **Single Loop Engine**: Reescrito el motor de detección JS para actualizar la referencia píxel a píxel *antes* de pintar el debug. Más rápido y robusto ante cambios de luz.

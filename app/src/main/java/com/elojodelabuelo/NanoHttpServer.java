@@ -280,8 +280,17 @@ public class NanoHttpServer {
                     sb.append(
                             "<button class='btn' onclick=\"fetch('/api/restart_adb').then(r=>alert('ADB Reiniciando... La conexión se cortará.'))\">⚠️ REINICIAR SERVICIO ADB (adbd)</button>");
 
-                    sb.append("<h3>📝 SYSTEM LOGS</h3><pre>");
-                    sb.append("--- DEBUG ONLINE (v3.9.8 - DEV TOOLS) ---\n");
+                    sb.append("<h3>📝 SYSTEM LOGS & DIAGNOSTICS</h3><pre>");
+                    sb.append("--- DEBUG ONLINE (v3.9.9) ---\n");
+                    sb.append("Status: ").append(SentinelService.isDetectorActive ? "WATCHING" : "IDLE").append("\n");
+                    sb.append("Recording: ").append(SentinelService.isRecordingPublic).append("\n");
+                    sb.append("LiveStream Clients: ").append(liveStreamClients.size()).append("\n");
+                    sb.append("Thermal State: ").append(SentinelService.lastOverheatState ? "OVERHEATING" : "NORMAL")
+                            .append("\n");
+                    sb.append("Stats (Last Minute): Processed=").append(SentinelService.statsFrameProcessed)
+                            .append(" / Skipped=").append(SentinelService.statsFrameSkipped)
+                            .append(" / JPEGs=").append(SentinelService.statsJpgGenerated).append("\n");
+
                     if (SentinelService.debugLogs != null) {
                         synchronized (SentinelService.debugLogs) {
                             for (String s : SentinelService.debugLogs) {

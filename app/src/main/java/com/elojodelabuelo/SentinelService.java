@@ -100,14 +100,14 @@ public class SentinelService extends Service {
     private int frameSkipCounter = 0;
 
     // Stats Counters
-    private int statsFrameProcessed = 0;
-    private int statsFrameSkipped = 0;
-    private int statsJpgGenerated = 0; // <--- AÑADIR ESTO
+    public static int statsFrameProcessed = 0;
+    public static int statsFrameSkipped = 0;
+    public static int statsJpgGenerated = 0;
     private Handler statsHandler;
     private Runnable statsRunnable;
 
     // Añade esta línea:
-    private boolean lastOverheatState = false; // Memoria de estado térmico
+    public static boolean lastOverheatState = false; // Memoria de estado térmico
     // --------------------------------
 
     // [NUEVO] Para el Cronómetro Estricto del Pintor Vago
