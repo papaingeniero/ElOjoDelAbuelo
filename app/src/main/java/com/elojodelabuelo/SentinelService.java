@@ -602,17 +602,20 @@ public class SentinelService extends Service {
 
                     if (isSuspicious || isAlertActive) {
                         // MODO ACTIVO o MODO ALERTA: Seguimos llenando el buffer
+
+                        // 1. Intentamos sacar un buffer limpio de la piscina
                         byte[] buffer = freeBufferPool.poll();
 
+                        // 2. [EL PARCHE MAGICO] Si la piscina está vacía, robamos el frame más viejo
+                        // del pasado
+                        if (buffer == null) {
+                            buffer = preRecordBuffer.poll();
+                        }
+
+                        // 3. Escribimos los datos nuevos y lo metemos al final de la cola
                         if (buffer != null) {
                             System.arraycopy(data, 0, buffer, 0, data.length);
-
-                            if (!preRecordBuffer.offer(buffer)) {
-                                byte[] old = preRecordBuffer.poll();
-                                if (old != null)
-                                    freeBufferPool.offer(old);
-                                preRecordBuffer.offer(buffer);
-                            }
+                            preRecordBuffer.offer(buffer);
                         }
                     } else {
                         // CALMA TOTAL (15s sin actividad): Vaciamos buffer

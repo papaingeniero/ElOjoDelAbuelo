@@ -3570,3 +3570,61 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 **Lecciones Aprendidas 🎓**:
 - ✅ Todo toggle que gestiona recursos (buffers, locks, streams) debe tener una "limpieza de salida". No basta con dejar de llenar; hay que vaciar.
 - ✅ Los "fósiles" (textos desactualizados) pueden parecer cosméticos, pero generan confusión real al usuario y al desarrollador futuro.
+
+### 🐛 Fix Crítico: El Salto Temporal del Ring Buffer (v3.9.10-dev.57)
+
+**El Problema (Storytelling) 📜**: Los vídeos grabados con el buffer de pre-grabación activo (el "Perro Guardián" 🐕 de la v3.9.10-dev.55) mostraban un comportamiento extraño: los primeros ~5 segundos del vídeo parecían "congelados" (mismo timestamp OSD, misma imagen repetida), y luego el vídeo pegaba un salto temporal y continuaba con la grabación en tiempo real perfectamente.
+
+La primera investigación (asistida por IA) buscó la causa en sitios equivocados: la función `rotateNV21Degree180` que reutiliza un pool de 2 buffers, el OSD que tatúa `new Date()` en el momento del volcado, y el multiplicador ×5 que amplifica frames. Todos eran efectos cosméticos o distracciones. **La verdadera causa era mucho más simple y más grave.**
+
+**La Causa Raíz (Ingeniería) 🛠️**:
+El `freeBufferPool` se inicializa con exactamente 15 buffers (`PRE_RECORD_FRAMES = 15`). Cuando el detector de movimiento entraba en estado de sospecha (`score > 10`), empezaba a llenar estos 15 arrays con `System.arraycopy`. Hasta aquí, correcto.
+
+**Pero al frame 16**, `freeBufferPool.poll()` devolvía `null` porque no quedaban más buffers libres. El código original tenía:
+```java
+byte[] buffer = freeBufferPool.poll();
+if (buffer != null) {
+    System.arraycopy(data, 0, buffer, 0, data.length);
+    // ... guardar en preRecordBuffer
+}
+// Si buffer == null: NADA. Silencio. Frame descartado.
+```
+
+El `if (buffer != null)` actuaba como un agujero negro silencioso. A partir del segundo 5 (~frame 16), **todos los frames nuevos se descartaban sin dejar rastro**. Si el intruso tardaba 10 segundos en confirmar la grabación, el buffer conservaba los segundos 0-5, tiraba a la basura los segundos 5-10, y al activar la grabación saltaba directamente al tiempo real. Ese era el "salto temporal".
+
+**La Lección Dolorosa (Error del Diagnóstico IA) ❌**:
+El agente de IA (Claude) dedicó su análisis a hipótesis secundarias:
+1. **"La escena era estática"** → Error de metodología. Si faltan datos en un pipeline, la primera regla es auditar la memoria, no asumir que la realidad física se ha quedado quieta.
+2. **"Corrupción del rotationBuffer"** → El propio agente admitió que el frame se escribía a disco antes de sobrescribirse. Fue ruido analítico.
+3. **"El OSD congela el timestamp"** → Cierto pero irrelevante. Solucionar el reloj no habría recuperado los frames descartados.
+
+**La Solución (El Ring Buffer Real) 🔄**:
+La solución fue cerrar el circuito de reciclaje: cuando la piscina de buffers libres está vacía, se recicla el frame más antiguo del propio buffer de pre-grabación:
+```java
+byte[] buffer = freeBufferPool.poll();
+
+// [EL PARCHE] Si la piscina está vacía, reciclamos el más viejo
+if (buffer == null) {
+    buffer = preRecordBuffer.poll();
+}
+
+if (buffer != null) {
+    System.arraycopy(data, 0, buffer, 0, data.length);
+    preRecordBuffer.offer(buffer);
+}
+```
+
+Con este simple cambio: memoria constante (15 buffers circulando siempre), cero presión de Garbage Collector, e historial ininterrumpido. Es un Ring Buffer clásico de sistemas embebidos — la cola se come su propia cola 🐍.
+
+**Lecciones Aprendidas 🎓**:
+- ✅ **"Follow the null"**: Cuando un pool devuelve `null`, es una alarma roja. Siempre preguntarse: ¿qué pasa con los datos que llegan después?
+- ✅ **El descarte silencioso es el bug más traicionero**: Un `if (x != null)` sin un `else { log("FRAME PERDIDO") }` es una bomba de tiempo invisible.
+- ✅ **Auditar el pipeline antes de teorizar**: La explicación más simple (se pierden datos) supera cualquier hipótesis exótica sobre la escena o el hardware.
+- ✅ **Object Pools necesitan fallback**: Si el pool se agota, el sistema debe degradarse graciosamente (reciclando), no fallar silenciosamente.
+- ✅ **La IA puede equivocarse**: Un diagnóstico asistido por IA es un punto de partida, no la verdad. El ojo humano del ingeniero que mira el vídeo y dice "aquí faltan frames" es irreemplazable.
+
+**Glosario 📖**:
+- **Object Pool**: Patrón de diseño donde se pre-crean objetos (buffers) y se reciclan para evitar la creación/destrucción constante que dispara el Garbage Collector.
+- **Ring Buffer**: Buffer circular donde los datos nuevos sobrescriben los más antiguos cuando está lleno. Memoria constante por diseño.
+- **Descarte Silencioso (Silent Drop)**: Bug donde datos se pierden sin generar error ni log. Extremadamente difícil de diagnosticar.
+- **Garbage Collector (GC)**: Mecanismo de Java que libera memoria no referenciada. En Android 2.3/4.x es lento y causa "stuttering" visible.

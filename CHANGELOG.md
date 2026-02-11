@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.57
+*   🐛 **Fix Crítico (Ring Buffer)**: Corregido agotamiento silencioso del Object Pool de pre-grabación. Tras llenar los 15 slots iniciales, `freeBufferPool.poll()` devolvía `null` y todos los frames nuevos se descartaban. El video mostraba solo los primeros ~5s y luego "saltaba" al tiempo real.
+*   🔄 **Ring Buffer Real**: Cuando el pool libre está vacío, se recicla el frame más antiguo del propio buffer (`preRecordBuffer.poll()`). Memoria constante, cero GC, historial ininterrumpido.
+
 ### v3.9.10-dev.56
 *   🧹 **Anti-Fantasmas**: Al desactivar Pre-Record, se vacía el buffer y se resetea `lastSuspiciousTime`. No más frames "fantasma" de hace horas en grabaciones futuras.
 *   📝 **Fix Etiquetas Fósiles**: Dashboard (`3s` → `5s`), Log (`3s Buffer` → `5s Buffer`).
