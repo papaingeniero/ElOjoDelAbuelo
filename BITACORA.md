@@ -3733,3 +3733,28 @@ Tras reinstalar la versión `v3.9.10-dev.61`, el usuario reporta que la temperat
 3.  **La Sonda Vigilará**: Ahora, si vuelve a subir a 40°C, tendremos las métricas de `/api/debug` para cazar al culpable (¿Clientes fantasma? ¿Encoder desbocado?).
 
 **Estado**: **Cerrado (por ahora)**. Vigilancia activa mediante panel de diagnóstico.
+
+## 🚀 Phase 39.10-dev.64: Operación Anti-Zombi (Refrigeración por Software)
+**Versión**: v3.9.10-dev.64
+
+### 📜 1. La Historia (El Problema)
+El "Ojo del Abuelo" sufría fiebre alta (41°C) incluso en reposo absoluto.
+Descubrimos un bug crítico en la arquitectura del servidor web (`NanoHttpServer`):
+*   Teníamos una variable **estática** llamada `lastHeartbeatTime`.
+*   Si **UNA** persona (o pestaña) estaba viendo la cámara, actualizaba esa variable global.
+*   El servidor pensaba que **TODAS** las conexiones estaban vivas.
+*   Resultado: Si cerrabas una pestaña en tu PC pero tenías el móvil abierto, la conexión del PC se quedaba "Zombi", enviando datos a la nada y quemando CPU innecesariamente.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos **Identidad de Sesión Única**:
+1.  **Mapas > Variables Globales**: Reemplazamos el `long` estático por un `ConcurrentHashMap<String, Long>`. Ahora cada conexión tiene su propio pulso.
+2.  **DNI para cada Pestaña**: Inyectamos un `SESSION_ID` aleatorio en el JavaScript del cliente.
+    *   La pestaña dice: "Soy la sesión `abc12345` y sigo viva".
+    *   El servidor anota: "La sesión `abc12345` respiró hace 1ms".
+3.  **Francotirador de Hilos**: El bucle de transmisión de video (`serveLiveStream`) ahora solo mira SU propio reloj. Si su `SESSION_ID` no respira en 5 segundos, se suicida (cierra el socket), sin importar que haya otros clientes vivos.
+
+### 🎓 3. Lecciones Aprendidas
+*   **El peligro de `static`**: En servidores concurrentes, las variables estáticas son veneno para el estado de la sesión. Compartir estado globalmente crea "efectos fantasma" entre usuarios. 
+*   **Heartbeats con Nombre**: Un "latido" anónimo no sirve de nada si tienes múltiples corazones. Cada latido debe ir firmado.
+
+---

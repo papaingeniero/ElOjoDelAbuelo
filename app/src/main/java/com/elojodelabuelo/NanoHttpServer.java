@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A robust embedded Web Server/NVR.
@@ -33,12 +35,14 @@ public class NanoHttpServer {
     private Thread serverThread;
     private boolean isRunning = false;
     private Context context;
-    private final Set<OutputStream> liveStreamClients = Collections.synchronizedSet(new HashSet<OutputStream>());
+    private final Set<OutputStream> liveStreamClients = new HashSet<>();
     private static final int PORT = 8080;
     private static final String BOUNDARY = "ElOjoDelAbueloBoundary";
     private static final File STORAGE_DIR = new File(Environment.getExternalStorageDirectory(), "ElOjoDelAbuelo");
-    // Variable para el Watchdog (Interruptor del Hombre Muerto)
-    private static volatile long lastHeartbeatTime = 0;
+    // [FIX ZOMBIE] Usamos un mapa para trackear el latido de CADA sesión
+    // individualmente.
+    // Clave: SessionID, Valor: Timestamp del último latido
+    private final Map<String, Long> sessionHeartbeats = new java.util.concurrent.ConcurrentHashMap<>();
     private static String lastError = "None";
 
     public static void setLastError(String error) {
@@ -103,6 +107,7 @@ public class NanoHttpServer {
             }
             liveStreamClients.clear();
         }
+        sessionHeartbeats.clear(); // Clear all session heartbeats on server stop
     }
 
     public void broadcast(byte[] jpegData) {
@@ -152,6 +157,18 @@ public class NanoHttpServer {
                 String method = st.hasMoreTokens() ? st.nextToken() : "GET";
                 String uri = st.hasMoreTokens() ? st.nextToken() : "/";
 
+                // Parse query parameters for all requests that might need them
+                java.util.Properties parms = new java.util.Properties();
+                if (uri.contains("?")) {
+                    String query = uri.substring(uri.indexOf("?") + 1);
+                    String[] pairs = query.split("&");
+                    for (String pair : pairs) {
+                        String[] kv = pair.split("=");
+                        if (kv.length == 2)
+                            parms.setProperty(kv[0], java.net.URLDecoder.decode(kv[1], "UTF-8"));
+                    }
+                }
+
                 // 2. Route Request
                 // --- RUTAS OSD (V3.9.7) ---
                 if (uri.toLowerCase(Locale.US).startsWith("/lab")) {
@@ -163,16 +180,6 @@ public class NanoHttpServer {
                     return;
                 }
                 if (uri.startsWith("/api/set_osd")) {
-                    java.util.Properties parms = new java.util.Properties();
-                    if (uri.contains("?")) {
-                        String query = uri.substring(uri.indexOf("?") + 1);
-                        String[] pairs = query.split("&");
-                        for (String pair : pairs) {
-                            String[] kv = pair.split("=");
-                            if (kv.length == 2)
-                                parms.setProperty(kv[0], kv[1]);
-                        }
-                    }
                     String x = parms.getProperty("x");
                     String y = parms.getProperty("y");
                     String size = parms.getProperty("size");
@@ -197,16 +204,6 @@ public class NanoHttpServer {
                 }
                 // ---------------------------
                 if (uri.startsWith("/api/test_telegram")) {
-                    java.util.Properties parms = new java.util.Properties();
-                    if (uri.contains("?")) {
-                        String query = uri.substring(uri.indexOf("?") + 1);
-                        String[] pairs = query.split("&");
-                        for (String pair : pairs) {
-                            String[] kv = pair.split("=");
-                            if (kv.length == 2)
-                                parms.setProperty(kv[0], java.net.URLDecoder.decode(kv[1], "UTF-8"));
-                        }
-                    }
                     String token = parms.getProperty("token");
                     String chat = parms.getProperty("chat");
                     if (token != null && chat != null) {
@@ -216,13 +213,20 @@ public class NanoHttpServer {
                     os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
                     return;
                 }
-                if (uri.equals("/stream")) {
+                if (uri.startsWith("/stream")) {
                     SentinelService.logToWeb("📹 STREAM: Cliente conectado (IP: " + socket.getInetAddress() + ")");
-                    serveLiveStream(os); // Bloquea el hilo mientras transmite
+                    serveLiveStream(os, parms); // Bloquea el hilo mientras transmite
                     SentinelService.logToWeb("📹 STREAM: Cliente desconectado");
                 } else if (uri.equals("/api/keepalive")) {
-                    // ❤️ EL LATIDO: Cliente dice "sigo vivo"
-                    lastHeartbeatTime = System.currentTimeMillis();
+                    // [FIX ZOMBIE] Latido con identidad
+                    String sessionId = parms.getProperty("session_id");
+                    if (sessionId != null && sessionHeartbeats.containsKey(sessionId)) {
+                        sessionHeartbeats.put(sessionId, System.currentTimeMillis());
+                    } else {
+                        // Si llega un latido de una sesión que no conocemos (quizás reiniciamos el
+                        // server),
+                        // no hacemos nada. El stream morirá en 5s y el cliente reconectará.
+                    }
                     os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
                     // Solo logueamos si es video real, no previews, para no saturar
@@ -347,6 +351,8 @@ public class NanoHttpServer {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
+                // This block should only close the socket if it's not a live stream client
+                // The live stream client is managed within serveLiveStream
                 if (!liveStreamClients.contains(os)) {
                     try {
                         socket.close();
@@ -356,24 +362,37 @@ public class NanoHttpServer {
             }
         }
 
-        private void serveLiveStream(OutputStream os) throws IOException {
-            // Inicializamos el reloj al entrar para dar margen inicial
-            lastHeartbeatTime = System.currentTimeMillis();
-
+        private void serveLiveStream(OutputStream os, java.util.Properties parms) throws IOException {
             os.write("HTTP/1.1 200 OK\r\n".getBytes());
             os.write(("Content-Type: multipart/x-mixed-replace; boundary=" + BOUNDARY + "\r\n").getBytes());
             os.write("Connection: keep-alive\r\n".getBytes());
             os.write("\r\n".getBytes());
             os.flush();
-            liveStreamClients.add(os);
 
-            // BUCLE DEAD MAN'S SWITCH 💀⏱️
+            // [FIX ZOMBIE] 1. Obtener Session ID de la URL
+            String sessionId = parms.getProperty("session_id");
+            if (sessionId == null || sessionId.isEmpty()) {
+                // Si no hay ID (ej: VLC o navegador viejo), generamos uno temporal
+                sessionId = "legacy_" + System.currentTimeMillis();
+            }
+
+            // 2. Registrar inicio de sesión
+            sessionHeartbeats.put(sessionId, System.currentTimeMillis());
+
+            // 3. Añadir al pool de streams
+            synchronized (liveStreamClients) {
+                liveStreamClients.add(os);
+            }
+            SentinelService.logToWeb("🎥 Nuevo cliente Stream conectado (ID: " + sessionId + ")");
+
             try {
-                while (liveStreamClients.contains(os)) {
-                    // Si el cliente no respira en 5000ms (5s), cortamos
-                    long silence = System.currentTimeMillis() - lastHeartbeatTime;
-                    if (silence > 5000) {
-                        SentinelService.logToWeb("💀 WATCHDOG: Cliente mudo (" + silence + "ms). Cortando stream.");
+                while (true) {
+                    // [FIX ZOMBIE] 4. WATCHDOG INDIVIDUAL
+                    // Verificamos SOLO el latido de ESTA sesión.
+                    Long lastBeat = sessionHeartbeats.get(sessionId);
+                    if (lastBeat == null || (System.currentTimeMillis() - lastBeat) > 5000) {
+                        SentinelService
+                                .logToWeb("💀 WATCHDOG: Cliente mudo (ID: " + sessionId + ") > 5s. Cortando stream.");
                         break; // Rompe el bucle y cierra el socket en el finally
                     }
                     Thread.sleep(1000); // Revisamos cada segundo
@@ -381,7 +400,12 @@ public class NanoHttpServer {
             } catch (InterruptedException e) {
                 // End
             } finally {
-                liveStreamClients.remove(os);
+                // Limpieza al salir
+                sessionHeartbeats.remove(sessionId);
+                synchronized (liveStreamClients) {
+                    liveStreamClients.remove(os);
+                }
+                SentinelService.logToWeb("End of stream (ID: " + sessionId + ")");
             }
         }
 
@@ -909,6 +933,9 @@ public class NanoHttpServer {
                         ? "<div class='camera-error'>⚠️ ERROR CRÍTICO: CÁMARA NO RESPONDE - REINICIA EL MÓVIL</div>\n"
                         : "")
                 +
+                // [FIX ZOMBIE] Generamos identidad única para esta pestaña
+                "<script>var SESSION_ID = Math.random().toString(36).substring(7); console.log('Session ID:', SESSION_ID);</script>\n"
+                +
                 commonHeader
                 +
                 "  <div style='text-align:center; padding-bottom:10px; flex-shrink:0;'>\n" +
@@ -1133,7 +1160,7 @@ public class NanoHttpServer {
                 "    </div>\n" +
                 "\n" +
                 "    <!-- SLIDER CONTAINER -->\n" +
-                "    <div id='slider-track' style='position:relative; width:80%; max-width:300px; height:60px; background:#330000; border-radius:30px; border:2px solid #550000; overflow:hidden; touch-action:none; user-select:none;'>\n"
+                "    <div id='slider-track' style='position:relative; width:80%; max-width:300px; height:60px; background:#330000; border:2px solid #550000; border-radius:30px; overflow:hidden; touch-action:none; user-select:none;'>\n"
                 +
                 "        <div style='position:absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center; color:#aa5555; fontWeight:bold; font-size:14px; letter-spacing:1px; z-index:1;'>\n"
                 +
@@ -1190,7 +1217,8 @@ public class NanoHttpServer {
                 "var heartbeatInterval = null;\n" +
                 "\n" +
                 "function sendHeartbeat() {\n" +
-                "    fetch('/api/keepalive').catch(e => {});\n" +
+                "    var sid = (typeof SESSION_ID !== 'undefined') ? SESSION_ID : 'unknown';\n" +
+                "    fetch('/api/keepalive?session_id=' + sid).catch(e => {});\n" +
                 "}\n" +
                 "\n" +
                 "function startHeartbeat() {\n" +
@@ -1456,7 +1484,7 @@ public class NanoHttpServer {
                 "}\n" +
                 "function openLiveView() {\n" +
                 "    document.getElementById('live-view-modal').style.display = 'flex';\n" +
-                "    document.getElementById('live-stream-img').src = '/stream';\n" +
+                "    document.getElementById('live-stream-img').src = '/stream?session_id=' + SESSION_ID;\n" +
                 "    history.pushState(null, null, location.href);\n" +
                 "    startHeartbeat();\n" + // <--- AÑADIDO
                 "}\n" +
@@ -1470,6 +1498,9 @@ public class NanoHttpServer {
                 "    \n" +
                 "    var newImg = document.createElement('img');\n" +
                 "    newImg.id = 'live-stream-img';\n" +
+                "    // [FIX PREVIEW] Si el usuario vuelve a abrir, necesitamos que la imagen tenga src\n" +
+                "    // Pero NO le ponemos src aqu para no cargar nada en background.\n" +
+                "    newImg.src = '';\n" +
                 "    newImg.style.maxWidth = '100%';\n" +
                 "    newImg.style.maxHeight = '100%';\n" +
                 "    newImg.style.objectFit = 'cover';\n" +
@@ -1869,13 +1900,21 @@ public class NanoHttpServer {
                 "   });\n" +
                 "}\n" +
                 "function startParasite() {\n" +
-                "   var img = document.createElement('img'); img.src = '/stream'; img.style.display = 'none'; img.id = 'hidden-stream-source'; document.body.appendChild(img);\n"
-                +
+                "    if (!parasite) {\n" +
+                "        parasite = document.createElement('img');\n" +
+                "        parasite.id = 'hidden-stream-source';\n" +
+                "        parasite.style.display = 'none';\n" +
+                "        // Usamos el MISMO SessionID para que el servidor sepa que somos nosotros\n" +
+                "        parasite.src = '/stream?session_id=' + SESSION_ID; \n" +
+                "        document.body.appendChild(parasite);\n" +
+                "        startHeartbeat(); // Iniciar latidos para mantener este stream vivo\n" +
+                "        console.log('Parasite Stream Started (ID: ' + SESSION_ID + ')');\n" +
+                "    }\n" +
                 "   var hiddenCanvas = document.createElement('canvas'); hiddenCanvas.width = 352; hiddenCanvas.height = 288; var ctx = hiddenCanvas.getContext('2d');\n"
                 +
                 "   parasiteBuffer = [];\n" +
                 "   parasiteInterval = setInterval(function() {\n" +
-                "       try { ctx.drawImage(img, 0, 0, 352, 288); parasiteBuffer.push(hiddenCanvas.toDataURL('image/jpeg', 0.4)); if (parasiteBuffer.length > 30) parasiteBuffer.shift(); } catch(e) {}\n"
+                "       try { ctx.drawImage(parasite, 0, 0, 352, 288); parasiteBuffer.push(hiddenCanvas.toDataURL('image/jpeg', 0.4)); if (parasiteBuffer.length > 30) parasiteBuffer.shift(); } catch(e) {}\n"
                 +
                 "   }, 1000);\n" +
                 "   var displayCanvas = document.getElementById('parasite-canvas');\n" +
@@ -1890,7 +1929,6 @@ public class NanoHttpServer {
                 "       };\n" +
                 "       pLoop();\n" +
                 "   }\n" +
-                "   startHeartbeat();\n" + // <--- AÑADIDO
                 "}\n" +
                 "function parseDateFromFilename(f) {\n" +
                 "    var parts = f.match(/video_(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})/);\n" +
@@ -2016,6 +2054,7 @@ public class NanoHttpServer {
 
     // Añadir esto en NanoHttpServer.java
     public boolean hasLiveClients() {
-        return !liveStreamClients.isEmpty();
+        // Ahora la verdad absoluta es el mapa de sesiones cardiacas
+        return !sessionHeartbeats.isEmpty();
     }
 }

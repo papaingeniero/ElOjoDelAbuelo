@@ -1419,3 +1419,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Detector Ajustado**: Stride optimizado (10) para la nueva resolución.
 - **Manteniendo Optimizaciones**: Lazy Rotation y Raw Detection siguen activos para máxima eficiencia.
 
+- **v3.9.10-dev.64 (Anti-Zombie)**: Solucionado bug en  donde una variable estática mantenía vivas conexiones muertas, causando sobrecalentamiento en reposo. Implementado .
