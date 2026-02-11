@@ -540,9 +540,10 @@ public class NanoHttpServer {
             float webZoom = 1.0f;
             int webPanX = 0;
             int webPanY = 0;
-            // Telegram Vars
-            String tgToken = "";
-            String tgChatId = "";
+            // Telegram Vars (Heredar valores actuales para no borrarlos si no vienen en la
+            // URL)
+            String tgToken = SentinelService.telegramToken;
+            String tgChatId = SentinelService.telegramChatId;
 
             try {
 
@@ -582,11 +583,11 @@ public class NanoHttpServer {
                                 webPanX = Integer.parseInt(val);
                             else if (key.equals("webPanY"))
                                 webPanY = Integer.parseInt(val);
-                            // Telegram Parsing
+                            // Telegram Parsing (Con Decodificación URL)
                             else if (key.equals("tgToken"))
-                                tgToken = val;
+                                tgToken = java.net.URLDecoder.decode(val, "UTF-8");
                             else if (key.equals("tgChatId"))
-                                tgChatId = val;
+                                tgChatId = java.net.URLDecoder.decode(val, "UTF-8");
                             else if (key.equals("tgActive")) {
                                 boolean isActive = Boolean.parseBoolean(val);
                                 SentinelService.isTelegramActive = isActive;

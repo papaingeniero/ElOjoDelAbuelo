@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.65
+*   🐛 **Fix Persistencia Telegram**: Corregido el borrado accidental de credenciales (Token/ChatId) al guardar otros ajustes.
+    *   **Herencia**: Las variables ahora inicializan con el valor actual de `SentinelService` en lugar de `""`.
+    *   **Decoding**: Añadida decodificación URL (`UTF-8`) para soportar tokens con caracteres especiales (como `:`).
+*   🚀 **Protocolo**: Despliegue v65 con documentación en Bitácora.
+
 ### v3.9.10-dev.61
 *   🌡️ **Diagnostic**: Panel `/api/debug` mejorado para investigar sobrecalentamiento.
 *   🔍 **Metrics**: Monitorización en tiempo real de Clientes Activos (Stream/Web), FPS procesados vs saltados y JPEGs generados.

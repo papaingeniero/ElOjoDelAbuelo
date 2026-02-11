@@ -346,9 +346,20 @@ public class SentinelService extends Service {
             camera.startPreview();
             logToWeb("Cámara arrancada OK");
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
-            NanoHttpServer.setLastError("Camera Error: " + e.toString());
+            // [CRASH DIAGNOSTIC] Capture fatal errors like OOM or NoClassDefFoundError
+            try {
+                // Escribir stacktrace completo en el log para verlo sin logcat
+                java.io.StringWriter sw = new java.io.StringWriter();
+                java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+                e.printStackTrace(pw);
+                String stackTrace = sw.toString();
+                logToWeb("❌ FATAL CAMERA CRASH: " + stackTrace);
+            } catch (Exception ignored) {
+            }
+
+            NanoHttpServer.setLastError("Camera Fatal: " + e.toString());
         }
     }
 

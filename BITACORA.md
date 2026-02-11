@@ -3758,3 +3758,22 @@ Implementamos **Identidad de Sesión Única**:
 *   **Heartbeats con Nombre**: Un "latido" anónimo no sirve de nada si tienes múltiples corazones. Cada latido debe ir firmado.
 
 ---
+
+## 🚀 Phase 65: Persistencia Quirúrgica (Telegram Gate)
+**Versión**: v3.9.10-dev.65 | **Fecha**: 11 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+Tras reinstalar la app o simplemente guardar otros ajustes (como la sensibilidad), el Bot Token y el Chat ID de Telegram desaparecían misteriosamente, dejando al Abuelo "mudo".
+
+### 🛠️ 2. La Solución (Ingeniería)
+Identificamos dos fallos en el "mecanismo de guardado" de `NanoHttpServer.java`:
+1.  **Amnesia por Defecto**: El servidor inicializaba el token como vacío (`""`) al procesar la petición. Si el navegador no las enviaba (ej: estabas en la pestaña de sensores y no en la de Telegram), el servidor escribía ese vacío en el disco, borrando los datos reales.
+    *   *Fix*: Ahora inicializamos las variables con los valores que YA están cargados en `SentinelService`. Si el usuario no envía nuevos, se conservan los antiguos.
+2.  **El Bug de los Dos Puntos (`:`)**: El navegador envía el token codificado (ej: `1234:abcd` -> `1234%3Aabcd`). El servidor lo guardaba "sucio". Al reiniciar, Telegram rechazaba el token porque incluía el símbolo `%3A`.
+    *   *Fix*: Implementamos `java.net.URLDecoder.decode(val, "UTF-8")` para limpiar las credenciales antes de persistirlas.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Heredar antes de Sobrescribir**: En sistemas de configuración parcial, los valores por defecto locales deben ser siempre los valores actuales de producción, nunca valores nulos o vacíos.
+*   **Sanitización de Red**: Todo lo que venga de una URL debe considerarse "contaminado" por el encoding del navegador. La decodificación no es opcional.
+
+---
