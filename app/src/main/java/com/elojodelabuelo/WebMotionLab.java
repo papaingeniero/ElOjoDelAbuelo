@@ -144,6 +144,8 @@ public class WebMotionLab {
                 "        var isPlaying = false;\n" +
                 "        var animationId;\n" +
                 "        var debugMode = false;\n" +
+                "        var prodSens = 90;\n" +
+                "        var prodThreshold = 100;\n" +
                 "\n" +
                 "        /* --- ROUTING & INIT --- */\n        // Moved to bottom to fix Hoisting\n" +
                 "\n" +
@@ -162,6 +164,14 @@ public class WebMotionLab {
                 +
                 "                window.history.pushState({path:newUrl},'',newUrl);\n" +
                 "            }\n" +
+                "            // Score Forense: Cargar sensibilidad real del dashboard\n" +
+                "            fetch('/api/settings').then(function(r){return r.json();}).then(function(cfg){\n" +
+                "                prodSens = cfg.sens;\n" +
+                "                prodThreshold = Math.floor(10000 * Math.pow(1 - cfg.sens/100, 2));\n" +
+                "                if(prodThreshold < 20) prodThreshold = 20;\n" +
+                "                log('\uD83D\uDCE1 Config cargada: Sens=' + prodSens + '% \u2192 Threshold=' + prodThreshold);\n"
+                +
+                "            }).catch(function(e){ log('\u26A0\uFE0F No se pudo cargar config: ' + e); });\n" +
                 "            loadVideo(filename);\n" +
                 "        }\n" +
                 "\n" +
@@ -447,18 +457,12 @@ public class WebMotionLab {
                 "                if (engine) {\n" +
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
-                "                    \n" +
-                "                    var sensEq = result.pixels >= 10000 ? 0 : Math.floor(100 * (1 - Math.sqrt(result.pixels / 10000)));\n"
-                +
-                "                    statusEl.textContent = (result.motion ? '⚠️ ALARMA: ' : '👁️ Monitor: ') + result.pixels + ' px (Eq. Sens: ' + sensEq + '%)';\n"
-                +
-                "                    \n" +
-                "                    if (result.motion) {\n" +
-                "                       statusEl.style.color = '#FF0000'; // Red\n" +
-                "                    } else {\n" +
-                "                       statusEl.style.color = '#888'; // Grey\n" +
-                "                    }\n" +
+                "                    var bufOk = result.pixels > 10;\n" +
+                "                    var recOk = result.pixels > prodThreshold;\n" +
+                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>10): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n" +
+                "                    statusEl.style.color = recOk ? '#FF4444' : (bufOk ? '#44FF44' : '#888');\n" +
                 "                }\n" +
+                "            };\n" +
                 "            };\n" +
                 "            window.mjpegPlayer.load();\n" +
                 "            \n" +
@@ -486,17 +490,10 @@ public class WebMotionLab {
                 "                if (engine) {\n" +
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
-                "                    \n" +
-                "                    var sensEq = result.pixels >= 10000 ? 0 : Math.floor(100 * (1 - Math.sqrt(result.pixels / 10000)));\n"
-                +
-                "                    statusEl.textContent = (result.motion ? '⚠️ ALARMA: ' : '👁️ Monitor: ') + result.pixels + ' px (Eq. Sens: ' + sensEq + '%)';\n"
-                +
-                "                    \n" +
-                "                    if (result.motion) {\n" +
-                "                       statusEl.style.color = '#FF0000'; // Red\n" +
-                "                    } else {\n" +
-                "                       statusEl.style.color = '#888'; // Grey\n" +
-                "                    }\n" +
+                "                    var bufOk = result.pixels > 10;\n" +
+                "                    var recOk = result.pixels > prodThreshold;\n" +
+                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>10): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n" +
+                "                    statusEl.style.color = recOk ? '#FF4444' : (bufOk ? '#44FF44' : '#888');\n" +
                 "                }\n" +
                 "            };\n" +
                 "            \n" +

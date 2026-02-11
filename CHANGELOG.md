@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.66
+*   🔬 **Score Forense (WebMotionLab)**: Cada frame muestra su Score con indicadores contextuales de Buffer (`>10`) y Grabación (`>threshold`), basados en la sensibilidad real del dashboard.
+*   📡 **API Integration**: El Lab ahora consulta `/api/settings` al cargar para obtener la configuración de producción.
+
 ### v3.9.10-dev.65
 *   🐛 **Fix Persistencia Telegram**: Corregido el borrado accidental de credenciales (Token/ChatId) al guardar otros ajustes.
     *   **Herencia**: Las variables ahora inicializan con el valor actual de `SentinelService` en lugar de `""`.

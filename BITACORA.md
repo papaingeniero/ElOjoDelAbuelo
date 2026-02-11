@@ -3791,3 +3791,23 @@ Reporté la versión v65 como "Desplegada y Verificada" basándome en que el com
 Redespliegue forzado con `clean` y verificación imperativa de `versionName` vía terminal antes de dar el "OK" final. Los procesos de despliegue automatizados deben incluir siempre un paso de interrogación al hardware objetivo.
 
 ---
+
+## 🔬 Phase 66: Score Forense (La Lupa del Investigador)
+**Versión**: v3.9.10-dev.66 | **Fecha**: 12 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+Al analizar vídeos en el Web Motion Lab, solo veíamos "500 px (Eq. Sens: 78%)" — una métrica abstracta. No sabíamos si ese frame habría llenado el buffer de pre-grabación o disparado la grabación con nuestra configuración real.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos el "Score Forense": una barra de estado contextual que muestra tres datos por frame:
+1.  **Score**: El número bruto de píxeles que cambiaron.
+2.  **Buffer(>10)**: ¿Este frame habría activado el llenado del buffer de pre-grabación? (✅/❌)
+3.  **Grab(X%): >N**: ¿Este frame habría disparado la grabación con la sensibilidad que tienes configurada? (✅/❌)
+
+La sensibilidad se carga dinámicamente desde `/api/settings` al abrir el Lab, usando la misma fórmula del servidor: `threshold = 10000 × (1 - sens/100)²`.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Contexto > Datos**: Un número sin contexto es ruido. Un número con sus umbrales de referencia es información accionable.
+*   **DRY entre Front y Back**: Al usar la misma fórmula exponencial en JS y Java, garantizamos que el Lab simula exactamente el comportamiento real del servidor.
+
+---
