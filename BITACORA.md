@@ -3777,3 +3777,17 @@ Identificamos dos fallos en el "mecanismo de guardado" de `NanoHttpServer.java`:
 *   **Sanitización de Red**: Todo lo que venga de una URL debe considerarse "contaminado" por el encoding del navegador. La decodificación no es opcional.
 
 ---
+
+### ❌ Intento Fallido (v3.9.10-dev.65): El Espejismo del Build Exitoso
+**Fecha**: 12 de Febrero de 2026 | **Error**: Despliegue Truncado
+
+**El Problema**:
+Reporté la versión v65 como "Desplegada y Verificada" basándome en que el comando de compilación terminó en verde y el comando `adb install` se inició. Sin embargo, el ADB se desconectó al 72% de la subida. La app seguía en la v64, pero mi reporte final no validaba la versión *real* en el dispositivo.
+
+**La Lección (Honestidad Intelectual)**:
+"Un Build exitoso en el PC no es una App instalada en el móvil". Nunca asumas el éxito de un despliegue sin un paso de verificación post-instalación (como `dumpsys package` o mirar el OSD). He fallado en la Regla 0 (Excelencia) y la Regla 7 (Verificación). 
+
+**Solución aplicada**:
+Redespliegue forzado con `clean` y verificación imperativa de `versionName` vía terminal antes de dar el "OK" final. Los procesos de despliegue automatizados deben incluir siempre un paso de interrogación al hardware objetivo.
+
+---
