@@ -633,16 +633,22 @@ public class SentinelService extends Service {
                             // Inyectamos lo que te perdiste mientras pensabas si grabar o no
                             logToWeb("⏪ PRE-RECORD: Revelando " + preRecordBuffer.size() + " frames...");
 
+                            int preRecIdx = 0;
                             while (!preRecordBuffer.isEmpty()) {
                                 byte[] pastFrame = preRecordBuffer.poll();
                                 if (pastFrame != null) {
-                                    // Pasamos el frame RAW tal cual (rotación diferida dentro de saveToFile)
-                                    // IMPORTANTE: saveToFile maneja la compresión y escritura
+                                    // Inyección SÍNCRONA al video completo (devuelve el JPEG ya comprimido)
+                                    byte[] jpeg = injectPreRecordFrameInjected(pastFrame);
 
-                                    // TRUCO FPS: processFrame es asíncrono y complejo.
-                                    // Aquí necesitamos inyección SÍNCRONA en el fichero que acabamos de abrir
-                                    // Usamos una versión simplificada de processFrame pero síncrona:
-                                    injectPreRecordFrameInjected(pastFrame);
+                                    // Preview: 1 de cada 3 frames (3FPS -> 1FPS, mismo ritmo que el preview normal)
+                                    // Reutilizamos el JPEG ya comprimido: cero coste CPU extra
+                                    if (jpeg != null && (preRecIdx % 3 == 0) && previewOutputStream != null) {
+                                        try {
+                                            previewOutputStream.write(jpeg);
+                                        } catch (IOException e) {
+                                        }
+                                    }
+                                    preRecIdx++;
 
                                     // ¡CRÍTICO! Devolver el plato al lavavajillas
                                     freeBufferPool.offer(pastFrame);
@@ -702,7 +708,9 @@ public class SentinelService extends Service {
     };
 
     // [NUEVO] Método auxiliar para inyectar frames del pasado de forma síncrona
-    private void injectPreRecordFrameInjected(byte[] data) {
+    // Devuelve el JPEG comprimido para reutilizarlo (ej: preview) sin comprimir dos
+    // veces
+    private byte[] injectPreRecordFrameInjected(byte[] data) {
         try {
             // 1. Rotación Diferida
             byte[] dataToCompress = data;
@@ -723,14 +731,17 @@ public class SentinelService extends Service {
             yuv.compressToJpeg(new Rect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT), 60, out);
             byte[] jpeg = out.toByteArray();
 
-            // 4. Escribir a Disco (3 VECES POR FRAME PARA ARMONIZAR FPS)
-            // 5FPS capturados -> 15FPS video = Repetir 3 veces
-            for (int k = 0; k < 3; k++) {
+            // 4. Escribir a Disco (5 VECES POR FRAME PARA ARMONIZAR FPS)
+            // 3FPS capturados (vigilancia) -> 15FPS video (grabación) = Repetir 5 veces
+            for (int k = 0; k < 5; k++) {
                 fileOutputStream.write(jpeg);
                 frameCount++;
             }
+
+            return jpeg; // Devolvemos para reutilizar en preview (sin comprimir dos veces)
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
 

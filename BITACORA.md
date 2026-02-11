@@ -3509,3 +3509,24 @@ Implementamos una **Memoria de Pez (Pre-Record Buffer)**:
 **Glosario 📖**:
 - **ISO/Ganancia**: Amplificación electrónica de la señal del sensor. A mayor ISO, más ruido digital (grano).
 - **MIN_CONSECUTIVE_FRAMES**: Número mínimo de frames consecutivos con movimiento real para confirmar una grabación.
+
+### 🎞️ Armonización Temporal del Pre-Record (v3.9.10-dev.54)
+**El Problema 📜**: Dos desajustes encontrados en el sistema de pre-grabación:
+1. **FPS Fantasma**: Un comentario decía "5FPS capturados" pero el `skipTarget=10` real nos daba solo 3FPS de vigilancia (30/10=3). Cada frame del buffer se repetía 3 veces al inyectarlo en el video, generando 9 frames/s en vez de los 15 FPS de la grabación normal. Resultado: el "pasado" se veía acelerado respecto al "presente" en el video final.
+2. **Preview Ciego**: Los frames del buffer de pre-grabación se inyectaban exclusivamente en el video completo (`fileOutputStream`), pero NO en el preview (`previewOutputStream`). Como Telegram solo recibe el preview, se perdían los ~5 segundos de contexto previo al movimiento.
+
+**La Solución (Ingeniería) 🛠️**:
+1. **Corrección de FPS**: El multiplicador pasó de `×3` a `×5` en `injectPreRecordFrameInjected`. Ahora 3FPS × 5 = 15 frames/s, igualando el ritmo de la grabación real. El "pasado" y el "presente" fluyen al mismo ritmo temporal.
+2. **Preview con Memoria**: Se refactorizó `injectPreRecordFrameInjected` de `void` a `byte[]`, devolviendo el JPEG ya comprimido. El bucle de volcado en `openNewRecordingFile` reutiliza ese JPEG para escribir 1 de cada 3 frames al preview (3FPS/3 = 1FPS, el mismo ritmo que tiene el preview durante la grabación normal). **Cero compresiones JPEG extra**: solo un `write()` adicional cada 3 frames.
+
+**Decisión de Diseño (Debate Claude vs Gemini) 🤝**:
+- Se evaluaron 3 opciones para resolver el acceso al JPEG desde el bucle exterior: (A) pasar un índice al método, (B) pasar un boolean `writeToPreview`, (C) devolver el JPEG. Tanto Claude como Gemini convergieron en la Opción C como la más limpia: el método hace su trabajo y devuelve el resultado sin efectos secundarios ocultos.
+
+**Lecciones Aprendidas 🎓**:
+- ✅ Cuando dos IAs con arquitecturas distintas convergen en la misma solución, es buena señal de que es el camino correcto.
+- ✅ Reutilizar lo que ya está comprimido es siempre mejor que comprimir dos veces. En un Galaxy S con single-core a 1GHz, cada compresión JPEG cuenta.
+- ✅ Los comentarios desactualizados en el código son "fósiles" peligrosos: pueden llevar a razonamientos erróneos sobre el comportamiento real del sistema.
+
+**Glosario 📖**:
+- **skipTarget**: Divisor de frames. Con skipTarget=10, procesamos 1 de cada 10 frames de la cámara (30FPS/10 = 3FPS).
+- **Object Reuse**: Técnica de devolver objetos ya procesados para evitar trabajo duplicado. Clave en hardware legacy.

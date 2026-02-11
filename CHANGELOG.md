@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.54
+*   🎞️ **FPS Fix**: Multiplicador pre-record de ×3 a ×5 para armonizar 3FPS capturados con 15FPS de grabación. Corrige velocidad acelerada del pasado en los videos.
+*   📲 **Preview con Memoria**: Pre-record ahora se inyecta también en el preview (1 de cada 3 frames = 1FPS). Telegram recibe el contexto previo al movimiento sin compresiones JPEG extra.
+
 ### v3.9.10-dev.53
 *   🛡️ **Anti-False Positive**: `MIN_CONSECUTIVE_FRAMES` de 2 → 3. El frame extra (~333ms) da tiempo al sensor a estabilizar el ISO tras cambios bruscos de luz, evitando grabar apagados de luz como movimiento falso.
 
