@@ -459,10 +459,10 @@ public class WebMotionLab {
                 "                    const statusEl = document.getElementById('status');\n" +
                 "                    var bufOk = result.pixels > 10;\n" +
                 "                    var recOk = result.pixels > prodThreshold;\n" +
-                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>10): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n" +
+                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>10): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n"
+                +
                 "                    statusEl.style.color = recOk ? '#FF4444' : (bufOk ? '#44FF44' : '#888');\n" +
                 "                }\n" +
-                "            };\n" +
                 "            };\n" +
                 "            window.mjpegPlayer.load();\n" +
                 "            \n" +
@@ -492,7 +492,8 @@ public class WebMotionLab {
                 "                    const statusEl = document.getElementById('status');\n" +
                 "                    var bufOk = result.pixels > 10;\n" +
                 "                    var recOk = result.pixels > prodThreshold;\n" +
-                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>10): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n" +
+                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>10): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n"
+                +
                 "                    statusEl.style.color = recOk ? '#FF4444' : (bufOk ? '#44FF44' : '#888');\n" +
                 "                }\n" +
                 "            };\n" +
