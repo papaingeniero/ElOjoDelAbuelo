@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.58
+*   🧪 **Web Motion Lab 2.0**: Ahora el analizador web muestra la **Sensibilidad Equivalente (%)** necesaria para detectar cada movimiento.
+    *   Fórmula inversa: `S = 100 * (1 - sqrt(Pixels / 10000))`.
+    *   Ejemplo: "450 px (Eq. Sens: 78%)" → Te dice exactamente qué poner en Ajustes.
+
 ### v3.9.10-dev.57
 *   🐛 **Fix Crítico (Ring Buffer)**: Corregido agotamiento silencioso del Object Pool de pre-grabación. Tras llenar los 15 slots iniciales, `freeBufferPool.poll()` devolvía `null` y todos los frames nuevos se descartaban. El video mostraba solo los primeros ~5s y luego "saltaba" al tiempo real.
 *   🔄 **Ring Buffer Real**: Cuando el pool libre está vacío, se recicla el frame más antiguo del propio buffer (`preRecordBuffer.poll()`). Memoria constante, cero GC, historial ininterrumpido.

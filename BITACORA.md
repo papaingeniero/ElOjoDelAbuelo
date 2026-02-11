@@ -3628,3 +3628,27 @@ Con este simple cambio: memoria constante (15 buffers circulando siempre), cero 
 - **Ring Buffer**: Buffer circular donde los datos nuevos sobrescriben los más antiguos cuando está lleno. Memoria constante por diseño.
 - **Descarte Silencioso (Silent Drop)**: Bug donde datos se pierden sin generar error ni log. Extremadamente difícil de diagnosticar.
 - **Garbage Collector (GC)**: Mecanismo de Java que libera memoria no referenciada. En Android 2.3/4.x es lento y causa "stuttering" visible.
+
+### 🧪 Web Motion Lab: Feedback de Sensibilidad Inversa (v3.9.10-dev.58)
+
+**El Problema 📜**:
+El "Laboratorio de Movimiento" (WebMotionLab) nos decía cuántos píxeles cambiaban (`450 px`), pero la app se configura con un porcentaje de sensibilidad (`Sensibilidad: 90%`).
+El usuario tenía que adivinar: "¿450 px es mucho o poco? ¿Equivale a 90% o a 50%?".
+La relación no es lineal, es cuadrática, lo que hace imposible calcularlo "a ojo".
+
+**La Solución (La Fórmula Inversa) 🛠️**:
+Hemos invertido la fórmula de conversión de la app para que el laboratorio nos dé el dato masticado.
+
+*   **App (De % a Píxeles)**: `Threshold = 10000 * (1 - Sens/100)^2`
+*   **Lab (De Píxeles a %)**: `Sens = 100 * (1 - sqrt(Threshold / 10000))`
+
+**Implementación**:
+Modificamos el JavaScript inyectado por `WebMotionLab.java` para hacer este cálculo en el navegador en tiempo real.
+Ahora, cuando ves un movimiento en el lab, te dice:
+> "⚠️ MOVIMIENTO: 450 px (**Eq. Sens: 78%**)"
+
+Esto significa: "Si quieres que la cámara detecte este movimiento específico, pon la sensibilidad al 78% o menos". **Dato accionable directo.**
+
+**Lecciones Aprendidas 🎓**:
+- ✅ **Cerrar el ciclo de feedback**: Las herramientas de debug deben hablar el mismo idioma que las herramientas de configuración. Si configuro en %, quiero medir en %.
+- ✅ **Matemáticas útiles**: Invertir una función cuadrática simple puede ahorrar horas de prueba y error manual.
