@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.67
+*   🥷 **Modo Sigilo (Stealth Mode)**: Nuevo interruptor en Ajustes para grabar clips de movimiento sin encender la pantalla LCD. Ahorro de batería y discreción total.
+*   🔒 **Backend**: Variable `stealthMode` persistida en `SharedPreferences`. Condición en `onPreviewFrame` que evita el `screenLock.acquire()` cuando está activo.
+*   🌐 **API/Frontend**: Campo `stealth` añadido al JSON de `/api/settings` (GET/POST). Checkbox "🥷 Modo Sigilo (Pantalla Off)" en el dashboard web.
+
 ### v3.9.10-dev.66
 *   🔬 **Score Forense (WebMotionLab)**: Cada frame muestra su Score con indicadores contextuales de Buffer (`>10`) y Grabación (`>threshold`), basados en la sensibilidad real del dashboard.
 *   📡 **API Integration**: El Lab ahora consulta `/api/settings` al cargar para obtener la configuración de producción.

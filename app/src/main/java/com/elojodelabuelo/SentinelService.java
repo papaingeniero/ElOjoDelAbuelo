@@ -196,6 +196,8 @@ public class SentinelService extends Service {
 
         cameraRotation = prefs.getInt("cameraRotation", 0);
         isPreRecordActive = prefs.getBoolean("isPreRecordActive", true); // [NUEVO]
+        stealthMode = prefs.getBoolean("stealthMode", false);
+        logToWeb("🕵️ MODO SIGILO: " + (stealthMode ? "ON" : "OFF"));
 
         // --- RESTAURAR CREDENCIALES TELEGRAM ---
         telegramToken = prefs.getString("tg_token", "");
@@ -657,7 +659,7 @@ public class SentinelService extends Service {
 
                             // --- VOLCADO DEL PASADO ("PRE-RECORD") ---
                             // Inyectamos lo que te perdiste mientras pensabas si grabar o no
-                            logToWeb("⏪ PRE-RECORD: Revelando " + preRecordBuffer.size() + " frames...");
+                            logToWeb("⏪ PRE-RECORD: Inyectando " + preRecordBuffer.size() + " frames...");
 
                             int preRecIdx = 0;
                             while (!preRecordBuffer.isEmpty()) {
@@ -684,8 +686,11 @@ public class SentinelService extends Service {
 
                             isRecording = true;
                             isRecordingPublic = true;
-                            if (screenLock != null) {
-                                screenLock.acquire();
+                            // Solo encender la pantalla si NO estamos en modo sigilo
+                            if (!stealthMode) {
+                                if (screenLock != null) {
+                                    screenLock.acquire();
+                                }
                             }
                             try {
                                 sendBroadcast(new Intent("com.elojodelabuelo.ACTION_REC_START"));
@@ -1060,9 +1065,10 @@ public class SentinelService extends Service {
     public static int contrastSensitivity = 50;
 
     public static boolean isPreRecordActive = true; // [NUEVO]
+    public static boolean stealthMode = false; // [NUEVO] Modo Sigilo: Graba sin encender pantalla
 
     public static void updateSettings(int sens, int contrast, int time, boolean active, int rot, String tgToken,
-            String tgChatId, boolean preRecord) { // <--- Added param
+            String tgChatId, boolean preRecord, boolean stealth) {
         boolean rotationChanged = (cameraRotation != rot);
         // --- INICIO INSERCIÓN ---
         if (isDetectorActive != active) {
@@ -1070,6 +1076,9 @@ public class SentinelService extends Service {
         }
         if (isPreRecordActive != preRecord) {
             logToWeb("📼 PRE-RECORD CAMBIADO: " + (preRecord ? "ACTIVADO (5s Buffer)" : "DESACTIVADO (Sin Pasado)"));
+        }
+        if (stealthMode != stealth) {
+            logToWeb("🕵️ MODO SIGILO CAMBIADO: " + (stealth ? "ON (Pantalla Apagada)" : "OFF (Pantalla Normal)"));
         }
         // --- FIN INSERCIÓN ---
         // Telegram Update
@@ -1081,6 +1090,7 @@ public class SentinelService extends Service {
         isDetectorActive = active;
         cameraRotation = rot;
         isPreRecordActive = preRecord; // [NUEVO]
+        stealthMode = stealth;
 
         // [SAFETY] Si se desactiva el pre-record, vaciar buffer para no arrastrar
         // fantasmas
@@ -1116,6 +1126,7 @@ public class SentinelService extends Service {
             editor.putBoolean("isDetectorActive", active);
             editor.putInt("cameraRotation", rot);
             editor.putBoolean("isPreRecordActive", preRecord); // [NUEVO]
+            editor.putBoolean("stealthMode", stealth);
             // --- FIX PERSISTENCIA TELEGRAM (v3.9.9-dev.3) ---
             editor.putString("tg_token", tgToken);
             editor.putString("tg_chat_id", tgChatId);

@@ -3825,4 +3825,66 @@ Al cargar el workbench, además de la sensibilidad de movimiento, ahora también
 *   **Dos Sensibilidades**: El sistema tiene dos umbrales independientes: (1) Contraste (pixelDiffThreshold) que filtra qué píxeles cuentan como "cambiados", y (2) Sensibilidad de Movimiento (score threshold) que decide cuántos píxeles cambiados disparan la grabación.
 *   **El Lab como Gemelo Digital**: Para que el Lab sea útil como herramienta de calibración, debe replicar fielmente TODAS las variables del servidor, no solo la más obvia.
 
+
+---
+
+## 🥷 Phase 67: Modo Sigilo (La Cámara Fantasma)
+**Versión**: v3.9.10-dev.67 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+El Ojo del Abuelo encendía la pantalla del Samsung Galaxy S cada vez que detectaba movimiento. Esto tenía dos problemas:
+*   **Consumo de batería**: La pantalla LCD es uno de los mayores consumidores de energía. En modo vigilancia 24/7, cada activación restaba minutos preciosos de autonomía.
+*   **Delator visual**: En escenarios donde la cámara debe pasar desapercibida (ej: vigilancia nocturna de un pasillo), el brillo repentino de la pantalla delataba la presencia del dispositivo.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Implementamos un **interruptor de Modo Sigilo** que suprime el encendido de pantalla durante la grabación, manteniendo toda la funcionalidad de detección y alertas intacta.
+
+**Arquitectura del cambio (Cirugía Mínima):**
+
+```
+┌─────────────────────────────────────────┐
+│           onPreviewFrame()              │
+│                                         │
+│  Movimiento detectado → Abrir fichero   │
+│                                         │
+│  ┌─ ANTES ────────────────────────┐     │
+│  │ screenLock.acquire();          │     │
+│  └────────────────────────────────┘     │
+│                                         │
+│  ┌─ AHORA ────────────────────────┐     │
+│  │ if (!stealthMode) {            │     │
+│  │     screenLock.acquire();      │     │
+│  │ }                              │     │
+│  └────────────────────────────────┘     │
+│                                         │
+│  → Grabación, Telegram, etc. siguen ←   │
+└─────────────────────────────────────────┘
+```
+
+**Puntos de inserción (11 modificaciones en 2 archivos):**
+
+| Archivo | Cambio | Propósito |
+|---------|--------|-----------|
+| `SentinelService.java` | Variable `stealthMode` | Estado en RAM |
+| `SentinelService.java` | `onCreate` carga | Persistencia al reiniciar |
+| `SentinelService.java` | `onPreviewFrame` guarda | Lógica core (no encender) |
+| `SentinelService.java` | `updateSettings` firma | Recibir cambio desde web |
+| `NanoHttpServer.java` | `serveSettings` JSON | API GET (leer estado) |
+| `NanoHttpServer.java` | `serveSaveSettings` parse | API POST (guardar cambio) |
+| `NanoHttpServer.java` | HTML checkbox | UI visual del interruptor |
+| `NanoHttpServer.java` | `loadSettings` JS | Cargar estado en checkbox |
+| `NanoHttpServer.java` | `saveSettings` JS | Enviar estado al guardar |
+
+**Patrón replicado**: Se siguió exactamente el mismo patrón usado por `isPreRecordActive` (Pre-Record Toggle), que ya estaba probado y funcionando desde v3.9.10-dev.51.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Cirugía Mínima**: El mejor código nuevo es el que no necesita nueva arquitectura. Envolver un `acquire()` en un `if` es más seguro que crear un nuevo flujo completo.
+*   **El `closeRecordingFile` no necesita cambios**: El `screenLock.release()` ya comprueba `isHeld()` antes de liberar. Si nunca se adquirió (modo sigilo), simplemente no hace nada. Elegancia por diseño defensivo previo.
+*   **Patrón "Feature Flag"**: Cada nueva funcionalidad sigue el mismo ciclo: variable estática → SharedPreferences → updateSettings → API → UI → JS. Tenerlo documentado reduce errores en futuras features.
+
+### 📖 4. Glosario
+*   **PARTIAL_WAKE_LOCK**: Mantiene la CPU despierta pero permite que la pantalla se apague. Es lo que permite que el servicio siga vigilando en background.
+*   **SCREEN_BRIGHT_WAKE_LOCK**: Fuerza la pantalla a encenderse. Es exactamente lo que el Modo Sigilo desactiva.
+*   **Feature Flag**: Variable booleana que activa/desactiva una funcionalidad sin cambiar el flujo principal del código.
+
 ---
