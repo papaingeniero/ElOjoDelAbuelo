@@ -169,7 +169,9 @@ public class WebMotionLab {
                 "                prodSens = cfg.sens;\n" +
                 "                prodThreshold = Math.floor(10000 * Math.pow(1 - cfg.sens/100, 2));\n" +
                 "                if(prodThreshold < 20) prodThreshold = 20;\n" +
-                "                log('\uD83D\uDCE1 Config cargada: Sens=' + prodSens + '% \u2192 Threshold=' + prodThreshold);\n"
+                "                var contrastThresh = 105 - (cfg.contrast || 50);\n" +
+                "                if(engine) engine.setSensitivity(contrastThresh);\n" +
+                "                log('\uD83D\uDCE1 Config: Sens=' + prodSens + '% \u2192 Threshold=' + prodThreshold + ' | Contraste=' + (cfg.contrast||50) + '% \u2192 PixelThresh=' + contrastThresh);\n"
                 +
                 "            }).catch(function(e){ log('\u26A0\uFE0F No se pudo cargar config: ' + e); });\n" +
                 "            loadVideo(filename);\n" +

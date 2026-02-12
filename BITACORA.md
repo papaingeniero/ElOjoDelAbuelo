@@ -3811,3 +3811,18 @@ La sensibilidad se carga dinámicamente desde `/api/settings` al abrir el Lab, u
 *   **DRY entre Front y Back**: Al usar la misma fórmula exponencial en JS y Java, garantizamos que el Lab simula exactamente el comportamiento real del servidor.
 
 ---
+
+## 🔬 Phase 66b: Sincronización de Contraste (Score Forense v2)
+**Versión**: v3.9.10-dev.66 | **Fecha**: 12 de Febrero de 2026
+
+### 📜 1. El Problema
+El Score Forense del Lab usaba un `THRESHOLD = 50` hardcodeado para decidir qué diferencia de luminancia entre píxeles cuenta como "cambio". Pero el servidor usa el valor real del slider de contraste del dashboard (0-100%), convertido a `105 - contrastSensitivity`. Resultado: el score del Lab no coincidía con el del servidor si el usuario tenía un contraste distinto a 50%.
+
+### 🛠️ 2. La Solución
+Al cargar el workbench, además de la sensibilidad de movimiento, ahora también leemos `cfg.contrast` desde `/api/settings` y se lo inyectamos al MotionEngine del Lab con `engine.setSensitivity(105 - contrast)`. Así el Score Forense replica exactamente el comportamiento del servidor.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Dos Sensibilidades**: El sistema tiene dos umbrales independientes: (1) Contraste (pixelDiffThreshold) que filtra qué píxeles cuentan como "cambiados", y (2) Sensibilidad de Movimiento (score threshold) que decide cuántos píxeles cambiados disparan la grabación.
+*   **El Lab como Gemelo Digital**: Para que el Lab sea útil como herramienta de calibración, debe replicar fielmente TODAS las variables del servidor, no solo la más obvia.
+
+---
