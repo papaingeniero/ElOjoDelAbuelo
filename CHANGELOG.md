@@ -1,9 +1,24 @@
-# Changelog
+## [v3.9.10] - 2026-02-13
 
-All notable changes to the "El Ojo Del Abuelo" project will be documented in this file.
+### Added
+- **Web Motion Lab**: Herramienta de análisis forense completa en `/lab` con reproducción MJPEG personalizada, MotionEngine sincronizado (JS), Visual Debugging, Scrubber y control de velocidad.
+- **Pre-Record Buffer**: Captura de 5 segundos previos al evento (Object Pooling Zero-GC), Ring Buffer real y Modo Alerta Temporal (ventana de 15s).
+- **Telegram Integration**: Alertas instantáneas con Dual Uplink (Foto SmartSnap + Video Preview MP4), soporte TLS 1.3 vía Conscrypt y panel de configuración seguro.
+- **Modo Sigilo**: Grabación discreta sin encender la pantalla LCD (Ahorro de batería y clandestinidad).
+- **Anti-Falsos Positivos**: Filtro de persistencia temporal (3 frames), Filtro Anti-Luces y sintonización de ultra-sensibilidad (Combo 2-10).
+- **UX/Security**: Slide-to-Confirm para borrado masivo, iconos 🔴 REC en logs y panel `/api/debug` con métricas de salud en tiempo real.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### Fixed
+- **Thermal Deadlock**: Solucionado el "Zombie Recording" y optimizado el `ThermalGuardian` (-99% de impacto en CPU I/O).
+- **Persistencia**: Corregido el borrado de credenciales de Telegram y mejorado el soporte de caracteres especiales en tokens.
+- **Sincronización**: Armonización de FPS entre el buffer de memoria (3fps) y la grabación final (15fps).
+- **Fuga de Memoria**: Corregido el agotamiento del Object Pool en el buffer circular de pre-grabación.
+
+### Engineering & Process
+- **Protocolo Forense**: Oficialización del protocolo "Install & Launch" para validaciones de despliegue deterministas.
+- **Reglas Blindadas**: Actualizado el manifiesto de desarrollo para asegurar la excelencia en cada release.
+
+---
 
 
 
