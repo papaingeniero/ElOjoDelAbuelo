@@ -3967,4 +3967,24 @@ logToWeb("🔴 REC: MOTION DETECTED (Persistente)! Score: " + score);
 *   **UX por encima de Logs**: Los logs no son solo para el desarrollador, son la interfaz de usuario de nuestro dashboard en tiempo real. 
 *   **Color como Ancla**: El uso de emojis (especialmente círculos de colores) sirve como ancla visual que el cerebro procesa mucho más rápido que el texto ASCII.
 
+
+---
+
+## 🧪 Phase 71: Sincronía Forense (Web Motion Lab x5)
+**Versión**: v3.9.10-dev.71 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+Tras bajar el umbral real a 5 píxeles en la Phase 69, el **Web Motion Lab** se quedó "obsoleto". El simulador mantenía un límite artificial de 20 píxeles, lo que provocaba que un vídeo que el dispositivo capturó a score 7, el Lab lo marcara como "Sin Movimiento". No había paridad entre el laboratorio y la realidad.
+
+### 🛠️ 2. La Solución (Ingeniería de Paridad)
+Actualizamos el motor de JavaScript (`MotionEngine`) y la UI del Lab:
+
+1.  **Límite de Proteción**: Cambiado de 20 a 5.
+2.  **Umbral de Disparo (`prodThreshold`)**: Ahora permite bajar hasta 5 píxeles al cargar la configuración del dashboard.
+3.  **Etiquetas Visuales**: El indicador de `Buffer(>10)` ahora es `Buffer(>5)`, informando correctamente que a partir de 5 píxeles ya se dispara el interés del sistema.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Paridad del Gemelo Digital**: Un simulador que no replica exactamente los límites del hardware real induce a errores de diagnóstico.
+*   **Hardcoding es deuda**: El valor "20" estaba repetido en varios sitios. En el futuro, convendría centralizar estos límites en una constante global del Lab.
+
 ---

@@ -10,8 +10,8 @@ android {
         applicationId "com.elojodelabuelo.rescue"
         minSdk 19
         targetSdk 35
-        versionCode 70
-        versionName "3.9.10-dev.70"
+        versionCode 71
+        versionName "3.9.10-dev.71"
     }
 
     buildTypes {

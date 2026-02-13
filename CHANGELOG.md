@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.71
+*   🧪 **Web Motion Lab Sincronizado**: El simulador forense ahora permite bajar el umbral hasta 5 píxeles (antes limitado a 20), igualando el comportamiento del motor real dev.69.
+*   📊 **Visualización de Buffer**: Actualizadas las etiquetas de estado a `Buffer(>5)` para una representación precisa de la zona de pre-grabación.
+
 ### v3.9.10-dev.70
 *   🎨 **Identidad Visual en Logs**: Añadido icono `🔴 REC:` como prefijo al log de detección persistente para facilitar la identificación visual inmediata de los inicios de grabación en el Dashboard Web.
 
