@@ -3888,3 +3888,39 @@ Implementamos un **interruptor de Modo Sigilo** que suprime el encendido de pant
 *   **Feature Flag**: Variable booleana que activa/desactiva una funcionalidad sin cambiar el flujo principal del código.
 
 ---
+
+## 🛡️ Phase 68: Filtrar Falsos Positivos (El Interruptor de Paciencia)
+**Versión**: v3.9.10-dev.68 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+El sistema de detección de movimiento exigía siempre 3 frames consecutivos (`MIN_CONSECUTIVE_FRAMES = 3`) antes de iniciar la grabación. Esto era un filtro excelente contra cambios de luz bruscos (un coche pasando con los faros, un relámpago), pero tenía un punto ciego: **acciones rápidas que ocurrían en menos de 3 frames se perdían**. Un intruso cruzando rápido por el borde del encuadre podía no disparar la grabación.
+
+Además, el umbral mínimo de sensibilidad era 20 píxeles, lo que impedía configuraciones ultra-sensibles para entornos controlados.
+
+### 🛠️ 2. La Solución (Ingeniería)
+
+**A. Filtro Configurable (Feature Flag):**
+
+```java
+// ANTES: Siempre 3 frames
+if (consecutiveMotionFrames >= MIN_CONSECUTIVE_FRAMES) { ... }
+
+// AHORA: Depende de la preferencia
+int requiredFrames = filterFalsePositives ? MIN_CONSECUTIVE_FRAMES : 1;
+if (consecutiveMotionFrames >= requiredFrames) { ... }
+```
+
+El usuario ahora decide en el dashboard web:
+*   ✅ **ON (Default)**: 3 frames → seguro contra flashes y luces
+*   ⚡ **OFF**: 1 frame → respuesta instantánea, ideal para captura rápida
+
+**B. Threshold Mínimo Reducido (20 → 10):**
+
+Se baja el suelo del `currentThreshold` de 20 a 10 píxeles en ambos puntos de cálculo (`onCreate` y `updateSettings`). Esto permite una sensibilidad extrema (99-100%) para entornos muy controlados donde interesa detectar hasta el más mínimo movimiento.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Trade-off Seguridad vs Velocidad**: No existe configuración perfecta universal. Lo correcto es dar al usuario la opción y que el default sea el más seguro.
+*   **Patrón consolidado**: Esta es la tercera Feature Flag implementada (tras Pre-Record y Modo Sigilo). El ciclo `variable → SharedPrefs → updateSettings → API → UI → JS` ya es un patrón maduro y repetible.
+*   **Threshold como política, no como constante**: Bajar el mínimo de 20 a 10 no rompe nada porque la curva exponencial ya protege contra valores absurdos en la mayoría de configuraciones.
+
+---

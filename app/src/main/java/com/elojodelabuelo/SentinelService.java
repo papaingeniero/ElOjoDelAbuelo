@@ -198,6 +198,8 @@ public class SentinelService extends Service {
         isPreRecordActive = prefs.getBoolean("isPreRecordActive", true); // [NUEVO]
         stealthMode = prefs.getBoolean("stealthMode", false);
         logToWeb("🕵️ MODO SIGILO: " + (stealthMode ? "ON" : "OFF"));
+        filterFalsePositives = prefs.getBoolean("filterFalsePositives", true);
+        logToWeb("🛡️ FILTRO FALSOS POSITIVOS: " + (filterFalsePositives ? "ON (3 Frames)" : "OFF (Instantáneo)"));
 
         // --- RESTAURAR CREDENCIALES TELEGRAM ---
         telegramToken = prefs.getString("tg_token", "");
@@ -215,8 +217,8 @@ public class SentinelService extends Service {
 
         // Calculate initial threshold (Phase 13: Exponential)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 20)
-            currentThreshold = 20;
+        if (currentThreshold < 10)
+            currentThreshold = 10;
         if (currentThreshold > 50000)
             currentThreshold = 50000;
 
@@ -647,10 +649,11 @@ public class SentinelService extends Service {
 
                 if (score > currentThreshold) {
                     consecutiveMotionFrames++;
-                    // Exigimos 3 frames seguidos de movimiento para confirmar que no es un flash
-                    if (consecutiveMotionFrames >= MIN_CONSECUTIVE_FRAMES) {
+                    // Si el filtro está activo, exigimos 3 frames. Si no, basta con 1.
+                    int requiredFrames = filterFalsePositives ? MIN_CONSECUTIVE_FRAMES : 1;
+                    if (consecutiveMotionFrames >= requiredFrames) {
                         if (consecutiveMotionFrames > 100)
-                            consecutiveMotionFrames = MIN_CONSECUTIVE_FRAMES; // Tope
+                            consecutiveMotionFrames = requiredFrames; // Tope
 
                         lastMotionTime = System.currentTimeMillis();
 
@@ -1066,9 +1069,10 @@ public class SentinelService extends Service {
 
     public static boolean isPreRecordActive = true; // [NUEVO]
     public static boolean stealthMode = false; // [NUEVO] Modo Sigilo: Graba sin encender pantalla
+    public static boolean filterFalsePositives = true; // [NUEVO] Filtro de falsos positivos (3 frames)
 
     public static void updateSettings(int sens, int contrast, int time, boolean active, int rot, String tgToken,
-            String tgChatId, boolean preRecord, boolean stealth) {
+            String tgChatId, boolean preRecord, boolean stealth, boolean filter) {
         boolean rotationChanged = (cameraRotation != rot);
         // --- INICIO INSERCIÓN ---
         if (isDetectorActive != active) {
@@ -1079,6 +1083,9 @@ public class SentinelService extends Service {
         }
         if (stealthMode != stealth) {
             logToWeb("🕵️ MODO SIGILO CAMBIADO: " + (stealth ? "ON (Pantalla Apagada)" : "OFF (Pantalla Normal)"));
+        }
+        if (filterFalsePositives != filter) {
+            logToWeb("🛡️ FILTRO FALSOS POSITIVOS CAMBIADO: " + (filter ? "ON (3 Frames)" : "OFF (Instantáneo)"));
         }
         // --- FIN INSERCIÓN ---
         // Telegram Update
@@ -1091,6 +1098,7 @@ public class SentinelService extends Service {
         cameraRotation = rot;
         isPreRecordActive = preRecord; // [NUEVO]
         stealthMode = stealth;
+        filterFalsePositives = filter;
 
         // [SAFETY] Si se desactiva el pre-record, vaciar buffer para no arrastrar
         // fantasmas
@@ -1103,8 +1111,8 @@ public class SentinelService extends Service {
 
         // 1. Min Pixels Logic (Legacy Sensitivity)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 20)
-            currentThreshold = 20;
+        if (currentThreshold < 10)
+            currentThreshold = 10;
         if (currentThreshold > 50000)
             currentThreshold = 50000;
 
@@ -1127,6 +1135,7 @@ public class SentinelService extends Service {
             editor.putInt("cameraRotation", rot);
             editor.putBoolean("isPreRecordActive", preRecord); // [NUEVO]
             editor.putBoolean("stealthMode", stealth);
+            editor.putBoolean("filterFalsePositives", filter);
             // --- FIX PERSISTENCIA TELEGRAM (v3.9.9-dev.3) ---
             editor.putString("tg_token", tgToken);
             editor.putString("tg_chat_id", tgChatId);

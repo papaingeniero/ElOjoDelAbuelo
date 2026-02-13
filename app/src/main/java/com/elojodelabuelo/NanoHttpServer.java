@@ -505,10 +505,12 @@ public class NanoHttpServer {
             int webPanY = prefs.getInt("webPanY", 0);
 
             boolean stealth = SentinelService.stealthMode;
+            boolean filter = SentinelService.filterFalsePositives;
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"preRecord\":%b, \"stealth\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
-                    sens, contrast, time, active, preRecord, stealth, rot, defZoom, defPanX, defPanY, minFreeSpace,
+                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"preRecord\":%b, \"stealth\":%b, \"filter\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
+                    sens, contrast, time, active, preRecord, stealth, filter, rot, defZoom, defPanX, defPanY,
+                    minFreeSpace,
                     webZoom,
                     webPanX,
                     webPanY,
@@ -535,6 +537,7 @@ public class NanoHttpServer {
             boolean active = true;
             boolean preRecord = true;
             boolean stealth = false;
+            boolean filter = true;
             int rot = 0;
             float defZoom = 1.0f;
             int defPanX = 0;
@@ -572,6 +575,8 @@ public class NanoHttpServer {
                                 preRecord = Boolean.parseBoolean(val);
                             else if (key.equals("stealth"))
                                 stealth = Boolean.parseBoolean(val);
+                            else if (key.equals("filter"))
+                                filter = Boolean.parseBoolean(val);
                             else if (key.equals("rot"))
                                 rot = Integer.parseInt(val);
                             else if (key.equals("defZoom"))
@@ -613,7 +618,7 @@ public class NanoHttpServer {
                         .commit();
 
                 SentinelService.updateSettings(sens, contrast, time, active, rot, tgToken, tgChatId, preRecord,
-                        stealth);
+                        stealth, filter);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
             } catch (Exception e) {
@@ -1076,6 +1081,12 @@ public class NanoHttpServer {
                 "         <input type='checkbox' id='set-stealth' style='transform: scale(1.5);'>\n" +
                 "      </div>\n" +
                 "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* Graba sin encender la pantalla (Ahorro Batería).</div>\n"
+                +
+                "      <div class='settings-row'>\n" +
+                "         <label>🛡️ Filtrar Falsos Positivos:</label>\n" +
+                "         <input type='checkbox' id='set-filter' style='transform: scale(1.5);'>\n" +
+                "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;'>* ON: Requiere 3 frames (evita luces). OFF: Grabación inmediata (1 frame).</div>\n"
                 +
                 "      <div class='settings-row'>\n" +
                 "         <label>📏 Sensibilidad al Tamaño: <span id='sens-label' style='color:#aaa; font-size:14px;'>90%</span></label>\n"
@@ -1648,6 +1659,8 @@ public class NanoHttpServer {
                 +
                 "     if(data.stealth !== undefined) document.getElementById('set-stealth').checked = data.stealth;\n"
                 +
+                "     if(data.filter !== undefined) document.getElementById('set-filter').checked = data.filter;\n"
+                +
                 "     if(data.rot === 180) document.getElementById('rot-180').checked = true;\n" +
                 "     else document.getElementById('rot-0').checked = true;\n" +
                 "     if(data.defZoom) {\n" +
@@ -1700,7 +1713,8 @@ public class NanoHttpServer {
                 "   \n" +
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "   var stealth = document.getElementById('set-stealth').checked;\n" +
-                "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&preRecord=' + preRecord + '&stealth=' + stealth + '&rot=' + rot +\n"
+                "   var filter = document.getElementById('set-filter').checked;\n" +
+                "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&preRecord=' + preRecord + '&stealth=' + stealth + '&filter=' + filter + '&rot=' + rot +\n"
                 +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
                 "            '&min_free_space=' + minSpace +\n" +

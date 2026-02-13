@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.68
+*   🛡️ **Filtrar Falsos Positivos**: Nuevo interruptor para elegir entre grabación inmediata (1 frame) o filtrada (3 frames consecutivos). Default: ON (seguro).
+*   📉 **Threshold Mínimo Reducido**: El umbral mínimo de sensibilidad baja de 20 a 10 píxeles, permitiendo detección ultra-sensible.
+
 ### v3.9.10-dev.67
 *   🥷 **Modo Sigilo (Stealth Mode)**: Nuevo interruptor en Ajustes para grabar clips de movimiento sin encender la pantalla LCD. Ahorro de batería y discreción total.
 *   🔒 **Backend**: Variable `stealthMode` persistida en `SharedPreferences`. Condición en `onPreviewFrame` que evita el `screenLock.acquire()` cuando está activo.
