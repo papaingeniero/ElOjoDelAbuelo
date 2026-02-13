@@ -703,7 +703,7 @@ public class SentinelService extends Service {
                                 statusLock.notifyAll();
                             }
                             updateNotification(true);
-                            logToWeb("MOTION DETECTED (Persistente)! Score: " + score);
+                            logToWeb("🔴 REC: MOTION DETECTED (Persistente)! Score: " + score);
 
                             // 🔔 ALERTA TEMPRANA: Avisar a Telegram YA (Vibración)
                             if (isTelegramActive && !telegramToken.isEmpty() && !telegramChatId.isEmpty()) {

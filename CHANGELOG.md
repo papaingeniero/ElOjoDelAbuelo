@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.70
+*   🎨 **Identidad Visual en Logs**: Añadido icono `🔴 REC:` como prefijo al log de detección persistente para facilitar la identificación visual inmediata de los inicios de grabación en el Dashboard Web.
+
 ### v3.9.10-dev.69
 *   ⚡ **Sensibilidad Ultra-Sónica**: Umbral mínimo reducido de 10 a 5 píxeles. 
 *   🎭 **Efecto Fluidez**: Al disparar a score 5 (antes que el pre-record buffer a 10), el sistema prioriza el vídeo real a 15fps sobre la inyección de buffer a 3fps, evitando el efecto de "salto" al inicio de la grabación.

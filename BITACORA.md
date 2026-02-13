@@ -3943,4 +3943,28 @@ Bajamos el umbral mínimo de detección física a **5 píxeles**.
 *   **Frame-rate es Rey**: El usuario prefiere perder 1 segundo de "pasado" si a cambio el inicio del vídeo es fluido.
 *   **Ajuste Fino de Hardware**: En dispositivos con recursos limitados (GT-I9000), el software debe compensar las carencias del bus de datos (3fps en RAM) mediante lógica de disparo inteligente.
 
+
+---
+
+## 🎨 Phase 70: Semiótica de Logs (El Icono REC)
+**Versión**: v3.9.10-dev.70 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+Aunque el sistema registraba correctamente "MOTION DETECTED (Persistente)", el texto se perdía visualmente entre la marea de trazas técnicas del dashboard (umbrales, cambios de configuración, etc.). En una emergencia, el usuario necesita identificar de un vistazo el *milivoltio* exacto donde empezó la acción.
+
+### 🛠️ 2. La Solución (Ingeniería Visual)
+Simplemente añadimos un prefijo visual de alto contraste: `🔴 REC:`.
+
+```java
+// ANTES
+logToWeb("MOTION DETECTED (Persistente)! Score: " + score);
+
+// AHORA
+logToWeb("🔴 REC: MOTION DETECTED (Persistente)! Score: " + score);
+```
+
+### 🎓 3. Lecciones Aprendidas
+*   **UX por encima de Logs**: Los logs no son solo para el desarrollador, son la interfaz de usuario de nuestro dashboard en tiempo real. 
+*   **Color como Ancla**: El uso de emojis (especialmente círculos de colores) sirve como ancla visual que el cerebro procesa mucho más rápido que el texto ASCII.
+
 ---
