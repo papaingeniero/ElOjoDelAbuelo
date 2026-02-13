@@ -1,3 +1,6 @@
+### v3.9.11-dev.2
+*   🩹 **Fix (Stream Stability)**: Solucionado el corte de video a los 15s. El servidor rechazaba los latidos (`keepalive`) por una validación de URL estricta. Ahora acepta parámeteros GET y blinda la memoria contra sesiones fantasma.
+
 ### v3.9.11-dev.1
 *   🐛 **Fix (Web UI)**: Corregido bug donde la miniatura en tiempo real del "Parásito" (grabación activa) aparecía negra/vacía. Se asegura la correcta inicialización y limpieza de la variable `parasite` en el script JS embebido.
 

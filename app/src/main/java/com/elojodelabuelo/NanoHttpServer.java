@@ -217,17 +217,22 @@ public class NanoHttpServer {
                     SentinelService.logToWeb("📹 STREAM: Cliente conectado (IP: " + socket.getInetAddress() + ")");
                     serveLiveStream(os, parms); // Bloquea el hilo mientras transmite
                     SentinelService.logToWeb("📹 STREAM: Cliente desconectado");
-                } else if (uri.equals("/api/keepalive")) {
-                    // [FIX ZOMBIE] Latido con identidad
+                } else if (uri.startsWith("/api/keepalive")) {
+                    // [FIX ZOMBIE & ROUTING] Latido con identidad y seguridad de memoria
                     String sessionId = parms.getProperty("session_id");
+
+                    // BLINDAJE: Solo actualizamos si la sesión REALMENTE existe.
+                    // Si el ID es nulo o inventado, no guardamos nada en el mapa para evitar DoS
+                    // (Memory Leak).
                     if (sessionId != null && sessionHeartbeats.containsKey(sessionId)) {
                         sessionHeartbeats.put(sessionId, System.currentTimeMillis());
+                        os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
                     } else {
-                        // Si llega un latido de una sesión que no conocemos (quizás reiniciamos el
-                        // server),
-                        // no hacemos nada. El stream morirá en 5s y el cliente reconectará.
+                        // Si el ID no existe (sesión caducada o ataque), respondemos 404
+                        // Esto le dice al cliente que su sesión murió y debe recargar si quiere ver
+                        // algo.
+                        os.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
                     }
-                    os.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
                 } else if (uri.startsWith("/video_") || uri.startsWith("/preview_")) {
                     // Solo logueamos si es video real, no previews, para no saturar
                     if (uri.startsWith("/video_")) {
