@@ -1914,7 +1914,7 @@ public class NanoHttpServer {
                 "    // Puente para compatibilidad con código antiguo que llame a startAnimation()\n" +
                 "    var startAnimation = function() { canvas.hasData = true; if(canvas.isVisible) canvas.startAnim(); };\n"
                 + "}\n" +
-                "var parasiteInterval = null; var parasiteBuffer = []; var parasiteIdx = 0;\n" +
+                "var parasite = null;var parasiteInterval = null; var parasiteBuffer = []; var parasiteIdx = 0;\n" +
                 "function injectLivePreview() {\n" +
                 "   fetch('/api/latest_video_meta').then(r=>r.json()).then(meta => {\n" +
                 "       if(!meta.filename) return;\n" +
@@ -2022,7 +2022,7 @@ public class NanoHttpServer {
                 "\n" +
                 "function cleanupLivePreview() {\n" +
                 "   if(parasiteInterval) clearInterval(parasiteInterval);\n" +
-                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img);\n"
+                "   var img = document.getElementById('hidden-stream-source'); if(img) document.body.removeChild(img); parasite = null;\n"
                 +
                 "    stopHeartbeat();\n" + // <--- AÑADIDO
                 "   setTimeout(function() { \n" +

@@ -4042,3 +4042,21 @@ Esta release cristaliza meses de arqueología técnica y pedagógica:
 
 ---
 
+## 🐛 Phase 74: El Parásito Invisible (Fix de Miniatura)
+**Versión**: v3.9.11-dev.1 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. El Problema
+Al detectar movimiento y comenzar una grabación, el Dashboard Web intenta mostrar una miniatura en tiempo real del evento (el "Parásito"). Sin embargo, esta miniatura aparecía completamente negra o vacía.
+**Causa Raíz**: La variable `parasite` en el script JS embebido de `NanoHttpServer` no se reinicializaba correctamente entre detecciones, manteniendo un estado "zombi" o nulo que impedía la renderización del nuevo canvas.
+
+### 🛠️ 2. La Solución
+Se ha implementado una gestión explícita del ciclo de vida de la variable `parasite`:
+1.  **Inicialización**: `var parasite = null;` al inicio del script.
+2.  **Limpieza**: `parasite = null;` forzado en `cleanupLivePreview()` para asegurar que la próxima detección comience con un canvas fresco.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Estado Global en JS**: En aplicaciones de una sola página (SPA) o scripts embebidos de larga duración, confiar en la recolección de basura implícita para variables globales es arriesgado. Siempre limpia tu desorden (`nullify`) al cerrar un proceso.
+
+---
+
+

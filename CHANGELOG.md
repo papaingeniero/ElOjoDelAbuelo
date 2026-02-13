@@ -1,3 +1,6 @@
+### v3.9.11-dev.1
+*   🐛 **Fix (Web UI)**: Corregido bug donde la miniatura en tiempo real del "Parásito" (grabación activa) aparecía negra/vacía. Se asegura la correcta inicialización y limpieza de la variable `parasite` en el script JS embebido.
+
 ## [v3.9.10] - 2026-02-13
 
 ### Added
