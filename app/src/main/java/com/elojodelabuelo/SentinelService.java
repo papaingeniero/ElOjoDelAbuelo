@@ -217,8 +217,8 @@ public class SentinelService extends Service {
 
         // Calculate initial threshold (Phase 13: Exponential)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 10)
-            currentThreshold = 10;
+        if (currentThreshold < 5)
+            currentThreshold = 5;
         if (currentThreshold > 50000)
             currentThreshold = 50000;
 
@@ -1111,8 +1111,8 @@ public class SentinelService extends Service {
 
         // 1. Min Pixels Logic (Legacy Sensitivity)
         currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 10)
-            currentThreshold = 10;
+        if (currentThreshold < 5)
+            currentThreshold = 5;
         if (currentThreshold > 50000)
             currentThreshold = 50000;
 

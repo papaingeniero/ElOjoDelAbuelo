@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.69
+*   ⚡ **Sensibilidad Ultra-Sónica**: Umbral mínimo reducido de 10 a 5 píxeles. 
+*   🎭 **Efecto Fluidez**: Al disparar a score 5 (antes que el pre-record buffer a 10), el sistema prioriza el vídeo real a 15fps sobre la inyección de buffer a 3fps, evitando el efecto de "salto" al inicio de la grabación.
+
 ### v3.9.10-dev.68
 *   🛡️ **Filtrar Falsos Positivos**: Nuevo interruptor para elegir entre grabación inmediata (1 frame) o filtrada (3 frames consecutivos). Default: ON (seguro).
 *   📉 **Threshold Mínimo Reducido**: El umbral mínimo de sensibilidad baja de 20 a 10 píxeles, permitiendo detección ultra-sensible.

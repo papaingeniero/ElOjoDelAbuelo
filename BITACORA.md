@@ -3924,3 +3924,23 @@ Se baja el suelo del `currentThreshold` de 20 a 10 píxeles en ambos puntos de c
 *   **Threshold como política, no como constante**: Bajar el mínimo de 20 a 10 no rompe nada porque la curva exponencial ya protege contra valores absurdos en la mayoría de configuraciones.
 
 ---
+
+## ⚡ Phase 69: Sincronía de Frames (Prioridad 15fps)
+**Versión**: v3.9.10-dev.69 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. El Problema (Handoff Tartamudo)
+El sistema inyectaba el "Pre-Record Buffer" (5 segundos del pasado) a un frame-rate de solo **3fps** (limitación física de la RAM y CPU del Samsung Galaxy S). Cuando ocurría un movimiento brusco, el usuario veía 5 segundos a saltos seguidos de un corte brusco al vídeo real a **15fps**. 
+
+Si el umbral de disparo era de 10 píxeles, tanto el buffer como la grabación real se activaban casi al mismo tiempo, forzando esta transición fea.
+
+### 🛠️ 2. La Solución (Ingeniería de Prioridad)
+Bajamos el umbral mínimo de detección física a **5 píxeles**. 
+
+*   **Estrategia**: Al ser el umbral de disparo real (5) más bajo que el de interés histórico (10 sugerido), la grabación real a 15fps tiene la oportunidad de "adelantarse" a la inyección del buffer en movimientos suaves pero detectables.
+*   **Resultado**: Un inicio de vídeo fluido y natural, reservando la inyección de buffer solo para disparos de alta intensidad donde realmente se necesita ver el "pasado lejano".
+
+### 🎓 3. Lecciones Aprendidas
+*   **Frame-rate es Rey**: El usuario prefiere perder 1 segundo de "pasado" si a cambio el inicio del vídeo es fluido.
+*   **Ajuste Fino de Hardware**: En dispositivos con recursos limitados (GT-I9000), el software debe compensar las carencias del bus de datos (3fps en RAM) mediante lógica de disparo inteligente.
+
+---
