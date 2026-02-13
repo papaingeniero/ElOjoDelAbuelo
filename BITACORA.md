@@ -3987,4 +3987,22 @@ Actualizamos el motor de JavaScript (`MotionEngine`) y la UI del Lab:
 *   **Paridad del Gemelo Digital**: Un simulador que no replica exactamente los límites del hardware real induce a errores de diagnóstico.
 *   **Hardcoding es deuda**: El valor "20" estaba repetido en varios sitios. En el futuro, convendría centralizar estos límites en una constante global del Lab.
 
+
+---
+
+## ⚡ Phase 72: Hyper-Sensibilidad (El Umbral de 2 Píxeles)
+**Versión**: v3.9.10-dev.72 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. La Historia (El Problema)
+Tras el éxito de la Phase 69 (umbral a 5 píxeles), el usuario decide llevar el sistema al límite extremo: **2 píxeles**. El objetivo es reducir aún más la latencia de "reacción" del hardware. Al detectar cambios tan ínfimos, el sistema inicia la grabación a 15fps (tiempo real) casi de forma inmediata, minimizando los segundos inyectados desde el pre-record buffer (3fps).
+
+### 🛠️ 2. La Solución (Ingeniería de Extremos)
+Esta fase ha sido un esfuerzo conjunto:
+1.  **Cámara (`SentinelService.java`)**: El usuario ha reducido manualmente el límite a 2 píxeles en la lógica de `currentThreshold`.
+2.  **Sincronía Lab (`WebMotionLab.java`)**: He actualizado el laboratorio forense para que el simulador reconozca estos disparos de ultra-baja intensidad. Las etiquetas visuales ahora reflejan `Buffer(>2)`.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Adiós a los Fantasmas**: Con un umbral de 2, el margen de error es mínimo. El sistema es ahora una "trampa para fotones" ultra-sensible.
+*   **Fluidez por Defecto**: Al sacrificar la tolerancia al ruido, ganamos una fluidez de vídeo inmediata. Es una apuesta por la calidad de imagen en el momento crítico.
+
 ---

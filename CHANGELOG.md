@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.72
+*   ⚡ **Hyper-Sensibilidad (Umbral 2px)**: Reducción del umbral de detección mínimo de 5 a 2 píxeles. Esto permite un inicio de grabación a 15fps casi instantáneo ante el menor cambio, minimizando la dependencia del buffer de 3fps.
+*   🧪 **Web Motion Lab v2**: Sincronizado el simulador forense para detectar y visualizar cambios a partir de 2 píxeles.
+
 ### v3.9.10-dev.71
 *   🧪 **Web Motion Lab Sincronizado**: El simulador forense ahora permite bajar el umbral hasta 5 píxeles (antes limitado a 20), igualando el comportamiento del motor real dev.69.
 *   📊 **Visualización de Buffer**: Actualizadas las etiquetas de estado a `Buffer(>5)` para una representación precisa de la zona de pre-grabación.

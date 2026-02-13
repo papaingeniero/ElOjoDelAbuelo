@@ -168,7 +168,7 @@ public class WebMotionLab {
                 "            fetch('/api/settings').then(function(r){return r.json();}).then(function(cfg){\n" +
                 "                prodSens = cfg.sens;\n" +
                 "                prodThreshold = Math.floor(10000 * Math.pow(1 - cfg.sens/100, 2));\n" +
-                "                if(prodThreshold < 5) prodThreshold = 5;\n" +
+                "                if(prodThreshold < 2) prodThreshold = 2;\n" +
                 "                var contrastThresh = 105 - (cfg.contrast || 50);\n" +
                 "                if(engine) engine.setSensitivity(contrastThresh);\n" +
                 "                log('\uD83D\uDCE1 Config: Sens=' + prodSens + '% \u2192 Threshold=' + prodThreshold + ' | Contraste=' + (cfg.contrast||50) + '% \u2192 PixelThresh=' + contrastThresh);\n"
@@ -459,9 +459,9 @@ public class WebMotionLab {
                 "                if (engine) {\n" +
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
-                "                    var bufOk = result.pixels > 5;\n" +
+                "                    var bufOk = result.pixels > 2;\n" +
                 "                    var recOk = result.pixels > prodThreshold;\n" +
-                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>5): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n"
+                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>2): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n"
                 +
                 "                    statusEl.style.color = recOk ? '#FF4444' : (bufOk ? '#44FF44' : '#888');\n" +
                 "                }\n" +
@@ -492,9 +492,9 @@ public class WebMotionLab {
                 "                if (engine) {\n" +
                 "                    var result = engine.process(data);\n" +
                 "                    const statusEl = document.getElementById('status');\n" +
-                "                    var bufOk = result.pixels > 5;\n" +
+                "                    var bufOk = result.pixels > 2;\n" +
                 "                    var recOk = result.pixels > prodThreshold;\n" +
-                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>5): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n"
+                "                    statusEl.textContent = 'Score: ' + result.pixels + ' \u2502 \uD83D\uDFE2 Buffer(>2): ' + (bufOk ? '\u2705' : '\u274C') + ' \u2502 \uD83D\uDD34 Grab(' + prodSens + '%): >' + prodThreshold + ' ' + (recOk ? '\u2705' : '\u274C');\n"
                 +
                 "                    statusEl.style.color = recOk ? '#FF4444' : (bufOk ? '#44FF44' : '#888');\n" +
                 "                }\n" +
@@ -524,7 +524,7 @@ public class WebMotionLab {
                 +
                 "                if (key === 'sens') {\n" +
                 "                   var s = parseInt(val); var px = 0;\n" +
-                "                   if(s>=95) px=5; else if(s<=5) px=50000; else px=Math.floor(10000*Math.pow(1-(s/100.0),2));\n"
+                "                   if(s>=95) px=2; else if(s<=5) px=50000; else px=Math.floor(10000*Math.pow(1-(s/100.0),2));\n"
                 +
                 "                   document.getElementById('val-sens').textContent = s+'%';\n" +
                 "                   var pxLabel = document.getElementById('val-sens-px'); if(pxLabel) pxLabel.textContent = '('+px+' px)';\n"
