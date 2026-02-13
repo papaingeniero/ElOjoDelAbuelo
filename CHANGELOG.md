@@ -1,3 +1,11 @@
+## [v3.9.11] - 2026-02-13
+
+### Stability & Bugfixes
+- 🩹 **Stream Stability**: Solucionado el corte sistemático de video a los 15 segundos corrigiendo el routing de `keepalive` y blindando la gestión de sesiones en el servidor.
+- 🐛 **Visual Fix**: Resuelto el problema de la "miniatura negra" (Parásito) en el dashboard web mediante una correcta gestión del ciclo de vida de variables JS.
+
+---
+
 ### v3.9.11-dev.2
 *   🩹 **Fix (Stream Stability)**: Solucionado el corte de video a los 15s. El servidor rechazaba los latidos (`keepalive`) por una validación de URL estricta. Ahora acepta parámeteros GET y blinda la memoria contra sesiones fantasma.
 
