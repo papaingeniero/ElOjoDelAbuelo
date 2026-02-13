@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### v3.9.10-dev.73
+#### Engineering & Process
+*   🚀 **Protocolo Install & Launch**: Oficialización del lanzamiento automático tras la instalación en el dispositivo objetivo. El reporte de verificación ahora incluye explícitamente el estado del arranque de la App para asegurar despliegues 100% operativos.
+
 ### v3.9.10-dev.72
 *   ⚡ **Hyper-Sensibilidad (Umbral 2px)**: Reducción del umbral de detección mínimo de 5 a 2 píxeles. Esto permite un inicio de grabación a 15fps casi instantáneo ante el menor cambio, minimizando la dependencia del buffer de 3fps.
 *   🧪 **Web Motion Lab v2**: Sincronizado el simulador forense para detectar y visualizar cambios a partir de 2 píxeles.

@@ -4005,4 +4005,20 @@ Esta fase ha sido un esfuerzo conjunto:
 *   **Adiós a los Fantasmas**: Con un umbral de 2, el margen de error es mínimo. El sistema es ahora una "trampa para fotones" ultra-sensible.
 *   **Fluidez por Defecto**: Al sacrificar la tolerancia al ruido, ganamos una fluidez de vídeo inmediata. Es una apuesta por la calidad de imagen en el momento crítico.
 
+
+---
+
+### [Meta-Ingeniería] Protocolo "Install & Launch" | Fecha: 13 de Febrero de 2026
+
+**El Problema**: 
+Identificamos un punto ciego en nuestro protocolo de despliegue. Instalar el APK (`adb install`) garantiza que el binario está en el dispositivo, pero no confirma que el código es estable o que la App arranca correctamente. En el pasado, esto podía generar "falsos positivos" de despliegue exitoso que terminaban en crash al abrirse.
+
+**La Solución**:
+Elevamos el rango del lanzamiento a **paso obligatorio y auditable**. 
+1.  **Reglas Actualizadas**: Modificamos `legacy_dev_rules.md` para integrar el lanzamiento (`am start`) como parte inseparable del paso "Install".
+2.  **Reporte Reforzado**: El punto 3 de nuestra Tabla de Verificación de 7 puntos evoluciona de "Install" a **"Install & Launch 🚀"**.
+
+**Lección de Ingeniería**:
+El despliegue no termina cuando el bit llega al disco, sino cuando el proceso entra en memoria. La visibilidad total exige verificar el ciclo de vida completo del software.
+
 ---
