@@ -4096,5 +4096,22 @@ Esta versión de estabilización aplica cirugía correctiva en el corazón del s
 ---
 
 
+## 🚀 Phase 76: Sincronización Visual WYSWYG (Web-to-Telegram)
+**Versión**: v3.9.12-dev.1 | **Fecha**: 17 de Febrero de 2026
 
+### 📜 1. El Problema (Experiencia Rota)
+El usuario configuraba cuidadosamente un **Zoom Digital** y un desplazamiento (Pan) en la interfaz web para vigilar una zona específica (ej: solo la puerta). Sin embargo, al recibir la alerta en Telegram, el vídeo MP4 mostraba el plano general completo de la cámara.
+**La Disfrutiva**: "Lo que veo en la web NO es lo que recibo en el móvil". Esto rompía el principio **WYSIWYG** (What You See Is What You Get).
 
+### 🛠️ 2. La Solución (Ingeniería de Imagen)
+Hemos inyectado inteligencia gráfica en el transcodificador `MjpegToMp4`:
+1.  **Puente de Contexto**: Creamos `SentinelService.getAppContext()` para permitir que la utilidad estática lea las `SharedPreferences` globales.
+2.  **Motor de Recorte (Crop & Scale)**:
+    *   Leemos `webZoom`, `webPanX`, `webPanY`.
+    *   Calculamos el viewport exacto usando la inversa de la fórmula CSS (`translate(x%, y%)`).
+    *   Aplicamos `Bitmap.createBitmap` (recorte) + `Bitmap.createScaledBitmap` (escalado bilinear) para devolver la imagen al tamaño 352x288 pero con el zoom aplicado.
+3.  **Gestión de Memoria (Galaxy S Friendly)**: Uso agresivo de `bmp.recycle()` para evitar `OutOfMemoryError` al manipular múltiples bitmaps en un dispositivo con 512MB RAM.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Consistencia Cross-Platform**: Si el frontend usa CSS para transformar la realidad, el backend debe replicar matemáticas idénticas para generar la evidencia física (MP4).
+*   **Contexto Estático**: A veces, romper la pureza de una clase utilitaria ("pasar contexto como argumento") es menos práctico que exponer un contexto global seguro ("Singleton Pattern") cuando la configuración es sistémica.

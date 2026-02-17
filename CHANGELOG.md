@@ -1,3 +1,8 @@
+## [v3.9.12-dev.1] - 2026-02-17
+### Added
+- 🔭 **Zoom Sincronizado**: El transcodificador MP4 ahora aplica el mismo Zoom y Pan digital que el usuario configuró en la Web. Los videos de Telegram muestran exactamente el encuadre deseado.
+- 🧠 **Core**: Expuesto contexto global en `SentinelService` para acceso a preferencias desde utilidades estáticas.
+
 ## [v3.9.11] - 2026-02-13
 
 ### Stability & Bugfixes

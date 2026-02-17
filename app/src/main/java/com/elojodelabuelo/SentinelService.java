@@ -62,6 +62,12 @@ public class SentinelService extends Service {
     public static void setUiCallback(UiPreviewCallback cb) {
         uiPreviewCallback = cb;
     }
+
+    // [ACCESO GLOBAL] Permitir a utilidades estáticas (como MjpegToMp4) leer
+    // recursos/preferencias
+    public static Context getAppContext() {
+        return instance != null ? instance.getApplicationContext() : null;
+    }
     // ----------------------------------
 
     private PowerManager.WakeLock wakeLock;
