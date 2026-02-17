@@ -1,4 +1,6 @@
 ## [v3.9.12-dev.1] - 2026-02-17
+### v3.9.12-dev.2
+*   🐛 **Fix Offset (Zoom/Pan)**: Corregido error matemático en el cálculo del recorte para MP4 (WYSIWYG Web/Telegram).
 ### Added
 - 🔭 **Zoom Sincronizado**: El transcodificador MP4 ahora aplica el mismo Zoom y Pan digital que el usuario configuró en la Web. Los videos de Telegram muestran exactamente el encuadre deseado.
 - 🧠 **Core**: Expuesto contexto global en `SentinelService` para acceso a preferencias desde utilidades estáticas.
@@ -11,8 +13,6 @@
 
 ---
 
-### v3.9.12-dev.2
-*   🐛 **Fix Offset (Zoom/Pan)**: Corregido error matemático en el cálculo del recorte para MP4. Ahora se divide el desplazamiento por el factor de zoom para alinear perfectamente la vista de Telegram con la Web (WYSIWYG).
 
 ### v3.9.11-dev.2
 *   🩹 **Fix (Stream Stability)**: Solucionado el corte de video a los 15s. El servidor rechazaba los latidos (`keepalive`) por una validación de URL estricta. Ahora acepta parámeteros GET y blinda la memoria contra sesiones fantasma.
