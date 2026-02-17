@@ -4057,23 +4057,7 @@ Se ha implementado una gestión explícita del ciclo de vida de la variable `par
 ### 🎓 3. Lecciones Aprendidas
 *   **Estado Global en JS**: En aplicaciones de una sola página (SPA) o scripts embebidos de larga duración, confiar en la recolección de basura implícita para variables globales es arriesgado. Siempre limpia tu desorden (`nullify`) al cerrar un proceso.
 
----
 
-## 🩹 Phase 75: El Pulso Arítmico (Fix de Stream Stability)
-**Versión**: v3.9.11-dev.2 | **Fecha**: 13 de Febrero de 2026
-
-### 📜 1. El Problema
-Los usuarios reportaban que el stream de video en vivo se congelaba sistemáticamente a los 15 segundos exacta.
-**Diagnóstico**: El servidor NanoHttpServer rechazaba las peticiones de `keepalive` (latido) porque la URL contenía parámetros query (ej: `?session_id=...`) y la validación era un estricto `.equals("/api/keepalive")`. Al fallar el latido, el Watchdog interno del servidor mataba el stream por inactividad.
-
-### 🛠️ 2. La Solución
-Se ha flexibilizado y securizado el endpoint de latido:
-1.  **Routing**: Cambio de `.equals()` a `.startsWith("/api/keepalive")` para aceptar parámetros.
-2.  **Blindaje Anti-DoS**: Antes de renovar el timestamp, se verifica que el `session_id` exista realmente en el mapa de sesiones activas. Si llega un ID falso o nulo, se rechaza con 404, evitando el llenado de memoria con claves basura.
-
-### 🎓 3. Lecciones Aprendidas
-*   **Routing Robusto**: En servidores web manuales, nunca asumas que una URL viene limpia. Siempre usa `startsWith` o parsea la URI base si esperas parámetros GET.
-*   **Defensa en Profundidad**: Validar la existencia de una clave antes de insertarla o actualizarla evita ataques de agotamiento de recursos (Memory Exhaustion).
 
 ---
 
@@ -4115,3 +4099,41 @@ Hemos inyectado inteligencia gráfica en el transcodificador `MjpegToMp4`:
 ### 🎓 3. Lecciones Aprendidas
 *   **Consistencia Cross-Platform**: Si el frontend usa CSS para transformar la realidad, el backend debe replicar matemáticas idénticas para generar la evidencia física (MP4).
 *   **Contexto Estático**: A veces, romper la pureza de una clase utilitaria ("pasar contexto como argumento") es menos práctico que exponer un contexto global seguro ("Singleton Pattern") cuando la configuración es sistémica.
+
+
+---
+
+## 🩹 Phase 75: El Pulso Arítmico (Fix de Stream Stability)
+**Versión**: v3.9.11-dev.2 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. El Problema
+Los usuarios reportaban que el stream de video en vivo se congelaba sistemáticamente a los 15 segundos exacta.
+**Diagnóstico**: El servidor NanoHttpServer rechazaba las peticiones de `keepalive` (latido) porque la URL contenía parámetros query (ej: `?session_id=...`) y la validación era un estricto `.equals("/api/keepalive")`. Al fallar el latido, el Watchdog interno del servidor mataba el stream por inactividad.
+
+### 🛠️ 2. La Solución
+Se ha flexibilizado y securizado el endpoint de latido:
+1.  **Routing**: Cambio de `.equals()` a `.startsWith("/api/keepalive")` para aceptar parámetros.
+2.  **Blindaje Anti-DoS**: Antes de renovar el timestamp, se verifica que el `session_id` exista realmente en el mapa de sesiones activas. Si llega un ID falso o nulo, se rechaza con 404, evitando el llenado de memoria con claves basura.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Routing Robusto**: En servidores web manuales, nunca asumas que una URL viene limpia. Siempre usa `startsWith` o parsea la URI base si esperas parámetros GET.
+*   **Defensa en Profundidad**: Validar la existencia de una clave antes de insertarla o actualizarla evita ataques de agotamiento de recursos (Memory Exhaustion).
+
+---
+
+## 🐛 Phase 77: Corrección de Offset en Zoom (v3.9.12-dev.2)
+**Fecha**: 17 de Febrero de 2026
+
+### 📜 1. El Problema
+Al aplicar zoom digital y desplazar (Pan), la imagen generada en el video MP4 de Telegram aparecía desplazada respecto a la vista Web (WYSIWYG roto).
+**Causa**: La fórmula de recorte en Java no consideraba que el desplazamiento visual CSS (`translate`) es absoluto a la pantalla, mientras que en el Bitmap original debe escalarse inversamente al Zoom aplicado.
+
+### 🛠️ 2. La Solución
+Se corrigió la fórmula matemática en `MjpegToMp4.java`:
+Dividimos el desplazamiento calculado (`pan * width`) por el factor de zoom (`webZoom`).
+```java
+int cropX = (int) ((panX * srcW) / webZoom);
+```
+
+### 🎓 3. Lecciones Aprendidas
+*   **Matemáticas de Imagen**: Cuando replicas transformaciones CSS en backend, recuerda siempre el sistema de coordenadas. CSS transforma la *vista*, el backend transforma la *fuente*.
