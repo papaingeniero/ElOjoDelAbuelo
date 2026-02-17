@@ -11,6 +11,9 @@
 
 ---
 
+### v3.9.12-dev.2
+*   🐛 **Fix Offset (Zoom/Pan)**: Corregido error matemático en el cálculo del recorte para MP4. Ahora se divide el desplazamiento por el factor de zoom para alinear perfectamente la vista de Telegram con la Web (WYSIWYG).
+
 ### v3.9.11-dev.2
 *   🩹 **Fix (Stream Stability)**: Solucionado el corte de video a los 15s. El servidor rechazaba los latidos (`keepalive`) por una validación de URL estricta. Ahora acepta parámeteros GET y blinda la memoria contra sesiones fantasma.
 

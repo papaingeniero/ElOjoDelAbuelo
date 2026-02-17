@@ -108,13 +108,17 @@ public class MjpegToMp4 {
                             int viewW = (int) (srcW / webZoom);
                             int viewH = (int) (srcH / webZoom);
 
-                            // 2. Calcular Origen del Recorte (Top-Left) basado en lógica CSS Translate
-                            // La web usa translate(x%, y%). Un valor negativo mueve la imagen a la
-                            // izquierda,
-                            // lo que equivale a mover el viewport a la derecha (positivo).
-                            // Fórmula inversa: Pixel de inicio = -1 * (Porcentaje / 100) * AnchoTotal
-                            int cropX = (int) (-1 * (webPanX / 100.0f) * srcW);
-                            int cropY = (int) (-1 * (webPanY / 100.0f) * srcH);
+                            // 2. [CORRECCIÓN MATEMÁTICA] 🧮
+                            // En CSS (transform: translate... scale...), el desplazamiento es absoluto en
+                            // pantalla.
+                            // Para encontrar el píxel de origen en la imagen fuente, debemos dividir el
+                            // desplazamiento
+                            // por el factor de escala (webZoom).
+                            // ANTES (Incorrecto): int cropX = (int) (-1 * (webPanX / 100.0f) * srcW);
+
+                            // AHORA (Correcto): Dividimos por webZoom
+                            int cropX = (int) ((-1 * (webPanX / 100.0f) * srcW) / webZoom);
+                            int cropY = (int) ((-1 * (webPanY / 100.0f) * srcH) / webZoom);
 
                             // 3. Clamping (Seguridad de bordes)
                             // Evitar coordenadas negativas
