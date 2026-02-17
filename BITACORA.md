@@ -4061,6 +4061,25 @@ Se ha implementado una gestión explícita del ciclo de vida de la variable `par
 
 ---
 
+## 🩹 Phase 75: El Pulso Arítmico (Fix de Stream Stability)
+**Versión**: v3.9.11-dev.2 | **Fecha**: 13 de Febrero de 2026
+
+### 📜 1. El Problema
+Los usuarios reportaban que el stream de video en vivo se congelaba sistemáticamente a los 15 segundos exacta.
+**Diagnóstico**: El servidor NanoHttpServer rechazaba las peticiones de `keepalive` (latido) porque la URL contenía parámetros query (ej: `?session_id=...`) y la validación era un estricto `.equals("/api/keepalive")`. Al fallar el latido, el Watchdog interno del servidor mataba el stream por inactividad.
+
+### 🛠️ 2. La Solución
+Se ha flexibilizado y securizado el endpoint de latido:
+1.  **Routing**: Cambio de `.equals()` a `.startsWith("/api/keepalive")` para aceptar parámetros.
+2.  **Blindaje Anti-DoS**: Antes de renovar el timestamp, se verifica que el `session_id` exista realmente en el mapa de sesiones activas. Si llega un ID falso o nulo, se rechaza con 404, evitando el llenado de memoria con claves basura.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Routing Robusto**: En servidores web manuales, nunca asumas que una URL viene limpia. Siempre usa `startsWith` o parsea la URI base si esperas parámetros GET.
+*   **Defensa en Profundidad**: Validar la existencia de una clave antes de insertarla o actualizarla evita ataques de agotamiento de recursos (Memory Exhaustion).
+
+---
+
+
 ## 🚀 Phase Release: v3.9.11 "El Pulso Firme" | Fecha: 13 de Febrero de 2026
 
 ### 📜 1. El Problema (Stability Check)
@@ -4077,8 +4096,8 @@ Esta versión de estabilización aplica cirugía correctiva en el corazón del s
 - **La Robustez está en los Detalles**: Un simple `.equals()` puede tirar abajo un sistema de vigilancia perfecto. La programación defensiva en interfaces de red no es opcional.
 - **Ciclo de Vida en SPA**: En aplicaciones Web de una sola página, el recolector de basura no es tu niñera. Limpia lo que ensucias.
 
----
 
+---
 
 ## 🚀 Phase 76: Sincronización Visual WYSWYG (Web-to-Telegram)
 **Versión**: v3.9.12-dev.1 | **Fecha**: 17 de Febrero de 2026
@@ -4100,25 +4119,6 @@ Hemos inyectado inteligencia gráfica en el transcodificador `MjpegToMp4`:
 *   **Consistencia Cross-Platform**: Si el frontend usa CSS para transformar la realidad, el backend debe replicar matemáticas idénticas para generar la evidencia física (MP4).
 *   **Contexto Estático**: A veces, romper la pureza de una clase utilitaria ("pasar contexto como argumento") es menos práctico que exponer un contexto global seguro ("Singleton Pattern") cuando la configuración es sistémica.
 
-
----
-
-## 🩹 Phase 75: El Pulso Arítmico (Fix de Stream Stability)
-**Versión**: v3.9.11-dev.2 | **Fecha**: 13 de Febrero de 2026
-
-### 📜 1. El Problema
-Los usuarios reportaban que el stream de video en vivo se congelaba sistemáticamente a los 15 segundos exacta.
-**Diagnóstico**: El servidor NanoHttpServer rechazaba las peticiones de `keepalive` (latido) porque la URL contenía parámetros query (ej: `?session_id=...`) y la validación era un estricto `.equals("/api/keepalive")`. Al fallar el latido, el Watchdog interno del servidor mataba el stream por inactividad.
-
-### 🛠️ 2. La Solución
-Se ha flexibilizado y securizado el endpoint de latido:
-1.  **Routing**: Cambio de `.equals()` a `.startsWith("/api/keepalive")` para aceptar parámetros.
-2.  **Blindaje Anti-DoS**: Antes de renovar el timestamp, se verifica que el `session_id` exista realmente en el mapa de sesiones activas. Si llega un ID falso o nulo, se rechaza con 404, evitando el llenado de memoria con claves basura.
-
-### 🎓 3. Lecciones Aprendidas
-*   **Routing Robusto**: En servidores web manuales, nunca asumas que una URL viene limpia. Siempre usa `startsWith` o parsea la URI base si esperas parámetros GET.
-*   **Defensa en Profundidad**: Validar la existencia de una clave antes de insertarla o actualizarla evita ataques de agotamiento de recursos (Memory Exhaustion).
-
 ---
 
 ## 🐛 Phase 77: Corrección de Offset en Zoom (v3.9.12-dev.2)
@@ -4137,3 +4137,4 @@ int cropX = (int) ((panX * srcW) / webZoom);
 
 ### 🎓 3. Lecciones Aprendidas
 *   **Matemáticas de Imagen**: Cuando replicas transformaciones CSS en backend, recuerda siempre el sistema de coordenadas. CSS transforma la *vista*, el backend transforma la *fuente*.
+
