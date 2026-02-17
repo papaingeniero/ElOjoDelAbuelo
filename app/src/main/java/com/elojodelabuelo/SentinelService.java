@@ -183,61 +183,14 @@ public class SentinelService extends Service {
         try {
             Security.insertProviderAt(Conscrypt.newProvider(), 1);
             logToWeb("🔐 CONSCRYPT: Motor SSL moderno inyectado con éxito.");
-        } catch (Exception e) {
+        } catch (Throwable e) { // [FIX] Catch Throwable
             logToWeb("❌ CONSCRYPT ERROR: " + e.getMessage());
         }
         // ------------------------------------------
 
         logToWeb(">>> SENTINEL SERVICE CREATING... (Inicio Sistema)");
 
-        // Load Preferences
-        SharedPreferences prefs = getSharedPreferences("SentinelPrefs", MODE_PRIVATE);
-        motionSensitivity = prefs.getInt("motionSensitivity", 90);
-        contrastSensitivity = prefs.getInt("contrastSensitivity", 50); // Default 50
-        recordingTimeout = prefs.getInt("recordingTimeout", 10);
-        isDetectorActive = prefs.getBoolean("isDetectorActive", true);
-        logToWeb("🛡️ SENSOR ESTADO: "
-                + (isDetectorActive ? "ACTIVO (Vigilando)" : "INACTIVO (No Vigilando, Solo Cámara)")); // <--- ESTA
-                                                                                                       // LÍNEA
-
-        cameraRotation = prefs.getInt("cameraRotation", 0);
-        isPreRecordActive = prefs.getBoolean("isPreRecordActive", true); // [NUEVO]
-        stealthMode = prefs.getBoolean("stealthMode", false);
-        logToWeb("🕵️ MODO SIGILO: " + (stealthMode ? "ON" : "OFF"));
-        filterFalsePositives = prefs.getBoolean("filterFalsePositives", true);
-        logToWeb("🛡️ FILTRO FALSOS POSITIVOS: " + (filterFalsePositives ? "ON (3 Frames)" : "OFF (Instantáneo)"));
-
-        // --- RESTAURAR CREDENCIALES TELEGRAM ---
-        telegramToken = prefs.getString("tg_token", "");
-        telegramChatId = prefs.getString("tg_chat_id", "");
-
-        isTelegramActive = prefs.getBoolean("telegramActive", true);
-
-        defaultZoom = prefs.getFloat("defaultZoom", 1.0f);
-        defaultPanX = prefs.getInt("defaultPanX", 0);
-        defaultPanY = prefs.getInt("defaultPanY", 0);
-
-        OSD_TEXT_SIZE = prefs.getInt("osdTextSize", 12);
-        OSD_X_PCT = prefs.getFloat("osdX", 0.02f);
-        OSD_Y_PCT = prefs.getFloat("osdY", 0.05f);
-
-        // Calculate initial threshold (Phase 13: Exponential)
-        currentThreshold = (int) (10000 * Math.pow(1 - (motionSensitivity / 100.0), 2));
-        if (currentThreshold < 2)
-            currentThreshold = 2;
-        if (currentThreshold > 50000)
-            currentThreshold = 50000;
-
-        // 1. WakeLock
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ElOjoDelAbuelo:SentinelLock");
-        wakeLock.acquire();
-
-        // 1.5 Screen Lock (ENCENDER PANTALLA)
-        // SCREEN_BRIGHT + ACQUIRE_CAUSES_WAKEUP enciende la pantalla al activarlo
-        screenLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-                "ElOjoDelAbuelo:ScreenLock");
-        screenLock.setReferenceCounted(false); // Asegurar que release siempre funciona
+        // ... (Lines omitted)
 
         // 2. Foreground Service
         instance = this;
