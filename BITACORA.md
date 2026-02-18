@@ -4188,3 +4188,17 @@ Se ha aplicado bloqueo de sincronización explícito (`synchronized (liveStreamC
 
 ### 🎓 3. Lecciones Aprendidas
 *   **Thread Safety**: En servidores multihilo, TODA modificación a una lista compartida debe estar sincronizada. No basta con sincronizar la lectura; la escritura también debe ser atómica respecto al lock del objeto.
+
+---
+
+## 🧹 Phase 81: El Mayordomo Daltónico (Cleanup Order)
+**Versión**: v3.9.12-dev.6 | **Fecha**: 18 de Febrero de 2026
+
+### 📜 1. El Problema
+La referencia estática `SentinelService.instance` se anulaba (`null`) al *principio* del método `onDestroy()`. Esto significaba que cualquier sub-componente (cámara, servidor web, hilos) que intentara acceder al contexto de la aplicación (`getAppContext()`) durante su propio proceso de cierre, se encontraba con un puntero nulo, provocando excepciones secundarias o logs perdidos.
+
+### 🛠️ 2. La Solución
+Se ha movido la instrucción `instance = null;` a la **última línea** del método `onDestroy()`. Esto garantiza que la instancia singleton siga siendo válida y proporcionando contexto mientras se apagan ordenadamente todos los subsistemas (WakeLocks, Cámara, WebServer).
+
+### 🎓 3. Lecciones Aprendidas
+*   **El Capitán se hunde con el barco**: La instancia principal que orquesta el servicio debe ser lo último en desaparecer. Si la matas primero, la tripulación (sub-procesos) entra en pánico al no encontrar a quien reportar.

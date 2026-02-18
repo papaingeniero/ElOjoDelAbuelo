@@ -1058,7 +1058,7 @@ public class SentinelService extends Service {
     @Override
     public void onDestroy() {
         logToWeb("!!! SENTINEL SERVICE DESTROYED !!!");
-        instance = null;
+        // instance = null; // MOVED TO END
         super.onDestroy();
         if (wakeLock != null && wakeLock.isHeld())
             wakeLock.release();
@@ -1074,6 +1074,8 @@ public class SentinelService extends Service {
         closeRecordingFile();
         if (screenLock != null && screenLock.isHeld())
             screenLock.release();
+
+        instance = null; // [FIX] Prevent premature garbage collection during shutdown
     }
 
     // [NUEVO] Sensibilidad al Contraste (0-100)
