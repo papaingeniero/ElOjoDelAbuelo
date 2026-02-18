@@ -4138,3 +4138,20 @@ int cropX = (int) ((panX * srcW) / webZoom);
 ### 🎓 3. Lecciones Aprendidas
 *   **Matemáticas de Imagen**: Cuando replicas transformaciones CSS en backend, recuerda siempre el sistema de coordenadas. CSS transforma la *vista*, el backend transforma la *fuente*.
 
+
+---
+
+## 🐛 Phase 78: El Cierre Prematuro (MediaMuxer Crash)
+**Versión**: v3.9.12-dev.3 | **Fecha**: 18 de Febrero de 2026
+
+### 📜 1. El Problema
+El  utiliza un bloque `finally` para asegurar la liberación de recursos. Sin embargo, si el  fallaba antes de arrancar (ej: error de configuración), el bloqué `finally` intentaba ejecutar , lanzando una  que crasheaba la aplicación nativamente, ocultando el error original.
+
+### 🛠️ 2. La Solución
+Se ha implementado un patrón de cierre defensivo:
+1.  **Flag de Estado**: Se verifica la variable  antes de llamar a .
+2.  **Liberación Incondicional**:  se sigue llamando siempre para evitar fugas de memoria nativa.
+
+### 🎓 3. Lecciones Aprendidas
+*   **No pares lo que no arrancó**: En APIs de bajo nivel como Android Media, el orden de los estados es sagrado. Intentar detener una máquina parada es tan fatal como no detener una en marcha.
+*   **Enmascaramiento de Errores**: Un crash en el bloque `finally` es el peor tipo de bug, porque impide ver la excepción original que ocurrió en el `try`.

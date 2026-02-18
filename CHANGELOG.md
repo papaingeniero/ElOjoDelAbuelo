@@ -1,5 +1,7 @@
 ## [v3.9.12-dev.1] - 2026-02-17
-### v3.9.12-dev.2
+### v3.9.12-dev.3
+*   🐛 **Fix (MediaMuxer)**: 🩹 Corregido crash nativo (`IllegalStateException`) en `MjpegToMp4` al intentar detener un muxer que nunca arrancó. Se verifica ahora el flag `muxerStarted` antes de `stop()`.
+
 *   🐛 **Fix Offset (Zoom/Pan)**: Corregido error matemático en el cálculo del recorte para MP4 (WYSIWYG Web/Telegram).
 ### Added
 - 🔭 **Zoom Sincronizado**: El transcodificador MP4 ahora aplica el mismo Zoom y Pan digital que el usuario configuró en la Web. Los videos de Telegram muestran exactamente el encuadre deseado.

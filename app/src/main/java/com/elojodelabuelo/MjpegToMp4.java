@@ -250,7 +250,9 @@ public class MjpegToMp4 {
             }
             if (muxer != null) {
                 try {
-                    muxer.stop();
+                    if (muxerStarted) {
+                        muxer.stop();
+                    }
                     muxer.release();
                 } catch (Exception e) {
                 }
