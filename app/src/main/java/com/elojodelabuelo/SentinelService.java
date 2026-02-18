@@ -331,15 +331,23 @@ public class SentinelService extends Service {
             // TRY-CATCH WRAPPER FOR API LEVEL COMPATIBILITY
             try {
                 // [NUEVO] LÓGICA DE RECUPERACIÓN DE PANTALLA (Amnesia Fix) 🧠✨
-                // Preguntamos: "¿Teníamos una pantalla conectada antes de morir?"
-                if (activeSurfaceHolder != null) {
+                // Preguntamos: "¿Teníamos una pantalla conectada antes de morir?" y "¿Sigue
+                // viva?"
+                if (activeSurfaceHolder != null && activeSurfaceHolder.getSurface() != null
+                        && activeSurfaceHolder.getSurface().isValid()) {
                     // SÍ: La recuperamos. ¡Adiós pantalla congelada!
                     camera.setPreviewDisplay(activeSurfaceHolder);
                     logToWeb("Cámara reiniciada recuperando SurfaceHolder activo.");
                 } else {
-                    // NO: Estamos en background real. Usamos textura ciega.
+                    // NO: Estamos en background real O la superficie murió. Usamos textura ciega.
                     dummySurface = new SurfaceTexture(10);
                     camera.setPreviewTexture(dummySurface);
+                    if (activeSurfaceHolder != null) {
+                        activeSurfaceHolder = null; // Limpiamos referencia muerta
+                        logToWeb("SurfaceHolder inválido o nulo. Usando DummySurface.");
+                    } else {
+                        logToWeb("Background Mode. Usando DummySurface.");
+                    }
                 }
             } catch (Throwable t) {
                 // Fallback for API < 11 if SurfaceTexture fails (Safety Net)

@@ -4155,3 +4155,22 @@ Se ha implementado un patrón de cierre defensivo:
 ### 🎓 3. Lecciones Aprendidas
 *   **No pares lo que no arrancó**: En APIs de bajo nivel como Android Media, el orden de los estados es sagrado. Intentar detener una máquina parada es tan fatal como no detener una en marcha.
 *   **Enmascaramiento de Errores**: Un crash en el bloque `finally` es el peor tipo de bug, porque impide ver la excepción original que ocurrió en el `try`.
+
+---
+
+## 🐛 Phase 79: El Espectro de la Superficie (Dead Surface Crash)
+**Versión**: v3.9.12-dev.4 | **Fecha**: 18 de Febrero de 2026
+
+### 📜 1. El Problema
+Al reiniciar la Activity principal (ej: rotación o navegación), la referencia estática `SentinelService.activeSurfaceHolder` retenía un objeto `SurfaceHolder` antiguo. Sin embargo, el sistema operativo ya había destruido la `Surface` subyacente. Al intentar reconectar la cámara a esta surface muerta (`setPreviewDisplay`), la app sufría un crash inmediato o congelación.
+
+### 🛠️ 2. La Solución
+Se ha añadido una validación estricta de triple factor en `startCamera`:
+1.  No basta con que el Holder no sea nulo.
+2.  La Surface no debe ser nula.
+3.  **Crucial**: `surface.isValid()` debe ser true.
+Si alguna falla, se descarta la referencia antigua (`activeSurfaceHolder = null`) y se crea una `DummySurface` temporal para que la cámara siga operando en background sin renderizar.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Referencias Estáticas vs Ciclo de Vida**: Guardar objetos de UI (View/Surface) en variables estáticas es jugar con fuego. Si lo haces, debes verificar su vitalidad (`isValid`) antes de cada uso.
+*   **Degradación Graciosa**: Si la pantalla no está disponible, el servicio debe ser capaz de operar en modo "ciego" (Dummy) automáticamente en lugar de morir.

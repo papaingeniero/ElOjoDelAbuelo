@@ -1,5 +1,7 @@
 ## [v3.9.12-dev.1] - 2026-02-17
-### v3.9.12-dev.3
+### v3.9.12-dev.4
+*   🩹 **Fix (Stability)**: Blindaje contra crashes por superficie muerta (`DeadObjectException`). Se valida `isValid()` en `SentinelService` antes de reconectar la cámara tras un reinicio de actividad.
+
 *   🐛 **Fix (MediaMuxer)**: 🩹 Corregido crash nativo (`IllegalStateException`) en `MjpegToMp4` al intentar detener un muxer que nunca arrancó. Se verifica ahora el flag `muxerStarted` antes de `stop()`.
 
 *   🐛 **Fix Offset (Zoom/Pan)**: Corregido error matemático en el cálculo del recorte para MP4 (WYSIWYG Web/Telegram).
