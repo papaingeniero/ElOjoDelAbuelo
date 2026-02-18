@@ -35,7 +35,7 @@ public class MjpegToMp4 {
 
         MediaCodec encoder = null;
         MediaMuxer muxer = null;
-        BufferedInputStream bis = null;
+        boolean muxerStarted = false;
 
         try {
             SentinelService.logToWeb("🔄 TRANSCODING: Iniciando " + inputFile.getName() + " -> MP4...");
@@ -69,7 +69,6 @@ public class MjpegToMp4 {
             // 3. Configurar Muxer (Empaquetador MP4)
             muxer = new MediaMuxer(outputFile.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
             int trackIndex = -1;
-            boolean muxerStarted = false;
 
             // Buffers
             ByteBuffer[] inputBuffers = encoder.getInputBuffers();
