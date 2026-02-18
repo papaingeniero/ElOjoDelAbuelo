@@ -4174,3 +4174,17 @@ Si alguna falla, se descarta la referencia antigua (`activeSurfaceHolder = null`
 ### 🎓 3. Lecciones Aprendidas
 *   **Referencias Estáticas vs Ciclo de Vida**: Guardar objetos de UI (View/Surface) en variables estáticas es jugar con fuego. Si lo haces, debes verificar su vitalidad (`isValid`) antes de cada uso.
 *   **Degradación Graciosa**: Si la pantalla no está disponible, el servicio debe ser capaz de operar en modo "ciego" (Dummy) automáticamente en lugar de morir.
+
+---
+
+## 🐛 Phase 80: La Carrera de los Hilos (ConcurrentModificationException)
+**Versión**: v3.9.12-dev.5 | **Fecha**: 18 de Febrero de 2026
+
+### 📜 1. El Problema
+En situaciones de alto estrés (ej: recargas rápidas de página o múltiples clientes conectando al stream), se producía una `ConcurrentModificationException` en `NanoHttpServer.java`. Esto ocurría porque un hilo intentaba añadir un nuevo cliente a la lista `liveStreamClients` mientras otro hilo iteraba sobre ella (durante el broadcast) o la modificaba (desconexión), sin la debida sincronización.
+
+### 🛠️ 2. La Solución
+Se ha aplicado bloqueo de sincronización explícito (`synchronized (liveStreamClients)`) alrededor de la operación de adición (`add`) en el método `serveLiveStream`. Esto garantiza que la lista no sea modificada concurrentemente, alineando el comportamiento con los otros puntos de acceso de la lista (broadcast y stop) que ya estaban sincronizados.
+
+### 🎓 3. Lecciones Aprendidas
+*   **Thread Safety**: En servidores multihilo, TODA modificación a una lista compartida debe estar sincronizada. No basta con sincronizar la lectura; la escritura también debe ser atómica respecto al lock del objeto.

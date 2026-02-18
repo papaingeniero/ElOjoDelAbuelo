@@ -1,5 +1,7 @@
 ## [v3.9.12-dev.1] - 2026-02-17
-### v3.9.12-dev.4
+### v3.9.12-dev.5
+*   🐛 **Fix (Critical)**: Sincronización corregida en `NanoHttpServer` (Blindaje `ConcurrentModificationException`). Bloqueo `synchronized` aplicado al añadir nuevos clientes al broadcast stream.
+
 *   🩹 **Fix (Stability)**: Blindaje contra crashes por superficie muerta (`DeadObjectException`). Se valida `isValid()` en `SentinelService` antes de reconectar la cámara tras un reinicio de actividad.
 
 *   🐛 **Fix (MediaMuxer)**: 🩹 Corregido crash nativo (`IllegalStateException`) en `MjpegToMp4` al intentar detener un muxer que nunca arrancó. Se verifica ahora el flag `muxerStarted` antes de `stop()`.
