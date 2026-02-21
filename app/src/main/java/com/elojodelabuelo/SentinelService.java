@@ -280,6 +280,37 @@ public class SentinelService extends Service {
                 statsFrameSkipped = 0;
                 statsJpgGenerated = 0; // <--- AÑADIR ESTO
 
+                // 4. WATCHDOG DE MAINACTIVITY (Resurrección Inmortal) 🧟‍♂️
+                // Si la app no ha sido "matada" voluntariamente por el usuario,
+                // la Activity debería haber dejado un rastro hace menos de 65s (si está viva)
+                // Ojo: Si la pantalla está apagada, onResume NO se llama, por lo que el ping
+                // se envejece. PERO nosotros solo resucitamos si necesitamos la UI lista.
+                // En realidad, MainActivity SÍ DEBE ESTAR VIVA para recibir el OnCreate.
+                // Corrección de concepto: La destruyen, así que `lastPingTime` deja de
+                // actualizarse,
+                // pero si la relanzamos en background con FLAG_ACTIVITY_NEW_TASK y no la
+                // estamos
+                // viendo, no se va a llamar a onResume().
+                // Por ello, la resurrección en CyanogenMod 2.3 la haremos solo si:
+                // a) No la hemos lanzado recientemente para no hacer un bucle infinito
+                // b) Lleva ausente mucho tiempo (ej: 120 segundos).
+                long timeSinceLastPing = System.currentTimeMillis() - MainActivity.lastPingTime;
+                if (MainActivity.lastPingTime > 0 && timeSinceLastPing > 120000) {
+                    logToWeb("⚠️ WATCHDOG: MainActivity lleva " + (timeSinceLastPing / 1000)
+                            + "s sin dar señales de vida. ¿Destruida por Android? ¡Resucitando en background!");
+                    try {
+                        Intent resurrectIntent = new Intent(SentinelService.this, MainActivity.class);
+                        resurrectIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP |
+                                Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        startActivity(resurrectIntent);
+                        // Hacemos ping artificial para no volver a intentar resucitarla inmediatamente
+                        MainActivity.lastPingTime = System.currentTimeMillis();
+                    } catch (Exception e) {
+                        logToWeb("❌ WATCHDOG ERROR: Fallo al resucitar MainActivity.");
+                    }
+                }
+
                 // Programar siguiente
                 statsHandler.postDelayed(this, 60000);
             }
@@ -298,7 +329,8 @@ public class SentinelService extends Service {
 
     private void updateNotification(boolean recording) {
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                PendingIntent.FLAG_IMMUTABLE);
 
         Notification.Builder builder = new Notification.Builder(this)
                 .setContentTitle("El Ojo Del Abuelo")

@@ -4202,3 +4202,27 @@ Se ha movido la instrucción `instance = null;` a la **última línea** del mét
 
 ### 🎓 3. Lecciones Aprendidas
 *   **El Capitán se hunde con el barco**: La instancia principal que orquesta el servicio debe ser lo último en desaparecer. Si la matas primero, la tripulación (sub-procesos) entra en pánico al no encontrar a quien reportar.
+
+## 🚀 Inmortalidad de UI y Watchdog del Sistema (v3.9.11-dev.3)
+
+### 📜 El Problema (Storytelling)
+Nos enfrentábamos a casos esporádicos donde el dispositivo reportaba quedarse sin RAM durante tareas pesadas (como la transcodificación local). Aunque `SentinelService` seguía vigilando y grabando perfectamente, Android, de forma totalmente silenciosa y sin lanzar ningún Crash Log (Logcat) ni avisar a la Exception general, decidía "hacer limpieza" eliminando nuestra queridísima interfaz `MainActivity` de la RAM temporal para hacer hueco.
+
+El resultado era desolador: cuando ibas a desbloquear la pantalla del móvil, la app parecía muerta y tenías que volver a abrirla a mano. Esto violaba nuestra regla de "Vigilante Perpetuo".
+
+### 🛠️ La Solución (Ingeniería)
+Descartamos enviar Intents constantes (matan la batería) o depender de Callbacks oscuros del OS porque Android 2.3 a veces no es honesto sobre los ciclos de vida cuando hay presión de Memoria (`Low Memory Killer`).
+
+Hemos optado por un **Watchdog Asimétrico (Método de Resurrección Silenciosa):**
+1.  **Ping de Latido (`MainActivity`)**: A la activity se le ha añadido un registro de tiempo estático: `MainActivity.lastPingTime = System.currentTimeMillis();`.
+2.  **El Ojo del Centinela (`SentinelService`)**: Nuestro servicio core YA tenía un Heartbeat que imprimía la RAM y Temperatura cada 60 segundos. Hemos aprovechado ese ciclo energético ya pagado para preguntar: ¿Hace más de 120 segundos que la UI no da señales de vida?
+3.  **Resurrección Limpia en Background**: Si la repuesta es Sí, el Servicio lanza un Intent especial con los flags `FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_SINGLE_TOP | FLAG_ACTIVITY_REORDER_TO_FRONT`. Esto obliga al OS a reconstruir la memoria de la pantalla en las sombras sin encender el display, garantizando que cuando desbloquees el móvil, todo esté exactamente donde lo dejaste.
+
+### 🎓 Lecciones Aprendidas
+1.  **El LMK (Low Memory Killer) de Android no deja notas de suicidio:** Cuando mata procesos no-foreground, simplemente los evapora de la RAM. No te desgastes buscando Exception traces en Java.
+2.  **Reciclaje Energético:** Si ya tienes un Handler o Timer ejecutándose, mételo todo ahí. Añadir un Timer dedicado para vigilar a la Activity habría duplicado los *Wake Ups* de la CPU.
+3.  **Retrocompatibilidad y Linting Feroz**: Gradle y el Lint moderno (API 35+) bloquean las builds exigiendo Context.RECEIVER_EXPORTED. Al compilar para Android 2.3 (API 10/19), el compilador se queja. Tuvimos que inyectar `registerReceiver` a las bravas suprimiendo el Lint explícitamente (`@SuppressWarnings("UnspecifiedRegisterReceiverFlag")`) recordando siempre que somos dueños, no esclavos, del tooling moderno.
+
+### 📖 Glosario
+- **Watchdog (Perro Guardián)**: Un proceso secundario dedicado a vigilar que un proceso o componente principal sigue fluyendo. Si detecta un parón, reinicia el sistema averiado.
+- **Low Memory Killer (LMK)**: El verdugo del espacio en Linux/Android que dispara ráfagas mortales (SIGKILL) a las Apps en Background sin llamar a los métodos de destrucción limpiamente.
