@@ -22,8 +22,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     // Configuración original para restaurar al salir
     private int originalTimeout = -1;
 
-    // Ping para Watchdog (Resurrección)
-    public static long lastPingTime = 0;
+    // Baliza de Presencia (Watchdog)
+    public static MainActivity instance = null;
 
     private BroadcastReceiver systemReceiver = new BroadcastReceiver() {
         @Override
@@ -48,6 +48,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Clavamos la baliza indicando "Existo en memoria"
+        instance = this;
         SentinelService.logToWeb("MainActivity: CREATED");
         try {
             // PASE VIP
@@ -150,9 +153,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 // Callback vacío para mantener despierto al servicio
             }
         });
-
-        // 5. PING: "Estoy vivo" (Watchdog)
-        lastPingTime = System.currentTimeMillis();
     }
 
     @Override
@@ -176,6 +176,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onDestroy();
         SentinelService.logToWeb("MainActivity: DESTROYED");
         restoreOriginalSettings();
+
+        // Retiramos la baliza "He muerto"
+        instance = null;
     }
 
     // --- UTILS ---

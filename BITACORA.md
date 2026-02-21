@@ -4226,3 +4226,22 @@ Hemos optado por un **Watchdog Asimétrico (Método de Resurrección Silenciosa)
 ### 📖 Glosario
 - **Watchdog (Perro Guardián)**: Un proceso secundario dedicado a vigilar que un proceso o componente principal sigue fluyendo. Si detecta un parón, reinicia el sistema averiado.
 - **Low Memory Killer (LMK)**: El verdugo del espacio en Linux/Android que dispara ráfagas mortales (SIGKILL) a las Apps en Background sin llamar a los métodos de destrucción limpiamente.
+
+## 🚀 Blindaje de Presencia (v3.9.11-dev.4)
+
+### 📜 El Problema (Storytelling)
+Pensábamos haber solucionado la resurrección de MainActivity en la v3.9.11-dev.3 usando un "Ping Constante" (Watchdog por tiempo). Pero el análisis estructural reveló **dos vulnerabilidades catastróficas**:
+1. **Falso Positivo por Envejecimiento**: Si la pantalla estaba apagada 2 minutos (estado normal), el Ping en RAM dejaba de actualizarse (no hay `onResume`). El Servicio entraría en pánico resucitándola eternamente.
+2. **Amnesia de Proceso (Muerte Total LMK)**: Al matar el proceso entero, Android resucita al Servicio pero la RAM empieza de cero. La variable `lastPingTime` volvía a `0`. El código dictaba: `if (lastPingTime > 0) resucitar()`. Por tanto, el Watchdog jamás entraba en acción tras una muerte térmica/memoria completa.
+
+### 🛠️ La Solución (Ingeniería)
+Abandonamos el tiempo (Watchdog Activo) en favor del **Estado de Memoria Físico (Blindaje de Presencia)**.
+- La `MainActivity` clava una estaca estática al nacer (`public static MainActivity instance = this;`) y la quita al morir limpia y dignamente mediante el `onDestroy()` (`instance = null;`).
+- El `SentinelService`, en su Heartbeat, simplemente mira: *¿Existe una porción de RAM referenciando a la Activity en este proceso?*. `if (MainActivity.instance == null)`.
+- Si es NULL, o bien la mató Android quirúgicamente (Muerte Parcial), o bien todo el proceso ha sido reencarnado por Android desde cero y la Activity no fue invitada a la resurrección (Muerte Total).
+- En ambos casos, el servicio lanza la bengala oscura `Intent.FLAG_ACTIVITY_NEW_TASK` para ordenar al Framework de Android que rellene ese hueco en la memoria con un OnCreate fresco.
+
+### 🎓 Lecciones Aprendidas
+1. **Las variables estáticas mueren en la aniquilación**: En Android (y Java), no puedes confiar en datos primitivos (`long`) arrastrados de un ciclo de vida a otro si el LMK mata el proceso. Al revivir con START_STICKY, toda la RAM es nueva.
+2. **Las Muertes de Android no son uniformes**: O dispara a todo el proceso (`SIGKILL`) o cercena Activities usando Callsbacks (`onDestroy`). La única comprobación que es universalmente cierta frente a cualquiera de los dos asaltos es: **¿Existe tu instancia real ahora mismo?**
+3. **Optimización Pasiva**: Quitar pings que se ejecutan cada N ms reduce el overhead. Usar punteros `null` en la RAM es virtualmente coste 0 para la CPU del Galaxy S.
