@@ -4245,3 +4245,9 @@ Abandonamos el tiempo (Watchdog Activo) en favor del **Estado de Memoria Físico
 1. **Las variables estáticas mueren en la aniquilación**: En Android (y Java), no puedes confiar en datos primitivos (`long`) arrastrados de un ciclo de vida a otro si el LMK mata el proceso. Al revivir con START_STICKY, toda la RAM es nueva.
 2. **Las Muertes de Android no son uniformes**: O dispara a todo el proceso (`SIGKILL`) o cercena Activities usando Callsbacks (`onDestroy`). La única comprobación que es universalmente cierta frente a cualquiera de los dos asaltos es: **¿Existe tu instancia real ahora mismo?**
 3. **Optimización Pasiva**: Quitar pings que se ejecutan cada N ms reduce el overhead. Usar punteros `null` en la RAM es virtualmente coste 0 para la CPU del Galaxy S.
+
+
+### 🚀 Limpieza de Código Huérfano en TelegramUplink (v3.9.11-dev.5)
+**Problema 📜**: Existía código obsoleto (`enviarClip`, `extractBestFrame`, `subirBytesComoFoto`) dentro de `TelegramUplink` que estaba desactivado y ya no se invocaba, solo ocupaba espacio y dificultaba la lectura del componente de red.
+**Solución 🛠️**: Se eliminaron los métodos inactivos y las llamadas comentadas correspondientes en `SentinelService.java`.
+**Lecciones Aprendidas 🎓**: Mantener el código base limpio de "código zombi" reduce la carga cognitiva para futuros desarrollos.
