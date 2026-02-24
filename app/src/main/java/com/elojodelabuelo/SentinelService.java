@@ -147,7 +147,7 @@ public class SentinelService extends Service {
     // --- BUFFER PRE-GRABACIÓN (Memoria de Pez 🐟) ---
     // Guardamos los últimos N frames para no perder el inicio de la acción
     private static final int NUM_BUFFERS = 3; // Buffer nativo de cámara (SurfaceView)
-    private static final int PRE_RECORD_FRAMES = 15; // 15 frames @ ~3FPS = ~5 segundos
+    private static final int PRE_RECORD_FRAMES = 8; // 8 frames @ ~3FPS = ~2.6 segundos
     private static final int FRAME_SIZE_NV21 = 352 * 288 * 3 / 2; // ~150KB
 
     // --- MODO ALERTA TEMPORAL (El Perro Guardián 🐕) ---

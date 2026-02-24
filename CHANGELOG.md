@@ -1,4 +1,8 @@
 ## [v3.9.12-dev.1] - 2026-02-17
+### v3.9.11-dev.6
+*   ⚡ **Memory Optimization (OOM Prevention)**: Reducido el buffer circular de pre-grabación (`PRE_RECORD_FRAMES`) de 15 a 8 frames (~2.6 segundos).
+    *   **Meta**: Solucionar muertes silenciosas de la app ocasionadas por el `LowMemoryKiller` de Android (Límites de 512MB de RAM).
+
 ### v3.9.12-dev.6
 *   🧹 **Fix (Cleanup)**: Corrección de orden en `SentinelService.onDestroy()`. La referencia estática `instance` se anula *al final* del método para permitir que los subcomponentes accedan al contexto durante su apagado.
 

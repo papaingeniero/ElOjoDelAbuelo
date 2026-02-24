@@ -4251,3 +4251,18 @@ Abandonamos el tiempo (Watchdog Activo) en favor del **Estado de Memoria Físico
 **Problema 📜**: Existía código obsoleto (`enviarClip`, `extractBestFrame`, `subirBytesComoFoto`) dentro de `TelegramUplink` que estaba desactivado y ya no se invocaba, solo ocupaba espacio y dificultaba la lectura del componente de red.
 **Solución 🛠️**: Se eliminaron los métodos inactivos y las llamadas comentadas correspondientes en `SentinelService.java`.
 **Lecciones Aprendidas 🎓**: Mantener el código base limpio de "código zombi" reduce la carga cognitiva para futuros desarrollos.
+
+## 🚀 Optimización de Memoria: El Pez se hace pequeño (v3.9.11-dev.6)
+
+### 📜 El Problema (Storytelling)
+Ayer a las 11:30 sufrimos otro episodio donde Android decidió matar silenciosamente la aplicación. Investigando la causa en un dispositivo con apenas 512MB de RAM, descubrimos que el responsable era el `LowMemoryKiller` de Android, que aniquila procesos al quedarse corto de memoria física. El mayor consumidor dinámico de RAM de la app era nuestro "Buffer de Pre-Grabación" (Memoria de Pez 🐟), configurado para retener 15 frames NV21 de 150KB cada uno (~2.25MB constantes).
+
+### 🛠️ La Solución (Ingeniería)
+Para blindarnos contra los picos de memoria que provocan los cierres del OS, hemos reducido drásticamente la huella de memoria en `SentinelService.java`.
+*   Se cambió `PRE_RECORD_FRAMES` de 15 a 8 frames.
+*   Esto significa que el tiempo de pre-grabación baja de ~5 segundos a ~2.6 segundos (a 3FPS).
+*   Liberamos más de 1MB de RAM estática del Object Pool, dándole oxígeno al sistema operativo para evitar que califique a nuestra app como objetivo a destruir.
+
+### 🎓 Lecciones Aprendidas
+1.  **En Legacy Hardware (512MB RAM), cada Megabyte cuenta**: Sacrificar unos segundos de grabación previa es un precio aceptable si garantiza la supervivencia del proceso de vigilancia (`Uptime 24/7 > Feature completa`). 
+2.  **El Sistema siempre gana**: No puedes luchar contra el LowMemoryKiller de Android, solo puedes tratar de ser menos apetecible para él adelgazando tu consumo de RAM base.
