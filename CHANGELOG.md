@@ -1,3 +1,7 @@
+### v3.9.11-dev.7
+*   🎨 **UX (Card States)**: Mejorada diferenciación visual de tarjetas "vistas" — fondo azul medianoche (`#1a2332`) con borde izquierdo azul acero (`#2d5a88`), reemplazando el `grayscale(100%)` casi invisible.
+*   ✨ **Feature (Long-Press Highlight)**: Nuevo gesto de pulsación larga (~500ms) en tarjetas de video para marcarlas temporalmente en dorado ámbar (`#d4a338`). Toggle on/off, no persistente, con feedback háptico.
+
 ## [v3.9.12-dev.1] - 2026-02-17
 ### v3.9.11-dev.6
 *   ⚡ **Memory Optimization (OOM Prevention)**: Reducido el buffer circular de pre-grabación (`PRE_RECORD_FRAMES`) de 15 a 8 frames (~2.6 segundos).

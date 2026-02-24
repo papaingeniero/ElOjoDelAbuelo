@@ -897,7 +897,12 @@ public class NanoHttpServer {
                 // AHORA: padding: 8px; (Más ajustado al borde)
                 ".video-item { display: flex; align-items: center; background: #2c2c2c; margin-bottom: 10px; padding: 6px; border-radius: 12px; active: scale(0.98); transition: transform 0.1s, opacity 0.5s, filter 0.5s; }\n"
                 +
-                ".video-item.watched { opacity: 0.5; filter: grayscale(100%); }\n" +
+                ".video-item.watched { background: #1a2332; border-left: 3px solid #2d5a88; opacity: 0.75; transition: background 0.3s, border-left 0.3s, opacity 0.3s; }\n"
+                +
+                ".video-item.highlighted { background: #332b1a; border-left: 3px solid #d4a338; animation: highlightPulse 1.5s ease-in-out; }\n"
+                +
+                "@keyframes highlightPulse { 0% { box-shadow: 0 0 0 0 rgba(212,163,56,0.4); } 70% { box-shadow: 0 0 12px 4px rgba(212,163,56,0); } 100% { box-shadow: none; } }\n"
+                +
                 ".video-item:active { transform: scale(0.98); background: #3d3d3d; }\n" +
                 ".video-item .icon { font-size: 24px; margin-right: 15px; }\n" +
                 // ANTES: width: 80px; height: 60px;
@@ -1782,6 +1787,7 @@ public class NanoHttpServer {
                 +
                 "    div.innerHTML = thumbHtml + infoHtml;\n" +
                 "    div.setAttribute('onclick', \"playVideo('\" + v.name + \"')\");\n" +
+                "    setupLongPress(div);\n" +
                 "    container.appendChild(div);\n" +
                 "    // Init canvas animation if preview exists\n" +
                 "    if(v.preview) {\n" +
@@ -1791,6 +1797,32 @@ public class NanoHttpServer {
                 "  });\n" +
                 "  // Apply current zoom/pan to new thumbnails\n" +
                 "  if(typeof updateWebTransformFromInputs === 'function') updateWebTransformFromInputs();\n" +
+                "}\n" +
+                "// --- LONG-PRESS HIGHLIGHT SYSTEM ---\n" +
+                "var longPressTimer = null;\n" +
+                "var longPressTriggered = false;\n" +
+                "function setupLongPress(el) {\n" +
+                "  el.addEventListener('touchstart', function(e) {\n" +
+                "    longPressTriggered = false;\n" +
+                "    var target = el;\n" +
+                "    longPressTimer = setTimeout(function() {\n" +
+                "      longPressTriggered = true;\n" +
+                "      target.classList.toggle('highlighted');\n" +
+                "      if(navigator.vibrate) navigator.vibrate(30);\n" +
+                "    }, 500);\n" +
+                "  }, {passive: true});\n" +
+                "  el.addEventListener('touchend', function(e) {\n" +
+                "    clearTimeout(longPressTimer);\n" +
+                "    if(longPressTriggered) { e.preventDefault(); e.stopPropagation(); longPressTriggered = false; }\n"
+                +
+                "  });\n" +
+                "  el.addEventListener('touchmove', function(e) {\n" +
+                "    clearTimeout(longPressTimer);\n" +
+                "  }, {passive: true});\n" +
+                "  el.addEventListener('click', function(e) {\n" +
+                "    if(longPressTriggered) { e.preventDefault(); e.stopImmediatePropagation(); longPressTriggered = false; }\n"
+                +
+                "  }, true);\n" +
                 "}\n" +
                 "// IntersectionObserver for infinite scroll\n" +
                 "var sentinel = document.getElementById('loading-sentinel');\n" +

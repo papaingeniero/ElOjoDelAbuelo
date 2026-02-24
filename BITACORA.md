@@ -4266,3 +4266,56 @@ Para blindarnos contra los picos de memoria que provocan los cierres del OS, hem
 ### 🎓 Lecciones Aprendidas
 1.  **En Legacy Hardware (512MB RAM), cada Megabyte cuenta**: Sacrificar unos segundos de grabación previa es un precio aceptable si garantiza la supervivencia del proceso de vigilancia (`Uptime 24/7 > Feature completa`). 
 2.  **El Sistema siempre gana**: No puedes luchar contra el LowMemoryKiller de Android, solo puedes tratar de ser menos apetecible para él adelgazando tu consumo de RAM base.
+
+---
+
+## 🎨 v3.9.11-dev.7 — Estados Visuales de Tarjetas: Azul Medianoche & Dorado Ámbar
+
+### 📜 El Problema (Storytelling)
+Las tarjetas de video en la interfaz web tenían un problema de usabilidad visual: al marcar una como "vista" (`watched`), el efecto `opacity: 0.5; filter: grayscale(100%)` producía un gris apagado *prácticamente indistinguible* del fondo `#2c2c2c` de las tarjetas normales. El usuario tenía que forzar la vista para saber qué grabaciones ya había revisado.
+
+Además, no existía ningún mecanismo para señalizar temporalmente una tarjeta como "interesante" o "pendiente de revisar después" — algo útil cuando se revisan muchas grabaciones seguidas.
+
+### 🛠️ La Solución (Ingeniería)
+Dos cambios quirúrgicos en `NanoHttpServer.java`, ambos 100% CSS+JS sin tocar Java:
+
+**1. Tarjeta Vista → Azul Medianoche**
+```css
+/* ANTES (indistinguible) */
+.video-item.watched { opacity: 0.5; filter: grayscale(100%); }
+
+/* DESPUÉS (elegante) */
+.video-item.watched { background: #1a2332; border-left: 3px solid #2d5a88; opacity: 0.75; }
+```
+- La paleta azul fría comunica "ya revisado" sin agresividad
+- El borde izquierdo azul acero (`#2d5a88`) crea una guía visual inmediata
+- Se preservan los colores naturales del thumbnail (sin grayscale)
+
+**2. Long-Press Highlight → Dorado Ámbar (Toggle)**
+```css
+.video-item.highlighted { background: #332b1a; border-left: 3px solid #d4a338; }
+```
+- Al mantener el dedo pulsado ~500ms sobre cualquier tarjeta, se ilumina en dorado ámbar
+- Un segundo long-press la desactiva (toggle on/off)
+- Incluye vibración táctil (`navigator.vibrate(30)`) como feedback haptico
+- **No persistente**: al recargar la página se pierden los highlights (perfecto para señalización de sesión)
+- Prevención de click: el long-press no abre el video accidentalmente
+
+**Detalle técnico del Long-Press**:
+```
+touchstart → setTimeout(500ms) → toggle('.highlighted') + vibrate
+touchend   → clearTimeout + preventDefault si fue long-press
+touchmove  → clearTimeout (cancela si el dedo se mueve)
+click      → stopImmediatePropagation si fue long-press (evita playVideo)
+```
+
+### 🎓 Lecciones Aprendidas
+1.  **El `filter: grayscale()` es el enemigo de la legibilidad en dark mode**: En interfaces oscuras, reducir la saturación de un elemento que ya es gris producce un efecto invisible. Cambiar el *hue* del fondo es mucho más efectivo.
+2.  **Long-press en móvil requiere 3 listeners**: `touchstart` para iniciar, `touchmove` para cancelar (el dedo se movió), y `touchend` para finalizar. Sin los tres, el UX es frágil.
+3.  **`{passive: true}` en `touchstart/touchmove` mejora rendimiento scroll**: Pero NO se puede usar en `touchend` si necesitas `preventDefault()` para bloquear el click subsiguiente.
+
+### 📖 Glosario
+- **Long-press**: Gesto táctil de mantener el dedo sobre un elemento por más de ~500ms
+- **Toggle**: Alternancia on/off con cada interacción sucesiva
+- **Haptic feedback**: Retroalimentación táctil mediante vibración del dispositivo
+- **Dark mode palette**: Colores de fondo con luminosidad <30% para reducir fatiga visual
