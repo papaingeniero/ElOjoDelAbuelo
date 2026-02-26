@@ -4319,3 +4319,30 @@ click      → stopImmediatePropagation si fue long-press (evita playVideo)
 - **Toggle**: Alternancia on/off con cada interacción sucesiva
 - **Haptic feedback**: Retroalimentación táctil mediante vibración del dispositivo
 - **Dark mode palette**: Colores de fondo con luminosidad <30% para reducir fatiga visual
+
+### 🚀 Sistema de Persistencia Forense: LocalStorage para Destacadas (v3.9.11-dev.8)
+
+#### El Problema (Storytelling) 📜
+Hasta ahora, nuestro panel de control web permitía destacar grabaciones importantes mediante una pulsación larga (color ámbar). Sin embargo, este estado era **volátil**: residía únicamente en la RAM del navegador. Si el usuario recargaba la página, cerraba la pestaña o el navegador limpiaba la memoria, el marcado de los eventos sospechosos desaparecía. Para un sistema de seguridad, esta falta de persistencia obligaba a un re-análisis constante, lo cual es ineficiente y propenso a errores humanos.
+
+#### La Solución (Ingeniería) 🛠️
+Hemos implementado una capa de persistencia utilizando la API `localStorage`. A diferencia de `sessionStorage`, `localStorage` no tiene fecha de expiración y sobrevive al cierre del navegador.
+
+**Cambios Técnicos Clave:**
+1.  **Arqueología de Datos en el Render**: Al generar cada "tarjeta" de video (`renderCards`), el script consulta inmediatamente el almacén local:
+    ```javascript
+    if (localStorage.getItem('highlighted_' + v.name)) div.classList.add('highlighted');
+    ```
+2.  **Sincronización de Estado Reactiva**: Hemos modificado la función `setupLongPress` para que sea "consciente" del archivo que está manejando. Al alternar la clase visual, se realiza una operación E/S (Entrada/Salida) en el navegador:
+    - **Añadir**: `localStorage.setItem('highlighted_' + filename, '1');`
+    - **Eliminar**: `localStorage.removeItem('highlighted_' + filename);`
+
+#### Lecciones Aprendidas 🎓
+- **Persistencia sin Backend**: No siempre es necesario saturar el servidor con estados de UI. `localStorage` es ideal para preferencias de visualización que solo importan al cliente actual.
+- **Inyección de Identidad**: Para que una función genérica como `setupLongPress` pudiera gestionar datos persistentes, necesitaba conocer la identidad (`filename`) del objeto. El paso de parámetros en el DOM es una técnica clásica pero efectiva en entornos legacy.
+
+#### Glosario 📖
+- **localStorage**: Memoria no volátil del navegador que permite guardar datos en formato Clave-Valor.
+- **I/O (Input/Output)**: En este contexto, la escritura y lectura del estado en el almacenamiento del dispositivo.
+- **Legacy Context**: Entorno donde el frontend está incrustado directamente en el código de backend (Java strings).
+

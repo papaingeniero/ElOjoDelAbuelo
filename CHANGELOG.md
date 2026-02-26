@@ -328,7 +328,12 @@
 ### Fixed
 - **Compilation**: Fix de contexto (`this` vs `SentinelService.this`) en la llamada a `getBatteryTemperature`.
 
-## [v3.9.10-dev.7] - 2026-02-06
+## [v3.9.11-dev.8] - 2026-02-26
+### ✅ Añadido
+- **Persistencia LocalStorage**: El estado "Destacada" de las grabaciones ahora se guarda en el navegador. Las tarjetas resaltadas en color ámbar mantienen su estado tras recargar la página o cerrar la sesión.
+- **Refactor JS**: La función `setupLongPress` ahora recibe el nombre del archivo para gestionar su estado individual en disco.
+
+## [v3.9.11-dev.7] - 2026-02-25
 ### Added
 - **Thermal Logs**: Ahora los mensajes de "Sobrecalentamiento" y "Estabilización" incluyen la temperatura exacta en grados.
 

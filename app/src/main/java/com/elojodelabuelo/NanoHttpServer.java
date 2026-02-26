@@ -1787,7 +1787,8 @@ public class NanoHttpServer {
                 +
                 "    div.innerHTML = thumbHtml + infoHtml;\n" +
                 "    div.setAttribute('onclick', \"playVideo('\" + v.name + \"')\");\n" +
-                "    setupLongPress(div);\n" +
+                "    if (localStorage.getItem('highlighted_' + v.name)) div.classList.add('highlighted');\n" +
+                "    setupLongPress(div, v.name);\n" +
                 "    container.appendChild(div);\n" +
                 "    // Init canvas animation if preview exists\n" +
                 "    if(v.preview) {\n" +
@@ -1801,13 +1802,15 @@ public class NanoHttpServer {
                 "// --- LONG-PRESS HIGHLIGHT SYSTEM ---\n" +
                 "var longPressTimer = null;\n" +
                 "var longPressTriggered = false;\n" +
-                "function setupLongPress(el) {\n" +
+                "function setupLongPress(el, filename) {\n" +
                 "  el.addEventListener('touchstart', function(e) {\n" +
                 "    longPressTriggered = false;\n" +
                 "    var target = el;\n" +
                 "    longPressTimer = setTimeout(function() {\n" +
                 "      longPressTriggered = true;\n" +
-                "      target.classList.toggle('highlighted');\n" +
+                "      var isHigh = target.classList.toggle('highlighted');\n" +
+                "      if (isHigh) localStorage.setItem('highlighted_' + filename, '1'); else localStorage.removeItem('highlighted_' + filename);\n"
+                +
                 "      if(navigator.vibrate) navigator.vibrate(30);\n" +
                 "    }, 500);\n" +
                 "  }, {passive: true});\n" +
