@@ -4387,3 +4387,21 @@ Variable estática → SharedPreferences → updateSettings() → API REST → M
 - **ThermalGuardian**: Componente que lee la temperatura de la batería vía sysfs y decide si pausar la vigilancia para proteger el hardware.
 - **Décimas de grado (deciCelsius)**: Unidad interna del kernel de Linux para temperaturas. 430 = 43.0°C.
 - **Feature Flag Pattern**: Ciclo estandarizado para añadir configuraciones al proyecto: variable → persistencia → API → UI.
+
+
+## 🚀 Phase Release: v3.9.12 "Control Absoluto" | Fecha: 08 de Junio de 2026
+
+### 📜 La Culminación de un Ciclo
+Durante las últimas decenas de iteraciones (la saga `v3.9.11-dev.X` y `v3.9.12-dev.X`), el proyecto ha evolucionado para dotar de completa autonomía y control remoto a "El Ojo del Abuelo", resolviendo de raíz los problemas de memoria en hardware antiguo y moviendo toda la lógica de configuración a la web.
+
+### 🛠️ Novedades de Ingeniería Incorporadas
+1. **Termostato Dinámico (MAX_TEMP)**: El umbral de temperatura que antes estaba fijado por código (43.0°C) ahora es configurable en tiempo real desde la web (35°C-55°C) mediante SharedPreferences.
+2. **Watchdog Asimétrico y Resurrección**: Se rediseñó el SentinelService para que vigile a la MainActivity mediante latidos temporales. Si el sistema operativo asesina la app por falta de memoria (OOM Killer), el SentinelService la resucita silenciosamente.
+3. **Persistencia y UI Web Avanzada**: Las tarjetas de la interfaz web ahora persisten su estado de expansión en el navegador (LocalStorage), y se ha implementado un nuevo esquema visual (Azul Medianoche y Dorado Ámbar) para comunicar estado activo/inactivo.
+4. **Cámara (Pan & Zoom)**: Las mecánicas de Pan y Zoom se ajustaron a la perfección, logrando una representación What-You-See-Is-What-You-Get (WYSIWYG) entre lo que muestra la interfaz web y la salida MP4 del video generado.
+
+### 🎓 Lecciones del Desarrollo
+- **El Patrón Feature Flag**: La arquitectura de tener variables que se leen directamente de SharedPreferences y se modifican desde REST demostró ser robusta y limpia.
+- **Supervivencia en Tierras Hostiles**: No se puede confiar en que Android 2.3 mantenga vivos los procesos. El watchdog activo es obligatorio.
+- **La configuración es un ciudadano de primera clase**: Todo lo que dependía de una recompilación para modificarse (temperatura, resoluciones) debe ir delegándose al control web.
+

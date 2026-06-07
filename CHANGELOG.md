@@ -1,3 +1,6 @@
+## [v3.9.12] - 2026-06-08
+*   🚀 **Release**: Control Absoluto (Termostato dinámico, Resurrección silenciosa, OOM Prevention, Pan & Zoom WYSIWYG, States Web).
+
 ### v3.9.11-dev.9
 *   🌡️ **Feature (Configurable Thermal Limit)**: El umbral de temperatura máxima (`MAX_TEMP`) del `ThermalGuardian` ahora es configurable desde la interfaz web de Preferencias (35°C–55°C, default 43°C).
     *   **Backend**: Constante convertida a variable de instancia con `setMaxTemp()`/`getMaxTemp()`. Persistencia en `SharedPreferences` y propagación en caliente vía `updateSettings()`.
