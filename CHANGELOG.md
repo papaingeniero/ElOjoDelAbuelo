@@ -1,3 +1,8 @@
+### v3.9.11-dev.9
+*   🌡️ **Feature (Configurable Thermal Limit)**: El umbral de temperatura máxima (`MAX_TEMP`) del `ThermalGuardian` ahora es configurable desde la interfaz web de Preferencias (35°C–55°C, default 43°C).
+    *   **Backend**: Constante convertida a variable de instancia con `setMaxTemp()`/`getMaxTemp()`. Persistencia en `SharedPreferences` y propagación en caliente vía `updateSettings()`.
+    *   **Frontend**: Nuevo campo numérico "🌡️ Límite Temperatura (°C)" en el modal de Configuración.
+
 ### v3.9.11-dev.7
 *   🎨 **UX (Card States)**: Mejorada diferenciación visual de tarjetas "vistas" — fondo azul medianoche (`#1a2332`) con borde izquierdo azul acero (`#2d5a88`), reemplazando el `grayscale(100%)` casi invisible.
 *   ✨ **Feature (Long-Press Highlight)**: Nuevo gesto de pulsación larga (~500ms) en tarjetas de video para marcarlas temporalmente en dorado ámbar (`#d4a338`). Toggle on/off, no persistente, con feedback háptico.

@@ -513,9 +513,10 @@ public class NanoHttpServer {
             boolean filter = SentinelService.filterFalsePositives;
 
             String json = String.format(Locale.US,
-                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"preRecord\":%b, \"stealth\":%b, \"filter\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
+                    "{\"sens\":%d, \"contrast\":%d, \"time\":%d, \"active\":%b, \"preRecord\":%b, \"stealth\":%b, \"filter\":%b, \"rot\":%d, \"defZoom\":%.2f, \"defPanX\":%d, \"defPanY\":%d, \"minFreeSpace\":%d, \"maxTemp\":%d, \"webZoom\":%.2f, \"webPanX\":%d, \"webPanY\":%d, \"tgToken\":\"%s\", \"tgChatId\":\"%s\", \"tgActive\":%b}",
                     sens, contrast, time, active, preRecord, stealth, filter, rot, defZoom, defPanX, defPanY,
                     minFreeSpace,
+                    SentinelService.maxTempCelsius,
                     webZoom,
                     webPanX,
                     webPanY,
@@ -548,6 +549,7 @@ public class NanoHttpServer {
             int defPanX = 0;
             int defPanY = 0;
             int minSpace = 500;
+            int maxTempC = 43; // [NUEVO] Default: 43°C
             // Web Vars
             float webZoom = 1.0f;
             int webPanX = 0;
@@ -592,6 +594,8 @@ public class NanoHttpServer {
                                 defPanY = Integer.parseInt(val);
                             else if (key.equals("min_free_space"))
                                 minSpace = Integer.parseInt(val);
+                            else if (key.equals("maxTemp"))
+                                maxTempC = Integer.parseInt(val);
                             // New Web Vars
                             else if (key.equals("webZoom"))
                                 webZoom = Float.parseFloat(val);
@@ -623,7 +627,7 @@ public class NanoHttpServer {
                         .commit();
 
                 SentinelService.updateSettings(sens, contrast, time, active, rot, tgToken, tgChatId, preRecord,
-                        stealth, filter);
+                        stealth, filter, maxTempC);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
                 SentinelService.updateViewSettings(defZoom, defPanX, defPanY);
             } catch (Exception e) {
@@ -1136,8 +1140,14 @@ public class NanoHttpServer {
                 "        <button onclick='openDeleteModal()' style='background:#330000; border:1px solid #550000; color:#ff4444; padding:8px 15px; border-radius:4px; font-size:12px;'>🗑️ BORRAR TODO</button>\n"
                 +
                 "      </div>\n" +
-                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Borra videos antiguos si queda menos espacio (MB).</div>\n"
-                +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Borra videos antiguos si queda menos espacio (MB).</div>\n" +
+                "\n" +
+                "      <div class='settings-row'>\n" +
+                "         <label>🌡️ Límite Temperatura (°C):</label>\n" +
+                "         <input type='number' id='set-max-temp' style='width:60px; padding:5px; background:#333; color:white; border:1px solid #555; text-align:right;' min='35' max='55'>\n" +
+                "      </div>\n" +
+                "      <div style='font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:10px;'>* Pausar vigilancia si supera este límite (Protección Hardware).</div>\n" +
+                "\n" +
                 "      <div class='settings-row'>\n" +
                 "         <label>Rotación:</label>\n" +
                 "         <div>\n" +
@@ -1699,6 +1709,7 @@ public class NanoHttpServer {
                 "\n"
                 +
                 "     updateSensLabel(data.sens);\n" +
+                "     if(data.maxTemp !== undefined) document.getElementById('set-max-temp').value = data.maxTemp;\n" +
                 "  });\n" +
                 "}\n" +
                 "function saveSettings() {\n" +
@@ -1724,10 +1735,11 @@ public class NanoHttpServer {
                 "   document.querySelector('.btn-save').textContent = 'Guardando...';\n" +
                 "   var stealth = document.getElementById('set-stealth').checked;\n" +
                 "   var filter = document.getElementById('set-filter').checked;\n" +
+                "   var maxTemp = document.getElementById('set-max-temp').value || 43;\n" +
                 "   var qs = '?sens=' + sens + '&contrast=' + contrast + '&time=' + time + '&active=' + active + '&preRecord=' + preRecord + '&stealth=' + stealth + '&filter=' + filter + '&rot=' + rot +\n"
                 +
                 "            '&defZoom=' + defZoom + '&defPanX=' + defPanX + '&defPanY=' + defPanY +\n" +
-                "            '&min_free_space=' + minSpace +\n" +
+                "            '&min_free_space=' + minSpace + '&maxTemp=' + maxTemp +\n" +
                 "            '&webZoom=' + wZoom + '&webPanX=' + wPanX + '&webPanY=' + wPanY +\n" +
                 "            '&tgToken=' + tgToken + '&tgChatId=' + tgChatId + '&tgActive=' + tgActive;\n"
                 +

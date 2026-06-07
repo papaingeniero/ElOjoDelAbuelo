@@ -4346,3 +4346,44 @@ Hemos implementado una capa de persistencia utilizando la API `localStorage`. A 
 - **I/O (Input/Output)**: En este contexto, la escritura y lectura del estado en el almacenamiento del dispositivo.
 - **Legacy Context**: Entorno donde el frontend está incrustado directamente en el código de backend (Java strings).
 
+
+---
+
+## 🌡️ Phase 84: El Termostato Configurable (MAX_TEMP Dinámico)
+**Versión**: v3.9.11-dev.9 | **Fecha**: 08 de Junio de 2026
+
+### 📜 1. El Problema (Storytelling)
+El `ThermalGuardian` — el componente que protege al Samsung Galaxy S (GT-I9000) contra el sobrecalentamiento — tenía un umbral de temperatura máxima fijado a fuego en el código: `private static final int MAX_TEMP = 430` (43.0°C). Si el usuario quería ajustar este límite (por ejemplo, porque en verano 43°C es un valor alcanzable sin riesgo real, o porque en un entorno cerrado prefiere ser más conservador), la única opción era recompilar la app entera.
+
+Esto violaba un principio fundamental del proyecto: **toda configuración de comportamiento debe ser accesible desde la interfaz web sin tocar código**.
+
+### 🛠️ 2. La Solución (Ingeniería)
+Hemos convertido la constante `MAX_TEMP` en una **preferencia configurable** siguiendo exactamente el patrón ya consolidado del proyecto (el mismo ciclo usado por `motionSensitivity`, `stealthMode`, `filterFalsePositives`, etc.):
+
+```
+Variable estática → SharedPreferences → updateSettings() → API REST → Modal HTML → JavaScript
+```
+
+**Archivos modificados (3):**
+
+| Archivo | Cambio | Propósito |
+|---------|--------|-----------|
+| `ThermalGuardian.java` | Constante → variable de instancia + `setMaxTemp()`/`getMaxTemp()` | Permitir actualización en caliente |
+| `SentinelService.java` | `maxTempCelsius` estática + carga en `onCreate` + extensión de `updateSettings()` | Persistencia y propagación |
+| `NanoHttpServer.java` | API GET/POST + HTML input + JS load/save | Interfaz web completa |
+
+**Detalle técnico relevante:**
+- Internamente, `ThermalGuardian` trabaja en **décimas de grado** (430 = 43.0°C) porque así lee `/sys/class/power_supply/battery/temp`.
+- En la web, el usuario configura en **grados enteros** (43°C) para simplificar la UX.
+- La conversión (`°C × 10 = décimas`) se hace en `SentinelService` al llamar a `setMaxTemp()`.
+- El rango permitido es **35°C a 55°C**. Por debajo de 35°C el móvil casi siempre estaría en "sobrecalentamiento" falso; por encima de 55°C se arriesga daño real a la batería LiPo.
+
+### 🎓 3. Lecciones Aprendidas
+- ✅ **El Patrón Feature Flag está maduro**: Esta es la N-ésima vez que se replica el ciclo `variable → SharedPrefs → updateSettings → API → UI → JS`. Tenerlo documentado en la bitácora de la Phase 67 (Modo Sigilo) ha permitido implementar este cambio en minutos, no horas.
+- ✅ **Separación de unidades**: Mantener las unidades internas (décimas) separadas de las unidades de usuario (grados) evita confusiones y bugs de factor ×10.
+- ✅ **Configurabilidad ≠ Complejidad**: Añadir un campo configurable con el patrón consolidado no aumenta la complejidad cognitiva del código si se sigue la estructura existente.
+
+### 📖 4. Glosario
+- **ThermalGuardian**: Componente que lee la temperatura de la batería vía sysfs y decide si pausar la vigilancia para proteger el hardware.
+- **Décimas de grado (deciCelsius)**: Unidad interna del kernel de Linux para temperaturas. 430 = 43.0°C.
+- **Feature Flag Pattern**: Ciclo estandarizado para añadir configuraciones al proyecto: variable → persistencia → API → UI.

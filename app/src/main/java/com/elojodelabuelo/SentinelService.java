@@ -126,6 +126,7 @@ public class SentinelService extends Service {
     public static int recordingTimeout = 10; // seconds
     public static volatile boolean isDetectorActive = true;
     public static int cameraRotation = 0; // 0 or 180
+    public static int maxTempCelsius = 43; // [NUEVO] Umbral térmico configurable (°C)
 
     // RULE OF 3: Temporal Persistence Filter
     private int consecutiveMotionFrames = 0;
@@ -248,6 +249,12 @@ public class SentinelService extends Service {
         // 3. Components
         motionDetector = new MotionDetector();
         thermalGuardian = new ThermalGuardian();
+
+        // [NUEVO] Cargar umbral de temperatura desde preferencias
+        maxTempCelsius = prefs.getInt("maxTempCelsius", 43);
+        thermalGuardian.setMaxTemp(maxTempCelsius * 10); // Convertir °C a décimas
+        logToWeb("🌡️ LÍMITE TÉRMICO: " + maxTempCelsius + "°C");
+
         httpServer = new NanoHttpServer(this);
         httpServer.start();
 
@@ -1100,7 +1107,7 @@ public class SentinelService extends Service {
     public static boolean filterFalsePositives = true; // [NUEVO] Filtro de falsos positivos (3 frames)
 
     public static void updateSettings(int sens, int contrast, int time, boolean active, int rot, String tgToken,
-            String tgChatId, boolean preRecord, boolean stealth, boolean filter) {
+            String tgChatId, boolean preRecord, boolean stealth, boolean filter, int maxTempC) {
         boolean rotationChanged = (cameraRotation != rot);
         // --- INICIO INSERCIÓN ---
         if (isDetectorActive != active) {
@@ -1115,6 +1122,9 @@ public class SentinelService extends Service {
         if (filterFalsePositives != filter) {
             logToWeb("🛡️ FILTRO FALSOS POSITIVOS CAMBIADO: " + (filter ? "ON (3 Frames)" : "OFF (Instantáneo)"));
         }
+        if (maxTempCelsius != maxTempC) {
+            logToWeb("🌡️ LÍMITE TÉRMICO CAMBIADO: " + maxTempCelsius + "°C → " + maxTempC + "°C");
+        }
         // --- FIN INSERCIÓN ---
         // Telegram Update
         telegramToken = tgToken;
@@ -1127,6 +1137,12 @@ public class SentinelService extends Service {
         isPreRecordActive = preRecord; // [NUEVO]
         stealthMode = stealth;
         filterFalsePositives = filter;
+        maxTempCelsius = maxTempC;
+
+        // [NUEVO] Actualizar ThermalGuardian en caliente
+        if (instance != null && instance.thermalGuardian != null) {
+            instance.thermalGuardian.setMaxTemp(maxTempC * 10);
+        }
 
         // [SAFETY] Si se desactiva el pre-record, vaciar buffer para no arrastrar
         // fantasmas
@@ -1164,6 +1180,7 @@ public class SentinelService extends Service {
             editor.putBoolean("isPreRecordActive", preRecord); // [NUEVO]
             editor.putBoolean("stealthMode", stealth);
             editor.putBoolean("filterFalsePositives", filter);
+            editor.putInt("maxTempCelsius", maxTempCelsius); // [NUEVO]
             // --- FIX PERSISTENCIA TELEGRAM (v3.9.9-dev.3) ---
             editor.putString("tg_token", tgToken);
             editor.putString("tg_chat_id", tgChatId);
